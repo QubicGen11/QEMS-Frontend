@@ -6,13 +6,11 @@ const Sidemenu = () => {
 <aside className="main-sidebar sidebar-dark-primary elevation-4">
   
   <div className="sidebar">
-    <div className="user-panel mt-3 pb-3 mb-3 d-flex">
-      <div className="image">
-        <img src="dist/img/user2-160x160.jpg" className="img-circle elevation-2" alt="User Image" />
+    <div className="w-40 mt-3 pb-3 mb-3 d-flex">
+      <div className="">
+        <img src="https://res.cloudinary.com/defsu5bfc/image/upload/v1715348582/og_6_jqnrvf.png" className="w-96" alt="User Image" />
       </div>
-      <div className="info">
-        <a href="#" className="d-block">Shaik Sajid Hussain</a>
-      </div>
+
     </div>
     <div className="form-inline">
       <div className="input-group" data-widget="sidebar-search">

@@ -23,24 +23,26 @@ const Header = () => {
     return (
         <>
 
-            <nav className="main-header navbar navbar-expand navbar-dark navbar-dark fixed sm:w-auto lg:w-[82vw] md:w-auto">
-                <ul className="navbar-nav">
+        
+
+            <nav className="main-header navbar navbar-expand navbar-dark navbar-dark fixed lg:w-[86vw] md:w-[86vw]">
+                <ul className="navbar-nav w-56">
                     <li className="nav-item">
                         <a className="nav-link" data-widget="pushmenu" href="#" role="button"><i className="fas fa-bars" /></a>
                     </li>
-                    <li className="nav-item d-none d-sm-inline-block">
+                    {/* <li className="nav-item d-none d-sm-inline-block">
                         <a href="index3.html" className="nav-link">Home</a>
                     </li>
                     <li className="nav-item d-none d-sm-inline-block">
                         <a href="#" className="nav-link">Contact</a>
-                    </li>
+                    </li> */}
                 </ul>
                 <ul className="navbar-nav ml-auto">
-                    <li className="nav-item">
+                    <li className="nav-item hidden ">
                         <a className="nav-link" data-widget="navbar-search" href="#" role="button">
                             <i className="fas fa-search" />
                         </a>
-                        <div className="navbar-search-block">
+                        <div className="navbar-search-block sm:hi">
                             <form className="form-inline">
                                 <div className="input-group input-group-sm">
                                     <input className="form-control form-control-navbar" type="search" placeholder="Search" aria-label="Search" />
@@ -136,7 +138,9 @@ const Header = () => {
                             <a href="#" className="dropdown-item dropdown-footer text-white hover:bg-[rgba(255,255,255,0.1)]">See All Notifications</a>
                         </div>
                     </li>
-                    <li className="nav-item">
+
+                    {/* This is my name drop down */}
+                    <li className="nav-item ">
                         <div className="mr-auto  " onMouseLeave={handleMouseLeave}
                             onMouseEnter={handleMouseEnter}>
 
@@ -145,7 +149,7 @@ const Header = () => {
 
 
 
-                                    className="absolute right-4 z-20 w-64 py-2 mt-[44px] overflow-hidden origin-top-right bg-white rounded-md shadow-xl dark:bg-gray-800"
+                                    className="absolute right-4 z-20 w-64 py-2 mt-[44px] overflow-hidden origin-top-right bg-gray-800 rounded-md shadow-xl dark:bg-gray-800"
                                 >
                                     <a
                                         href="#"
@@ -216,7 +220,7 @@ const Header = () => {
                   src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=634&q=80"
                   alt="avatar"
                 />
-                <button className="relative z-10 flex items-center p-2 text-sm text-gray-600 bg-white border border-transparent rounded-md focus:border-blue-500 focus:ring-opacity-40 dark:focus:ring-opacity-40 focus:ring-blue-300 dark:focus:ring-blue-400 focus:ring dark:text-white dark:bg-gray-800 focus:outline-none">
+                <button className="w-auto z-10 flex flex-wrap items-center p-2 text-sm ml-auto text-gray-600 bg-white border border-transparent rounded-md focus:border-blue-500 focus:ring-opacity-40 dark:focus:ring-opacity-40 focus:ring-blue-300 dark:focus:ring-blue-400 focus:ring dark:text-white dark:bg-gray-800 focus:outline-none">
                   <span className="mx-1 hover:text-yellow-500 dark:hover:text-yellow-400">Shaik Sajid Hussain</span>
                   <svg
                     className="w-5 h-5 mx-1"
@@ -236,97 +240,13 @@ const Header = () => {
                 </button>
               </a>
 
-              <div className="mr-auto  "    onMouseLeave={handleMouseLeave}
-        onMouseEnter={handleMouseEnter}>
-
-              {isOpen && (
-                <div
-                
-                  
-                  
-                  className="absolute right-4 z-20 w-64 py-2 mt-[44px] overflow-hidden origin-top-right bg-dark rounded-md shadow-xl dark:bg-gray-800"
-                >
-                  <a
-                    href="#"
-                    className="flex items-center p-3 -mt-2 text-sm text-gray-600 transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
-                  >
-                    <img
-                      className="flex-shrink-0 object-cover mx-1 rounded-full w-9 h-9"
-                      src="https://images.unsplash.com/photo-1523779917675-b6ed3a42a561?ixid=MnwxMjA3fDB8MHxzZWFyY2h8N3x8d29tYW4lMjBibHVlfGVufDB8fDB8fA%3D%3D&ixlib=rb-1.2.1&auto=format&fit=face&w=500&q=200"
-                      alt="jane avatar"
-                    />
-                    <div className="mx-1">
-                      <h1 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                        Sajid Hussain
-                      </h1>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        SajidHussain@exampl.com
-                      </p>
-                    </div>
-                  </a>
-                  <hr className="border-gray-200 dark:border-gray-700 " />
-                  <a
-                    href="#"
-                    className="block px-4 py-3 text-sm text-gray-600 capitalize transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
-                  >
-                    view profile
-                  </a>
-                  <a
-                    href="#"
-                    className="block px-4 py-3 text-sm text-gray-600 capitalize transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
-                  >
-                    Settings
-                  </a>
-               
-                
-                
-                  <hr className="border-gray-200 dark:border-gray-700 " />
-            
-                  <Link
-                    to="/"
-                    className="block px-4 py-3 text-sm text-gray-600 capitalize transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
-                  >
-                    Sign Out
-                  </Link>
-                </div>
-
-              )}
-
-
-
-
-
-
-
-                
-              </div>
+   
               
             </div>
 
 
             
-            {/* <div className="flex justify-center md:block">
-              <a
-                className="relative text-gray-700 transition-colors duration-300 transform dark:text-gray-200 hover:text-gray-600 dark:hover:text-gray-300"
-                href="#"
-              >
-                <svg
-                  className="w-5 h-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M3 3H5L5.4 5M7 13H17L21 5H5.4M7 13L5.4 5M7 13L4.70711 15.2929C4.07714 15.9229 4.52331 17 5.41421 17H17M17 17C15.8954 17 15 17.8954 15 19C15 20.1046 15.8954 21 17 21C18.1046 21 19 20.1046 19 19C19 17.8954 18.1046 17 17 17ZM9 19C9 20.1046 8.10457 21 7 21C5.89543 21 5 20.1046 5 19C5 17.8954 5.89543 17 7 17C8.10457 17 9 17.8954 9 19Z"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <span className="absolute top-0 left-0 p-1 text-xs text-white bg-blue-500 rounded-full"></span>
-              </a>
-            </div> */}
+            
           </div>
                     </li>
 

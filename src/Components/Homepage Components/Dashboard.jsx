@@ -1,6 +1,15 @@
 import React from 'react'
 
 const Dashboard = () => {
+
+  const clockin = ()=>{
+    alert("Successfully clocked  In")
+  }
+  const clockout = ()=>{
+    alert("Successfully clocked  Out")
+  }
+
+
   return (
     <>
 
@@ -20,32 +29,84 @@ const Dashboard = () => {
       </div>
     </div>
   </div>
+
+
+  {/* This is clock in function */}
+
+
   <section className="content">
     <div className="container-fluid">
       <div className="row">
         <div className="col-lg-3 col-6">
-          <div className="small-box bg-info">
-            <div className="inner">
-              <h3>150</h3>
-              <p>New Orders</p>
+        <div className="card card-widget widget-user-2" bis_skin_checked={1}>
+        <div className="card card-widget widget-user shadow-lg">
+        <div className="widget-user-header text-white" style={{background: 'url("../dist/img/photo1.png") center center'}}>
+          <h3 className="widget-user-username text-right">Shaik Sajid Hussain</h3>
+          <h5 className="widget-user-desc text-right">Web Developer</h5>
+        </div>
+        <div className="widget-user-image">
+          <img className="img-circle" src="https://res.cloudinary.com/defsu5bfc/image/upload/v1710237566/QubicGen/Contact%20Us/cropped_robot_yspx0x.jpg" alt="User Avatar" />
+        </div>
+        <div className="card-footer">
+          <div className="row">
+            <div className="col-sm-6 border-right">
+              <div className="description-block">
+              <button onClick={clockin}
+  class="w-20 bg-green-600  text-xs text-white font-semibold py-2 px-1 rounded-full shadow-lg transform hover:scale-105 transition duration-300 ease-in-out hover:bg-yellow-500"
+>
+ Clock In
+</button>
+                
+              </div>
             </div>
-            <div className="icon">
-              <i className="ion ion-bag" />
+            <div className="col-sm-6 border-right">
+              <div className="description-block">
+              <button onClick={clockout}
+  class="w-20 bg-red-600 text-xs   text-white font-semibold py-2 px-1 rounded-full shadow-lg transform hover:scale-105 transition duration-300 ease-in-out hover:bg-yellow-500"
+>
+ Clock Out
+</button>
+              </div>
             </div>
-            <a href="#" className="small-box-footer">More info <i className="fas fa-arrow-circle-right" /></a>
+            
           </div>
         </div>
-        <div className="col-lg-3 col-6">
-          <div className="small-box bg-success">
-            <div className="inner">
-              <h3>53<sup style={{fontSize: 20}}>%</sup></h3>
-              <p>Bounce Rate</p>
-            </div>
-            <div className="icon">
-              <i className="ion ion-stats-bars" />
-            </div>
-            <a href="#" className="small-box-footer">More info <i className="fas fa-arrow-circle-right" /></a>
-          </div>
+      </div>
+        <div className="card-footer p-0" bis_skin_checked={1}>
+          <ul className="nav flex-column">
+            <li className="nav-item">
+              <a href="#" className="nav-link" cursorshover="true">
+                Projects <span className="float-right badge bg-primary">31</span>
+              </a>
+            </li>
+            <li className="nav-item">
+              <a href="#" className="nav-link" cursorshover="true">
+                Tasks <span className="float-right badge bg-info">5</span>
+              </a>
+            </li>
+            <li className="nav-item">
+              <a href="#" className="nav-link" cursorshover="true">
+                Completed Projects <span className="float-right badge bg-success">12</span>
+              </a>
+            </li>
+            
+            
+          </ul>
+        </div>
+      </div>
+        </div>
+        <div className="col-lg-3 col-6 h-48">
+        <div className="small-box bg-success" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:142,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}">
+        <div className="inner" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:112,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}">
+          <h3 bis_size="{&quot;x&quot;:381,&quot;y&quot;:82,&quot;w&quot;:321,&quot;h&quot;:42,&quot;abs_x&quot;:631,&quot;abs_y&quot;:179}">53<sup style={{fontSize: '20px'}} bis_size="{&quot;x&quot;:418,&quot;y&quot;:85,&quot;w&quot;:17,&quot;h&quot;:25,&quot;abs_x&quot;:668,&quot;abs_y&quot;:182}">%</sup></h3>
+          <p bis_size="{&quot;x&quot;:381,&quot;y&quot;:134,&quot;w&quot;:321,&quot;h&quot;:24,&quot;abs_x&quot;:631,&quot;abs_y&quot;:231}">Bounce Rate</p>
+        </div>
+        <div className="icon" bis_size="{&quot;x&quot;:371,&quot;y&quot;:184,&quot;w&quot;:341,&quot;h&quot;:0,&quot;abs_x&quot;:621,&quot;abs_y&quot;:281}">
+          <i className="ion ion-stats-bars" bis_size="{&quot;x&quot;:647,&quot;y&quot;:89,&quot;w&quot;:52,&quot;h&quot;:77,&quot;abs_x&quot;:897,&quot;abs_y&quot;:186}" />
+        </div>
+        <a href="#" className="small-box-footer" bis_size="{&quot;x&quot;:371,&quot;y&quot;:184,&quot;w&quot;:341,&quot;h&quot;:30,&quot;abs_x&quot;:621,&quot;abs_y&quot;:281}">More info <i className="fas fa-arrow-circle-right" bis_size="{&quot;x&quot;:567,&quot;y&quot;:191,&quot;w&quot;:16,&quot;h&quot;:16,&quot;abs_x&quot;:817,&quot;abs_y&quot;:288}" /></a>
+      </div>
+          
         </div>
         <div className="col-lg-3 col-6">
           <div className="small-box bg-warning">

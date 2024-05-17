@@ -76,17 +76,5 @@
   
 
 
-@media (min-width: 320px) and (max-width: 650px) {
-    /* Add custom message for small screen sizes */
-    body:before {
-        content: "Please open this page in desktop mode for the best experience.";
-        
-    }
-    .Careersmain {
-    display: none;
-    }
-    
- 
-    
-}
+
 
