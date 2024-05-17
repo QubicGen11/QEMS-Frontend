@@ -2,12 +2,44 @@ import React, { useEffect, useRef, useState } from 'react'
 
 const Dashboard = () => {
 
-  const clockin = ()=>{
-    alert("Successfully clocked  In")
-  }
-  const clockout = ()=>{
-    alert("Successfully clocked  Out")
-  }
+
+
+
+  const [isClockedIn, setIsClockedIn] = useState(false);
+  const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
+  const intervalRef = useRef(null);
+
+  const clockIn = () => {
+    const now = new Date();
+    const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    alert(`Employee Successfully Clocked In on ${formattedTime}`);
+    setIsClockedIn(true);
+    intervalRef.current = setInterval(() => {
+      setTime(prevTime => {
+        const newSeconds = prevTime.seconds + 1;
+        const newMinutes = prevTime.minutes + Math.floor(newSeconds / 60);
+        const newHours = prevTime.hours + Math.floor(newMinutes / 60);
+        return {
+          hours: newHours % 24,
+          minutes: newMinutes % 60,
+          seconds: newSeconds % 60,
+        };
+      });
+    }, 1000);
+  };
+
+  const clockOut = () => {
+    const now = new Date();
+    const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    alert(`Employee Successfully Clocked Out on ${formattedTime}`);
+
+    setIsClockedIn(false);
+    clearInterval(intervalRef.current);
+  };
+
+  useEffect(() => {
+    return () => clearInterval(intervalRef.current); // Cleanup interval on component unmount
+  }, []);
 
 
   return (
