@@ -103,12 +103,16 @@ const Login = () => {
                     Forgot your password?
                   </a>
                 </div>
+                <Link to="/dashboard">
+
                 <button
                   type="submit"
                   className="w-max m-auto px-7 py-2 rounded flex bg-yellow-400 text-black text-sm font-bold transform transition-all duration-500 ease-in-out hover:scale-110 hover:brightness-110 hover:animate-pulse active:animate-bounce"
                 >
                   SIGN IN
                 </button>
+                </Link>
+               
               </form>
             </div>
           </div>
