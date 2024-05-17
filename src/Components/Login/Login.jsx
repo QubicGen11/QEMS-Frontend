@@ -7,8 +7,8 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useForm } from "react-hook-form";
 import axios from 'axios';
-
-const Login = () => {
+ const Login = () => {
+   
   useEffect(() => {
     AOS.init();
   }, []);

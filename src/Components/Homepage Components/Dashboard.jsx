@@ -2,11 +2,13 @@ import React from 'react'
 
 const Dashboard = () => {
 
-  const clockin = ()=>{
+  const clockin =async ()=>{
     alert("Successfully clocked  In")
+    const response=await axios.post('http://localhost:9988/qubinest/clockin')
   }
-  const clockout = ()=>{
+  const clockout = async()=>{
     alert("Successfully clocked  Out")
+    const response=await axios.post('http://localhost:9988/qubinest/clockout')
   }
 
 
