@@ -6,22 +6,24 @@ import { Link } from "react-router-dom";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useForm } from "react-hook-form";
-import axios from 'axios'
+import axios from 'axios';
+
 const Login = () => {
   useEffect(() => {
     AOS.init();
   }, []);
 
   // Initialize the form
-  const { register, handleSubmit, formState: { errors },reset } = useForm();
+  const { register, handleSubmit, formState: { errors }, reset } = useForm();
 
   // Handle form submission
   const onSubmit = async (data) => {
     try {
-      const response = await axios.post('http://localhost:9987/qubinest/login', data);
-      reset(); // Reset form fields
-      // If login is successful, you can redirect the user or perform other actions
-      console.log(data)
+      const response = await axios.post('http://localhost:9988/qubinest/login', data);
+      console.log(response);
+      reset();  
+      
+      console.log(data);
     } catch (error) {
       if (error.response) {
         // The request was made and the server responded with a status code
