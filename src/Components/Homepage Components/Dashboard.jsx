@@ -114,7 +114,7 @@ const Dashboard = () => {
               <div className="col-lg-3 col-6">
                 <div className="card card-widget widget-user-2" bis_skin_checked={1}>
                   <div className="card card-widget widget-user shadow-lg">
-                    <div className="widget-user-header text-white" style={{ background: 'url("../dist/img/photo1.png") center center' }}>
+                    <div className="widget-user-header text-white" style={{ background: 'url("../distingg/img/photo1.png") center center' }}>
                       <h3 className="widget-user-username text-right">Shaik Sajid Hussain</h3>
                       <h5 className="widget-user-desc text-right">Web Developer</h5>
                     </div>
