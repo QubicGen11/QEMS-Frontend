@@ -10,6 +10,23 @@ const Dashboard = () => {
   const intervalRef = useRef(null);
   const [currentTime, setCurrentTime] = useState(new Date());
 
+  const [text, setText] = useState('');
+
+
+  const onChangesubmit = (e) => {
+
+    setText(e.target.value)
+    console.log(e)
+
+  }
+  const onClicksubmit = (e) => {
+
+    setText(e.target.value)
+    console.log(e)
+
+  }
+
+
 
   const clockIn = () => {
     const now = new Date();
@@ -43,16 +60,28 @@ const Dashboard = () => {
     return () => clearInterval(intervalRef.current); // Cleanup interval on component unmount
   }, []);
 
+
+
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
 
+
+
     // Cleanup the interval on component unmount
     return () => clearInterval(timer);
   }, []);
 
-
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (text.trim() === '') {
+      alert('Please enter your daily update');
+      return;
+    }
+    // Your submit logic here
+  };
 
 
   return (
@@ -114,7 +143,7 @@ const Dashboard = () => {
                       <div className="description-block">
                         <button
                           onClick={clockOut}
-                          className="w-20 bg-red-600 text-xs text-white font-semibold py-2 px-1 rounded-full shadow-lg transform hover:scale-105 transition duration-300 ease-in-out hover:bg-yellow-500 ml-4"
+                          className="w-20 bg-red-400 text-xs text-white font-semibold py-2 px-1 rounded-full shadow-lg transform hover:scale-105 transition duration-300 ease-in-out hover:bg-yellow-500 ml-4"
                         >
                           Clock Out
                         </button>
@@ -139,14 +168,25 @@ const Dashboard = () => {
                         <li className="nav-item">
                           <div className="bg-white h-4/6" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:112,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}" >
                             {/* <h3 bis_size="{&quot;x&quot;:381,&quot;y&quot;:82,&quot;w&quot;:321,&quot;h&quot;:42,&quot;abs_x&quot;:631,&quot;abs_y&quot;:179}" style={{fontSize:'25px'}}>Statistics<sup style={{fontSize: '20px'}} bis_size="{&quot;x&quot;:418,&quot;y&quot;:85,&quot;w&quot;:17,&quot;h&quot;:25,&quot;abs_x&quot;:668,&quot;abs_y&quot;:182}"></sup></h3> */}
-                            <p bis_size="{&quot;x&quot;:381,&quot;y&quot;:134,&quot;w&quot;:321,&quot;h&quot;:24,&quot;abs_x&quot;:631,&quot;abs_y&quot;:231}" className='text-left'>Task Reports!</p>
+                            <p bis_size="{&quot;x&quot;:381,&quot;y&quot;:134,&quot;w&quot;:321,&quot;h&quot;:24,&quot;abs_x&quot;:631,&quot;abs_y&quot;:231}" className='text-left text-sm'>Task Reports</p>
                             <div className="card-footer bg-w p-0" bis_skin_checked={1}>
                               <div className="reports bg-white">
-                                <textarea name="" id="" style={{ border: 'solid 1px black', width: "250px" }} placeholder='Submit Your Daily Update...' className='text-[12px]'></textarea>
-                                <button className="inline-flex cursor-pointer h-5 w-16 items-center gap-1 rounded bg-yellow-300 border  active:opacity-100 text-sm px-2 font-bold ml-28">
-                                  Submit
-                                </button>
+                                <form onSubmit={handleSubmit}>
+                                  <textarea
+                                    value={text}
+                                    onChange={onChangesubmit}
+                                    style={{ border: 'solid 1px black', width: "250px" }}
+                                    placeholder='Submit Your Daily Update...!'
+                                    className='text-[12px] px-1'
 
+                                  />
+                                  <button
+                                    type="submit"
+                                    className="inline-flex cursor-pointer h-5 w-16 items-center gap-1 rounded bg-yellow-300 border text-sm px-2 font-bold ml-28  transform hover:scale-110 transition duration-400 ease-in-out hover:bg-yellow-500 "
+                                  >
+                                    Submit
+                                  </button>
+                                </form>
                               </div>
                             </div>
                           </div>
@@ -168,45 +208,39 @@ const Dashboard = () => {
 
               {/* This is Reports */}
               <div className="col-lg-6 " >
-                <div className="small-box bg-white h-[33vh]" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:142,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}"  style={{
-    background: `
-      linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.3)),
-      url('https://plus.unsplash.com/premium_photo-1661775756810-82dbd209fc95?q=80&w=1954&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')
-    `,
-  }}>
+                <div className="small-box bg-white h-[33vh] lg:h-[20vh] md:h-[23vh]" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:142,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}">
                   <div className=" h-6/6" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:112,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}" >
-                    
+
                     <div className='flex justify-between'>
-                    <p bis_size="{&quot;x&quot;:381,&quot;y&quot;:134,&quot;w&quot;:321,&quot;h&quot;:24,&quot;abs_x&quot;:631,&quot;abs_y&quot;:231}" className='text-left mx-2' >My Details</p>
+                      <p bis_size="{&quot;x&quot;:381,&quot;y&quot;:134,&quot;w&quot;:321,&quot;h&quot;:24,&quot;abs_x&quot;:631,&quot;abs_y&quot;:231}" className='text-left mx-2 font-bold' >My Details</p>
 
-                    <p bis_size="{&quot;x&quot;:381,&quot;y&quot;:134,&quot;w&quot;:321,&quot;h&quot;:24,&quot;abs_x&quot;:631,&quot;abs_y&quot;:231}" className='text-left mx-2 text-sm bg-black text-white font-bold py-1 px-3 my-1 rounded-full animate-pulse">
-  Pulse Animation'  >More Details</p>
+                      <p bis_size="{&quot;x&quot;:381,&quot;y&quot;:134,&quot;w&quot;:321,&quot;h&quot;:24,&quot;abs_x&quot;:631,&quot;abs_y&quot;:231}" className='text-left mx-2 text-sm  text-black font-bold py-1 px-3 my-1 transform hover:scale-105 transition duration-300 ease-in-out hover:bg-yellow-300 rounded-xl'  >More Details  </p>
                     </div>
+                    <div className="card-footer p-2 bg-white" bis_skin_checked={1}>
 
-                    <div className="card-footer p-2" bis_skin_checked={1}>
 
-            
-            <div className='flex justify-evenly'>
+                      <div className='flex justify-evenly '>
 
-                      <div className="section_personal">
-                      <h1 className='mx-2'>Personal Information :</h1>
+                        <div className="section_personal">
+                          <h1 className='mx-2 font-bold'>Personal Information :</h1>
 
-                      <h5 className='px-2 text-xs mt-3'>First Name : </h5>
-                      <h5 className='px-2 text-xs mt-2'>Second Name :</h5>
-                      <h5 className='px-2 text-xs mt-2'>Gmail(Personal) :</h5>
-                      <h5 className='px-2 text-xs mt-2'>Phone Number :</h5>
+                          <h5 className='px-2 text-xs mt-3 font-semibold'>First Name : </h5>
+                          <h5 className='px-2 text-xs mt-2 font-semibold'>Second Name :</h5>
+                          <h5 className='px-2 text-xs mt-2 font-semibold'>Email(Personal) :</h5>
+                          <h5 className='px-2 text-xs mt-2 font-semibold'>Phone Number :</h5>
+                          <h5 className='px-2 text-xs mt-2 font-semibold'>Address :</h5>
+                        </div>
+                        <div className="section_personal">
+                          <h1 className='mx-2 font-bold'>Project Information :</h1>
+
+                          <h5 className='px-2 text-xs mt-3 font-semibold'>Associate ID :</h5>
+                          <h5 className='px-2 text-xs mt-2 font-semibold'>Designaton :</h5>
+                          <h5 className='px-2 text-xs mt-2 font-semibold'>Company Mail :</h5>
+                          <h5 className='px-2 text-xs mt-2 font-semibold'>Business Unit :</h5>
+                          <h5 className='px-2 text-xs mt-2 font-semibold'>Project Name :</h5>
+                          <h5 className='px-2 text-xs mt-2 font-semibold'>Project Location :</h5>
+                        </div>
                       </div>
-                      <div className="section_personal">
-                      <h1 className='mx-2'>Project Information :</h1>
-
-                      <h5 className='px-2 text-xs mt-3'>Associate ID :</h5>
-                      <h5 className='px-2 text-xs mt-2'>Designaton :</h5>
-                      <h5 className='px-2 text-xs mt-2'>Company Mail :</h5>
-                      <h5 className='px-2 text-xs mt-2'>Business Unit :</h5>
-                      <h5 className='px-2 text-xs mt-2'>Project Name :</h5>
-                      <h5 className='px-2 text-xs mt-2'>Project Location :</h5>
-                      </div>
-            </div>
 
 
                     </div>
