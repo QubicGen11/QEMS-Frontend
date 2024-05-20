@@ -1,40 +1,32 @@
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 import "./Login.css";
-import AOS from "aos";
-import "aos/dist/aos.css";
-import { Link } from "react-router-dom";
+import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useForm } from "react-hook-form";
-import axios from 'axios';
- const Login = () => {
-   
-  useEffect(() => {
-    AOS.init();
-  }, []);
+import { useNavigate } from 'react-router-dom';
 
-  // Initialize the form
-  const { register, handleSubmit, formState: { errors }, reset } = useForm();
+const Login = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   // Handle form submission
-  const onSubmit = async (data) => {
+  const onSubmit = async (event) => {
+    event.preventDefault();
     try {
-      const response = await axios.post('http://localhost:9988/qubinest/login', data);
+      const response = await axios.post('http://localhost:9988/qubinest/login', { username, password });
       console.log(response);
-      reset();  
-      
-      console.log(data);
+      setUsername('');
+      setPassword('');
+      toast.success('Login successful');
+      navigate('/dashboard'); // Navigate to /dashboard
     } catch (error) {
       if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
         const errorMessage = error.response.data.message || 'An error occurred';
         toast.error(errorMessage);
       } else if (error.request) {
-        // The request was made but no response was received
         toast.error('No response from server');
       } else {
-        // Something happened in setting up the request that triggered an Error
         toast.error('Error occurred while sending request');
       }
     }
@@ -67,7 +59,7 @@ import axios from 'axios';
                 Log in to your account
               </div>
 
-              <form className="flex flex-col gap-3" onSubmit={handleSubmit(onSubmit)}>
+              <form className="flex flex-col gap-3" onSubmit={onSubmit}>
                 <div className="block relative">
                   <label
                     htmlFor="email"
@@ -78,11 +70,12 @@ import axios from 'axios';
                   <input
                     type="text"
                     id="email"
-                    placeholder="Enter your email"
-                    {...register("email", { required: "Email is required" })}
+                    name="email"
+                    placeholder="Enter your username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
                   />
-                  {errors.email && <p className="text-red-600 text-sm">{errors.email.message}</p>}
                 </div>
                 <div className="block relative">
                   <label
@@ -94,27 +87,24 @@ import axios from 'axios';
                   <input
                     type="password"
                     id="password"
+                    name="password"
                     placeholder="Enter your password"
-                    {...register("password", { required: "Password is required" })}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
                   />
-                  {errors.password && <p className="text-red-600 text-sm">{errors.password.message}</p>}
                 </div>
                 <div>
                   <a className="text-sm text-[#7747ff]" href="#">
                     Forgot your password?
                   </a>
                 </div>
-                <Link to="/dashboard">
-
                 <button
                   type="submit"
                   className="w-max m-auto px-7 py-2 rounded flex bg-yellow-400 text-black text-sm font-bold transform transition-all duration-500 ease-in-out hover:scale-110 hover:brightness-110 hover:animate-pulse active:animate-bounce"
                 >
                   SIGN IN
                 </button>
-                </Link>
-               
               </form>
             </div>
           </div>
