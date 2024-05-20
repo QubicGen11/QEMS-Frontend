@@ -8,6 +8,8 @@ const Dashboard = () => {
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const intervalRef = useRef(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
 
   const clockIn = () => {
     const now = new Date();
@@ -40,6 +42,17 @@ const Dashboard = () => {
   useEffect(() => {
     return () => clearInterval(intervalRef.current); // Cleanup interval on component unmount
   }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    // Cleanup the interval on component unmount
+    return () => clearInterval(timer);
+  }, []);
+
+
 
 
   return (
@@ -79,99 +92,93 @@ const Dashboard = () => {
                     <div className="widget-user-image">
                       <img className="img-circle" src="https://res.cloudinary.com/defsu5bfc/image/upload/v1710237566/QubicGen/Contact%20Us/cropped_robot_yspx0x.jpg" alt="User Avatar" />
                     </div>
-                    
-                  
+
+
 
 
                   </div>
-                    <div className="row ">
-                        <div className="col-sm-6 border-right">
-                          <div className="description-block">
-                          <button
-        onClick={clockIn}
-        className="w-20 bg-green-600 text-xs text-white font-semibold py-2 px-1 rounded-full shadow-lg transform hover:scale-105 transition duration-300 ease-in-out hover:bg-yellow-500"
-      >
-        Clock In
-      </button>
-      
+                  <div className="row h-20">
+                    <div className="col-sm-6 border-right">
+                      <div className="description-block">
+                        <button
+                          onClick={clockIn}
+                          className="w-20 bg-green-600 text-xs text-white font-semibold py-2 px-1 rounded-full shadow-lg transform hover:scale-105 transition duration-300 ease-in-out hover:bg-yellow-500"
+                        >
+                          Clock In
+                        </button>
 
-                          </div>
-                        </div>
-                        <div className="col-sm-6 border-right">
-                          <div className="description-block">
-                          <button
-        onClick={clockOut}
-        className="w-20 bg-red-600 text-xs text-white font-semibold py-2 px-1 rounded-full shadow-lg transform hover:scale-105 transition duration-300 ease-in-out hover:bg-yellow-500 ml-4"
-      >
-        Clock Out
-      </button>
-                          </div>
-                        </div>
 
                       </div>
-                
+                    </div>
+                    <div className="col-sm-6 border-right">
+                      <div className="description-block">
+                        <button
+                          onClick={clockOut}
+                          className="w-20 bg-red-600 text-xs text-white font-semibold py-2 px-1 rounded-full shadow-lg transform hover:scale-105 transition duration-300 ease-in-out hover:bg-yellow-500 ml-4"
+                        >
+                          Clock Out
+                        </button>
+                      </div>
+                    </div>
+
+                  </div>
+
                 </div>
               </div>
-              <div className="col-lg-3 col-6 ">
-                <div className="small-box bg-white"  bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:142,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}">
-                  <div className="inner shadow-lg" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:112,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}" >
+              <div className="col-lg-3 col-6  ">
+                <div className="small-box bg-white" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:142,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}">
+                  <div className="inner h-4/6" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:112,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}" >
                     {/* <h3 bis_size="{&quot;x&quot;:381,&quot;y&quot;:82,&quot;w&quot;:321,&quot;h&quot;:42,&quot;abs_x&quot;:631,&quot;abs_y&quot;:179}" style={{fontSize:'25px'}}>Statistics<sup style={{fontSize: '20px'}} bis_size="{&quot;x&quot;:418,&quot;y&quot;:85,&quot;w&quot;:17,&quot;h&quot;:25,&quot;abs_x&quot;:668,&quot;abs_y&quot;:182}"></sup></h3> */}
-                    <p bis_size="{&quot;x&quot;:381,&quot;y&quot;:134,&quot;w&quot;:321,&quot;h&quot;:24,&quot;abs_x&quot;:631,&quot;abs_y&quot;:231}" className='text-center'>Work Time</p>
-                    <p className='text-center ' style={{ fontSize: '23px' }}> {`${time.hours} Hrs : ${time.minutes} Min : ${time.seconds} Sec`}</p>
-                  <a href="#" className="small-box-footer ml-3" bis_size="{&quot;x&quot;:371,&quot;y&quot;:184,&quot;w&quot;:341,&quot;h&quot;:30,&quot;abs_x&quot;:621,&quot;abs_y&quot;:281}">View Attendence <i className="fas fa-arrow-circle-right" bis_size="{&quot;x&quot;:567,&quot;y&quot;:191,&quot;w&quot;:16,&quot;h&quot;:16,&quot;abs_x&quot;:817,&quot;abs_y&quot;:288}" /></a>
-                  <div className="card-footer p-0" bis_skin_checked={1}>
-          <ul className="nav flex-column">
-            <li className="nav-item">
-              <a href="#" className="nav-link" cursorshover="true">
-                Projects <span className="float-right badge bg-primary">31</span>
-              </a>
-            </li>
-            <li className="nav-item">
-              <a href="#" className="nav-link" cursorshover="true">
-                Tasks <span className="float-right badge bg-info">5</span>
-              </a>
-            </li>
-            <li className="nav-item">
-              <a href="#" className="nav-link" cursorshover="true">
-                Completed Projects <span className="float-right badge bg-success">12</span>
-              </a>
-            </li>
-            
-            
-          </ul>
-        </div>
+                    <p className='text-left' style={{ fontSize: '15px',height:'65px' }}>
+                    {currentTime.toLocaleDateString('en-US', { weekday: 'long'})}, {currentTime.toLocaleTimeString('en-US')}                      <p bis_size="{&quot;x&quot;:381,&quot;y&quot;:134,&quot;w&quot;:321,&quot;h&quot;:24,&quot;abs_x&quot;:631,&quot;abs_y&quot;:231}" className='text-center text-lg'>Work Time</p>
+                    </p>            <p className='text-center ' style={{ fontSize: '20px' }}> {`${time.hours} Hrs : ${time.minutes} Min : ${time.seconds} Sec`}</p>
+
+                    <a href="#" className="small-box-footer ml-3" bis_size="{&quot;x&quot;:371,&quot;y&quot;:184,&quot;w&quot;:341,&quot;h&quot;:30,&quot;abs_x&quot;:621,&quot;abs_y&quot;:281}">View Attendence <i className="fas fa-arrow-circle-right" bis_size="{&quot;x&quot;:567,&quot;y&quot;:191,&quot;w&quot;:16,&quot;h&quot;:16,&quot;abs_x&quot;:817,&quot;abs_y&quot;:288}" /></a>
+                    <div className="card-footer p-0" bis_skin_checked={1} >
+                      <ul className="nav flex-column">
+                        <li className="nav-item">
+                          <div className="bg-white h-4/6" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:112,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}" >
+                            {/* <h3 bis_size="{&quot;x&quot;:381,&quot;y&quot;:82,&quot;w&quot;:321,&quot;h&quot;:42,&quot;abs_x&quot;:631,&quot;abs_y&quot;:179}" style={{fontSize:'25px'}}>Statistics<sup style={{fontSize: '20px'}} bis_size="{&quot;x&quot;:418,&quot;y&quot;:85,&quot;w&quot;:17,&quot;h&quot;:25,&quot;abs_x&quot;:668,&quot;abs_y&quot;:182}"></sup></h3> */}
+                            <p bis_size="{&quot;x&quot;:381,&quot;y&quot;:134,&quot;w&quot;:321,&quot;h&quot;:24,&quot;abs_x&quot;:631,&quot;abs_y&quot;:231}" className='text-left'>Task Reports!</p>
+                            <div className="card-footer bg-w p-0" bis_skin_checked={1}>
+                              <div className="reports bg-white">
+                                <textarea name=""  id="" style={{ border: 'solid 1px black',width:"250px" }} placeholder='Submit Your Daily Update...' className='text-[12px]'></textarea>
+                                <button className="inline-flex cursor-pointer h-5 w-16 items-center gap-1 rounded bg-yellow-300 border  active:opacity-100 text-sm px-2 font-bold ml-28">
+                                  Submit
+                                </button>
+
+                              </div>
+                            </div>
+                          </div>
+
+
+                        </li>
+
+
+
+                      </ul>
+                    </div>
                   </div>
-                  <div className="icon" bis_size="{&quot;x&quot;:371,&quot;y&quot;:184,&quot;w&quot;:341,&quot;h&quot;:0,&quot;abs_x&quot;:621,&quot;abs_y&quot;:281}">
-                    <i className="ion ion-stats-bars" bis_size="{&quot;x&quot;:647,&quot;y&quot;:89,&quot;w&quot;:52,&quot;h&quot;:77,&quot;abs_x&quot;:897,&quot;abs_y&quot;:186}" />
-                    
-                  </div>
+
                 </div>
 
               </div>
-              <div className="col-lg-3 col-6">
-                <div className="small-box bg-warning">
-                  <div className="inner">
-                    <h3>44</h3>
-                    <p>User Registrations</p>
+
+
+
+              {/* This is Reports */}
+              <div className="col-lg-6 ">
+                <div className="small-box bg-white h-[33vh]" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:142,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}">
+                  <div className=" h-6/6" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:112,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}" >
+                    <p bis_size="{&quot;x&quot;:381,&quot;y&quot;:134,&quot;w&quot;:321,&quot;h&quot;:24,&quot;abs_x&quot;:631,&quot;abs_y&quot;:231}" className='text-left mx-2'>My Details</p>
+                    <div className="card-footer p-0" bis_skin_checked={1}>
+                     
+                    </div>
                   </div>
-                  <div className="icon">
-                    <i className="ion ion-person-add" />
-                  </div>
-                  <a href="#" className="small-box-footer">More info <i className="fas fa-arrow-circle-right" /></a>
+
                 </div>
               </div>
-              <div className="col-lg-3 col-6">
-                <div className="small-box bg-danger">
-                  <div className="inner">
-                    <h3>65</h3>
-                    <p>Unique Visitors</p>
-                  </div>
-                  <div className="icon">
-                    <i className="ion ion-pie-graph" />
-                  </div>
-                  <a href="#" className="small-box-footer">More info <i className="fas fa-arrow-circle-right" /></a>
-                </div>
-              </div>
+              
             </div>
             <div className="row">
               <section className="col-lg-7 connectedSortable">
