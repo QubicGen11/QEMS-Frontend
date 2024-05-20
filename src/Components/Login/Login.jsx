@@ -54,7 +54,7 @@ const Login = () => {
           <div className='loginform z-40 flex justify-center items-center data-aos="flip-left" '>
             <div className="max-w-md relative flex flex-col rounded-lg text-black bg-[#EEF7FF] p-10">
               <div className="text-2xl font-bold mb-2 text-[#1e0e4b] text-center px-9">
-                Welcome to <span className="text-yellow-400">QubiNesttt</span>
+                Welcome to <span className="text-yellow-400">QubiNest</span>
               </div>
               <div className="text-sm font-normal mb-4 text-center text-[#1e0e4b]">
                 Log in to your account
