@@ -129,8 +129,8 @@ const Dashboard = () => {
                 <div className="small-box bg-white" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:142,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}">
                   <div className="inner h-4/6" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:112,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}" >
                     {/* <h3 bis_size="{&quot;x&quot;:381,&quot;y&quot;:82,&quot;w&quot;:321,&quot;h&quot;:42,&quot;abs_x&quot;:631,&quot;abs_y&quot;:179}" style={{fontSize:'25px'}}>Statistics<sup style={{fontSize: '20px'}} bis_size="{&quot;x&quot;:418,&quot;y&quot;:85,&quot;w&quot;:17,&quot;h&quot;:25,&quot;abs_x&quot;:668,&quot;abs_y&quot;:182}"></sup></h3> */}
-                    <p className='text-left' style={{ fontSize: '15px',height:'65px' }}>
-                    {currentTime.toLocaleDateString('en-US', { weekday: 'long'})}, {currentTime.toLocaleTimeString('en-US')}                      <p bis_size="{&quot;x&quot;:381,&quot;y&quot;:134,&quot;w&quot;:321,&quot;h&quot;:24,&quot;abs_x&quot;:631,&quot;abs_y&quot;:231}" className='text-center text-lg'>Work Time</p>
+                    <p className='text-left' style={{ fontSize: '15px', height: '65px' }}>
+                      {currentTime.toLocaleDateString('en-US', { weekday: 'long' })}, {currentTime.toLocaleTimeString('en-US')}                      <p bis_size="{&quot;x&quot;:381,&quot;y&quot;:134,&quot;w&quot;:321,&quot;h&quot;:24,&quot;abs_x&quot;:631,&quot;abs_y&quot;:231}" className='text-center text-lg my-2'>Work Time</p>
                     </p>            <p className='text-center ' style={{ fontSize: '20px' }}> {`${time.hours} Hrs : ${time.minutes} Min : ${time.seconds} Sec`}</p>
 
                     <a href="#" className="small-box-footer ml-3" bis_size="{&quot;x&quot;:371,&quot;y&quot;:184,&quot;w&quot;:341,&quot;h&quot;:30,&quot;abs_x&quot;:621,&quot;abs_y&quot;:281}">View Attendence <i className="fas fa-arrow-circle-right" bis_size="{&quot;x&quot;:567,&quot;y&quot;:191,&quot;w&quot;:16,&quot;h&quot;:16,&quot;abs_x&quot;:817,&quot;abs_y&quot;:288}" /></a>
@@ -142,7 +142,7 @@ const Dashboard = () => {
                             <p bis_size="{&quot;x&quot;:381,&quot;y&quot;:134,&quot;w&quot;:321,&quot;h&quot;:24,&quot;abs_x&quot;:631,&quot;abs_y&quot;:231}" className='text-left'>Task Reports!</p>
                             <div className="card-footer bg-w p-0" bis_skin_checked={1}>
                               <div className="reports bg-white">
-                                <textarea name=""  id="" style={{ border: 'solid 1px black',width:"250px" }} placeholder='Submit Your Daily Update...' className='text-[12px]'></textarea>
+                                <textarea name="" id="" style={{ border: 'solid 1px black', width: "250px" }} placeholder='Submit Your Daily Update...' className='text-[12px]'></textarea>
                                 <button className="inline-flex cursor-pointer h-5 w-16 items-center gap-1 rounded bg-yellow-300 border  active:opacity-100 text-sm px-2 font-bold ml-28">
                                   Submit
                                 </button>
@@ -167,18 +167,54 @@ const Dashboard = () => {
 
 
               {/* This is Reports */}
-              <div className="col-lg-6 ">
-                <div className="small-box bg-white h-[33vh]" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:142,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}">
+              <div className="col-lg-6 " >
+                <div className="small-box bg-white h-[33vh]" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:142,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}"  style={{
+    background: `
+      linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.3)),
+      url('https://plus.unsplash.com/premium_photo-1661775756810-82dbd209fc95?q=80&w=1954&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')
+    `,
+  }}>
                   <div className=" h-6/6" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:112,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}" >
-                    <p bis_size="{&quot;x&quot;:381,&quot;y&quot;:134,&quot;w&quot;:321,&quot;h&quot;:24,&quot;abs_x&quot;:631,&quot;abs_y&quot;:231}" className='text-left mx-2'>My Details</p>
-                    <div className="card-footer p-0" bis_skin_checked={1}>
-                     
+                    
+                    <div className='flex justify-between'>
+                    <p bis_size="{&quot;x&quot;:381,&quot;y&quot;:134,&quot;w&quot;:321,&quot;h&quot;:24,&quot;abs_x&quot;:631,&quot;abs_y&quot;:231}" className='text-left mx-2' >My Details</p>
+
+                    <p bis_size="{&quot;x&quot;:381,&quot;y&quot;:134,&quot;w&quot;:321,&quot;h&quot;:24,&quot;abs_x&quot;:631,&quot;abs_y&quot;:231}" className='text-left mx-2 text-sm bg-black text-white font-bold py-1 px-3 my-1 rounded-full animate-pulse">
+  Pulse Animation'  >More Details</p>
+                    </div>
+
+                    <div className="card-footer p-2" bis_skin_checked={1}>
+
+            
+            <div className='flex justify-evenly'>
+
+                      <div className="section_personal">
+                      <h1 className='mx-2'>Personal Information :</h1>
+
+                      <h5 className='px-2 text-xs mt-3'>First Name : </h5>
+                      <h5 className='px-2 text-xs mt-2'>Second Name :</h5>
+                      <h5 className='px-2 text-xs mt-2'>Gmail(Personal) :</h5>
+                      <h5 className='px-2 text-xs mt-2'>Phone Number :</h5>
+                      </div>
+                      <div className="section_personal">
+                      <h1 className='mx-2'>Project Information :</h1>
+
+                      <h5 className='px-2 text-xs mt-3'>Associate ID :</h5>
+                      <h5 className='px-2 text-xs mt-2'>Designaton :</h5>
+                      <h5 className='px-2 text-xs mt-2'>Company Mail :</h5>
+                      <h5 className='px-2 text-xs mt-2'>Business Unit :</h5>
+                      <h5 className='px-2 text-xs mt-2'>Project Name :</h5>
+                      <h5 className='px-2 text-xs mt-2'>Project Location :</h5>
+                      </div>
+            </div>
+
+
                     </div>
                   </div>
 
                 </div>
               </div>
-              
+
             </div>
             <div className="row">
               <section className="col-lg-7 connectedSortable">
