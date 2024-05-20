@@ -20,6 +20,7 @@ const Login = () => {
       setPassword('');
       toast.success('Login successful');
       navigate('/dashboard'); // Navigate to /dashboard
+      
     } catch (error) {
       if (error.response) {
         const errorMessage = error.response.data.message || 'An error occurred';
