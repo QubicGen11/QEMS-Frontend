@@ -4,7 +4,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
-
+import Cookies from 'js-cookie'
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -16,6 +16,7 @@ const Login = () => {
     try {
       const response = await axios.post('https://qubinest-backend-five.vercel.app/qubinest/login', { username, password });
       console.log(response);
+      Cookies.set('username',username,{secure:true,sameSite:'Strict'})
       setUsername('');
       setPassword('');
       toast.success('Login successful');
