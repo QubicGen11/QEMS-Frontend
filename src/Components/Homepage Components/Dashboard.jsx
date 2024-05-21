@@ -92,12 +92,12 @@ const Dashboard = () => {
           <div className="container-fluid">
             <div className="row mb-2">
               <div className="col-sm-6">
-                <h1 className="m-0">Dashboard</h1>
+                <h1 className="m-0">Console</h1>
               </div>
               <div className="col-sm-6">
                 <ol className="breadcrumb float-sm-right">
                   <li className="breadcrumb-item"><a href="#">Home</a></li>
-                  <li className="breadcrumb-item active">Dashboard v1</li>
+                  <li className="breadcrumb-item active">Console</li>
                 </ol>
               </div>
             </div>
@@ -111,7 +111,7 @@ const Dashboard = () => {
         <section className="content">
           <div className="container-fluid">
             <div className="row">
-              <div className="col-lg-3 col-6">
+              <div className="col-lg-12 col-sm-12 col-12 ">
                 <div className="card card-widget widget-user-2" bis_skin_checked={1}>
                   <div className="card card-widget widget-user shadow-lg">
                     <div className="widget-user-header text-white" style={{ background: 'url("../distingg/img/photo1.png") center center' }}>
@@ -126,8 +126,8 @@ const Dashboard = () => {
 
 
                   </div>
-                  <div className="row h-20">
-                    <div className="col-sm-6 border-right">
+                  <div className="row h-20 ">
+                    <div className="col-sm-6 col-6 border-right">
                       <div className="description-block">
                         <button
                           onClick={clockIn}
@@ -139,7 +139,7 @@ const Dashboard = () => {
 
                       </div>
                     </div>
-                    <div className="col-sm-6 border-right">
+                    <div className="col-sm-6 col-6 border-right">
                       <div className="description-block">
                         <button
                           onClick={clockOut}
@@ -154,7 +154,7 @@ const Dashboard = () => {
 
                 </div>
               </div>
-              <div className="col-lg-3 col-6  ">
+              <div className="col-lg-6 col-md-12 col-12  ">
                 <div className="small-box bg-white" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:142,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}">
                   <div className="inner h-4/6" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:112,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}" >
                     {/* <h3 bis_size="{&quot;x&quot;:381,&quot;y&quot;:82,&quot;w&quot;:321,&quot;h&quot;:42,&quot;abs_x&quot;:631,&quot;abs_y&quot;:179}" style={{fontSize:'25px'}}>Statistics<sup style={{fontSize: '20px'}} bis_size="{&quot;x&quot;:418,&quot;y&quot;:85,&quot;w&quot;:17,&quot;h&quot;:25,&quot;abs_x&quot;:668,&quot;abs_y&quot;:182}"></sup></h3> */}
@@ -252,35 +252,10 @@ const Dashboard = () => {
             </div>
             <div className="row">
               <section className="col-lg-7 connectedSortable">
-                <div className="card">
-                  <div className="card-header">
-                    <h3 className="card-title">
-                      <i className="fas fa-chart-pie mr-1" />
-                      Sales
-                    </h3>
-                    <div className="card-tools">
-                      <ul className="nav nav-pills ml-auto">
-                        <li className="nav-item">
-                          <a className="nav-link active" href="#revenue-chart" data-toggle="tab">Area</a>
-                        </li>
-                        <li className="nav-item">
-                          <a className="nav-link" href="#sales-chart" data-toggle="tab">Donut</a>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                  <div className="card-body">
-                    <div className="tab-content p-0">
-                      <div className="chart tab-pane active" id="revenue-chart" style={{ position: 'relative', height: 300 }}>
-                        <canvas id="revenue-chart-canvas" height={300} style={{ height: 300 }} />
-                      </div>
-                      <div className="chart tab-pane" id="sales-chart" style={{ position: 'relative', height: 300 }}>
-                        <canvas id="sales-chart-canvas" height={300} style={{ height: 300 }} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="card direct-chat direct-chat-primary">
+                
+
+                                  {/* This is direct chat */}
+                {/* <div className="card direct-chat direct-chat-primary">
                   <div className="card-header">
                     <h3 className="card-title">Direct Chat</h3>
                     <div className="card-tools">
@@ -426,8 +401,8 @@ const Dashboard = () => {
                       </div>
                     </form>
                   </div>
-                </div>
-                <div className="card">
+                </div> */}
+                {/* <div className="card">
                   <div className="card-header">
                     <h3 className="card-title">
                       <i className="ion ion-clipboard mr-1" />
@@ -546,110 +521,9 @@ const Dashboard = () => {
                   <div className="card-footer clearfix">
                     <button type="button" className="btn btn-primary float-right"><i className="fas fa-plus" /> Add item</button>
                   </div>
-                </div>
+                </div> */}
               </section>
-              <section className="col-lg-5 connectedSortable">
-                <div className="card bg-gradient-primary">
-                  <div className="card-header border-0">
-                    <h3 className="card-title">
-                      <i className="fas fa-map-marker-alt mr-1" />
-                      Visitors
-                    </h3>
-                    <div className="card-tools">
-                      <button type="button" className="btn btn-primary btn-sm daterange" title="Date range">
-                        <i className="far fa-calendar-alt" />
-                      </button>
-                      <button type="button" className="btn btn-primary btn-sm" data-card-widget="collapse" title="Collapse">
-                        <i className="fas fa-minus" />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="card-body">
-                    <div id="world-map" style={{ height: 250, width: '100%' }} />
-                  </div>
-                  <div className="card-footer bg-transparent">
-                    <div className="row">
-                      <div className="col-4 text-center">
-                        <div id="sparkline-1" />
-                        <div className="text-white">Visitors</div>
-                      </div>
-                      <div className="col-4 text-center">
-                        <div id="sparkline-2" />
-                        <div className="text-white">Online</div>
-                      </div>
-                      <div className="col-4 text-center">
-                        <div id="sparkline-3" />
-                        <div className="text-white">Sales</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="card bg-gradient-info">
-                  <div className="card-header border-0">
-                    <h3 className="card-title">
-                      <i className="fas fa-th mr-1" />
-                      Sales Graph
-                    </h3>
-                    <div className="card-tools">
-                      <button type="button" className="btn bg-info btn-sm" data-card-widget="collapse">
-                        <i className="fas fa-minus" />
-                      </button>
-                      <button type="button" className="btn bg-info btn-sm" data-card-widget="remove">
-                        <i className="fas fa-times" />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="card-body">
-                    <canvas className="chart" id="line-chart" style={{ minHeight: 250, height: 250, maxHeight: 250, maxWidth: '100%' }} />
-                  </div>
-                  <div className="card-footer bg-transparent">
-                    <div className="row">
-                      <div className="col-4 text-center">
-                        <input type="text" className="knob" data-readonly="true" defaultValue={20} data-width={60} data-height={60} data-fgcolor="#39CCCC" />
-                        <div className="text-white">Mail-Orders</div>
-                      </div>
-                      <div className="col-4 text-center">
-                        <input type="text" className="knob" data-readonly="true" defaultValue={50} data-width={60} data-height={60} data-fgcolor="#39CCCC" />
-                        <div className="text-white">Online</div>
-                      </div>
-                      <div className="col-4 text-center">
-                        <input type="text" className="knob" data-readonly="true" defaultValue={30} data-width={60} data-height={60} data-fgcolor="#39CCCC" />
-                        <div className="text-white">In-Store</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="card bg-gradient-success">
-                  <div className="card-header border-0">
-                    <h3 className="card-title">
-                      <i className="far fa-calendar-alt" />
-                      Calendar
-                    </h3>
-                    <div className="card-tools">
-                      <div className="btn-group">
-                        <button type="button" className="btn btn-success btn-sm dropdown-toggle" data-toggle="dropdown" data-offset={-52}>
-                          <i className="fas fa-bars" />
-                        </button>
-                        <div className="dropdown-menu" role="menu">
-                          <a href="#" className="dropdown-item">Add new event</a>
-                          <a href="#" className="dropdown-item">Clear events</a>
-                          <div className="dropdown-divider" />
-                          <a href="#" className="dropdown-item">View calendar</a>
-                        </div>
-                      </div>
-                      <button type="button" className="btn btn-success btn-sm" data-card-widget="collapse">
-                        <i className="fas fa-minus" />
-                      </button>
-                      <button type="button" className="btn btn-success btn-sm" data-card-widget="remove">
-                        <i className="fas fa-times" />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="card-body pt-0">
-                    <div id="calendar" style={{ width: '100%' }} />
-                  </div>
-                </div>
-              </section>
+           
             </div>
           </div>
         </section>

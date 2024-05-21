@@ -2,31 +2,14 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom';
 
 const Header = () => {
-    const [isOpen, setIsOpen] = useState(false);
 
-    let timeoutId;
-
-    const handleMouseEnter = () => {
-        clearTimeout(timeoutId);
-        setIsOpen(true);
-    };
-
-    const handleMouseLeave = () => {
-        timeoutId = setTimeout(() => {
-            setIsOpen(false);
-        }, 200); // Adjust the delay as needed
-    };
-
-    const handleMenuToggle = () => {
-        setIsOpen(!isOpen);
-    };
     return (
         <>
 
-        
 
-            <nav className="main-header navbar navbar-expand navbar-dark navbar-dark fixed lg:w-[86vw] md:w-[86vw]">
-                <ul className="navbar-nav w-56">
+
+            <nav className="main-header navbar navbar-expand navbar-dark navbar-dark ">
+                <ul className="navbar-nav w-auto">
                     <li className="nav-item">
                         <a className="nav-link" data-widget="pushmenu" href="#" role="button"><i className="fas fa-bars" /></a>
                     </li>
@@ -58,8 +41,8 @@ const Header = () => {
                             </form>
                         </div>
                     </li>
-                    
-                    <li className="nav-item dropdown">
+
+                    {/* <li className="nav-item dropdown">
                         <a className="nav-link" data-toggle="dropdown" href="#">
                             <i className="far fa-comments" />
                             <span className="badge badge-danger navbar-badge">3</span>
@@ -111,144 +94,108 @@ const Header = () => {
                         </div>
 
 
-                    </li>
+                    </li> */}
                     <li className="nav-item dropdown">
                         <a className="nav-link" data-toggle="dropdown" href="#">
-                            <i className="far fa-bell" />
-                            <span className="badge badge-warning navbar-badge">15</span>
-                        </a>
+                            <li class="nav-item">
+
+                                <div className=" inset-x-0 z-20 w-full px-6  transition-all duration-300 ease-in-out   md:mt-0 md:p-0 md:top-0 md:relative md:bg-transparent md:w-auto md:opacity-100 md:translate-x-0 md:flex md:items-center">
+                                    <div className="flex flex-col md:flex-row md:mx-6">
+
+                                        {/* <a className="relative top-2 mx-2 text-gray-700 transition-colors duration-300 transform dark:text-gray-200 hover:text-yellow-500 dark:hover:text-yellow-400 md:mx-4 md:my-0" href="#">About</a> */}
+                                        <a href="#" className="flex items-center px-4 -mx-2">
+                                            <img
+                                                className="object-cover mx-2 rounded-full h-9 w-9"
+                                                src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=634&q=80"
+                                                alt="avatar"
+                                            />
+                                            <button className="w-auto z-10 flex flex-wrap items-center p-2 text-sm ml-auto text-gray-600 bg-white border border-transparent rounded-md focus:border-blue-500 focus:ring-opacity-40 dark:focus:ring-opacity-40 focus:ring-blue-300 dark:focus:ring-blue-400 focus:ring dark:text-white dark:bg-gray-800 focus:outline-none">
+                                                <span className="mx-1 hover:text-yellow-500 dark:hover:text-yellow-400 text-xs">Shaik Sajid Hussain</span>
+                                                <svg
+                                                    className="w-5 h-5 mx-1"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    xmlns="http://www.w3.org/2000/svg"
+
+
+
+                                                >
+                                                    <path
+                                                        d="M12 15.713L18.01 9.70299L16.597 8.28799L12 12.888L7.40399 8.28799L5.98999 9.70199L12 15.713Z"
+                                                        fill="currentColor"
+                                                    />
+                                                </svg>
+                                            </button>
+                                        </a>
+
+
+
+                                    </div>
+
+
+
+
+                                </div>
+                            </li>                        </a>
                         <div className="dropdown-menu dropdown-menu-lg dropdown-menu-right bg-gray-600 transition-all duration-300 ease-in-out">
-                            <span className="dropdown-item dropdown-header text-white hover:bg-[rgba(255,255,255,0.1)] ">15 Notifications</span>
-                            <div className="dropdown-divider " />
-                            <a href="#" className="dropdown-item">
-                                <i className="fas fa-envelope mr-2 text-white" /> <i className='text-black '> 4 new messages</i>
-                                <span className="float-right text-muted text-sm text-black ">3 mins</span>
-                            </a>
-                            <div className="dropdown-divider" />
-                            <a href="#" className="dropdown-item">
-                                <i className="fas fa-users mr-2 text-white " /> <i className='text-black '> 8 friend requests</i> 
-                                <span className="float-right text-muted text-sm text-black ">12 hours</span>
-                            </a>
-                            <div className="dropdown-divider" />
-                            {/* <a href="#" className="dropdown-item">
-                                <i className="fas fa-file mr-2 text-white " /> 3 new reports
-                                <span className="float-right text-muted text-sm text-white ">2 days</span>
-                            </a> */}
-                            <div className="dropdown-divider" />
-                            <a href="#" className="dropdown-item dropdown-footer text-white hover:bg-[rgba(255,255,255,0.1)]">See All Notifications</a>
+
+                            <div
+
+
+
+                                className=" bg-gray-800 rounded-md shadow-xl dark:bg-gray-800"
+                            >
+                                <a
+                                    href="#"
+                                    className="flex items-center p-3 -mt-2 text-sm text-gray-600 transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
+                                >
+                                    <img
+                                        className="flex-shrink-0 object-cover mx-1 rounded-full w-9 h-9"
+                                        src="https://images.unsplash.com/photo-1523779917675-b6ed3a42a561?ixid=MnwxMjA3fDB8MHxzZWFyY2h8N3x8d29tYW4lMjBibHVlfGVufDB8fDB8fA%3D%3D&ixlib=rb-1.2.1&auto=format&fit=face&w=500&q=200"
+                                        alt="jane avatar"
+                                    />
+                                    <div className="mx-1">
+                                        <h1 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            Sajid Hussain
+                                        </h1>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                            SajidHussain@exampl.com
+                                        </p>
+                                    </div>
+                                </a>
+                                <hr className="border-gray-200 dark:border-gray-700 " />
+                                <a
+                                    href="#"
+                                    className="block px-4 py-3 text-sm text-gray-600 capitalize transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
+                                >
+                                    view profile
+                                </a>
+                                <a
+                                    href="#"
+                                    className="block px-4 py-3 text-sm text-gray-600 capitalize transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
+                                >
+                                    Settings
+                                </a>
+
+
+
+                                <hr className="border-gray-200 dark:border-gray-700 " />
+
+                                <a
+                                    href="/"
+                                    className="block px-4 py-3 text-sm text-gray-600 capitalize transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
+                                >
+                                    Sign Out
+                                </a>
+                            </div>
                         </div>
                     </li>
 
                     {/* This is my name drop down */}
-                    <li className="nav-item ">
-                        <div className="mr-auto  " onMouseLeave={handleMouseLeave}
-                            onMouseEnter={handleMouseEnter}>
 
-                            {isOpen && (
-                                <div
-
-
-
-                                    className="absolute right-4 z-20 w-64 py-2 mt-[44px] overflow-hidden origin-top-right bg-gray-800 rounded-md shadow-xl dark:bg-gray-800"
-                                >
-                                    <a
-                                        href="#"
-                                        className="flex items-center p-3 -mt-2 text-sm text-gray-600 transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
-                                    >
-                                        <img
-                                            className="flex-shrink-0 object-cover mx-1 rounded-full w-9 h-9"
-                                            src="https://images.unsplash.com/photo-1523779917675-b6ed3a42a561?ixid=MnwxMjA3fDB8MHxzZWFyY2h8N3x8d29tYW4lMjBibHVlfGVufDB8fDB8fA%3D%3D&ixlib=rb-1.2.1&auto=format&fit=face&w=500&q=200"
-                                            alt="jane avatar"
-                                        />
-                                        <div className="mx-1">
-                                            <h1 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                                                Sajid Hussain
-                                            </h1>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                SajidHussain@exampl.com
-                                            </p>
-                                        </div>
-                                    </a>
-                                    <hr className="border-gray-200 dark:border-gray-700 " />
-                                    <a
-                                        href="#"
-                                        className="block px-4 py-3 text-sm text-gray-600 capitalize transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
-                                    >
-                                        view profile
-                                    </a>
-                                    <a
-                                        href="#"
-                                        className="block px-4 py-3 text-sm text-gray-600 capitalize transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
-                                    >
-                                        Settings
-                                    </a>
-
-
-
-                                    <hr className="border-gray-200 dark:border-gray-700 " />
-
-                                    <a
-                                        href="/"
-                                        className="block px-4 py-3 text-sm text-gray-600 capitalize transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
-                                    >
-                                        Sign Out
-                                    </a>
-                                </div>
-
-                            )}
-
-
-
-
-
-
-
-
-                        </div>
-                    </li>
 
                     {/* This is shaiksajidhussain hover */}
-                    <li class="nav-item">
-                        
-                    <div className="absolute inset-x-0 z-20 w-full px-6  transition-all duration-300 ease-in-out   md:mt-0 md:p-0 md:top-0 md:relative md:bg-transparent md:w-auto md:opacity-100 md:translate-x-0 md:flex md:items-center">
-            <div className="flex flex-col md:flex-row md:mx-6">
 
-              {/* <a className="relative top-2 mx-2 text-gray-700 transition-colors duration-300 transform dark:text-gray-200 hover:text-yellow-500 dark:hover:text-yellow-400 md:mx-4 md:my-0" href="#">About</a> */}
-              <a href="#" className="flex items-center px-4 -mx-2">
-                <img
-                  className="object-cover mx-2 rounded-full h-9 w-9"
-                  src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=634&q=80"
-                  alt="avatar"
-                />
-                <button className="w-auto z-10 flex flex-wrap items-center p-2 text-sm ml-auto text-gray-600 bg-white border border-transparent rounded-md focus:border-blue-500 focus:ring-opacity-40 dark:focus:ring-opacity-40 focus:ring-blue-300 dark:focus:ring-blue-400 focus:ring dark:text-white dark:bg-gray-800 focus:outline-none">
-                  <span className="mx-1 hover:text-yellow-500 dark:hover:text-yellow-400">Shaik Sajid Hussain</span>
-                  <svg
-                    className="w-5 h-5 mx-1"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-
-                    onMouseEnter={handleMouseEnter}
-                    onClick={handleMenuToggle}
-
-                  >
-                    <path
-                      d="M12 15.713L18.01 9.70299L16.597 8.28799L12 12.888L7.40399 8.28799L5.98999 9.70199L12 15.713Z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                </button>
-              </a>
-
-   
-              
-            </div>
-
-
-            
-            
-          </div>
-                    </li>
 
 
                 </ul>
