@@ -14,7 +14,7 @@ const Dashboard = () => {
   const intervalRef = useRef(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [greetingMessage, setGreetingMessage] = useState('');
-  
+
 
 
 
@@ -36,8 +36,8 @@ const Dashboard = () => {
       toast.error('You have already clocked in today!');
       return;
     }
-  
-    
+
+
     setIsClockedIn(true);
     const now = new Date();
     const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -68,7 +68,7 @@ const Dashboard = () => {
         const now = new Date();
         const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         toast.success(`Employee Successfully Clocked Out at ${formattedTime}`)
-  
+
         clearInterval(intervalRef.current);
         setTime({ hours: 0, minutes: 0, seconds: 0 }); // Reset the timer
         setIsReportSubmitted(false); // Reset report submission status
@@ -148,7 +148,8 @@ const Dashboard = () => {
                 <div className="card card-widget widget-user-2" bis_skin_checked={1}>
                   <div className="card card-widget widget-user shadow-lg">
                     <div className="widget-user-header text-white" style={{ background: 'url("../distingg/img/photo1.png") center center' }}>
-  <h3 className="widget-user-username text-left font-bolder">{`${greetingMessage}, Shaik Sajid Hussain`}</h3>                      <h5 className="widget-user-desc text-left">Web Developer</h5>
+                      <h3 className="widget-user-username text-left ml-auto text-base shadow-xl-black " style={{ fontWeight: 'bolder',textShadow:'5px 5px black' }}>{`${greetingMessage}, Shaik Sajid Hussain`}</h3>
+                      <h5 className="widget-user-desc text-left ml-auto">Web Developer</h5>
                     </div>
                     <div className="widget-user-image">
                       <img className="img-circle" src="https://res.cloudinary.com/defsu5bfc/image/upload/v1710237566/QubicGen/Contact%20Us/cropped_robot_yspx0x.jpg" alt="User Avatar" />
@@ -237,7 +238,7 @@ const Dashboard = () => {
 
 
               {/* This is Reports */}
-              <div className="col-lg-6 " >
+              <div className="col-lg-6 shadow-md" >
                 <div className="small-box bg-white h-[33vh] lg:h-[20vh] md:h-[23vh]" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:142,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}">
                   <div className=" h-6/6" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:112,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}" >
 
@@ -280,6 +281,72 @@ const Dashboard = () => {
               </div>
 
             </div>
+
+            {/* This is time hseet row */}
+
+           <div className="row" bis_skin_checked={1}>
+  <div className="col-12 col-lg-6" bis_skin_checked={1}>
+    <div className="card" bis_skin_checked={1}>
+      <div className="card-header" bis_skin_checked={1}>
+        <h3 className="card-title">Time Sheets</h3>
+        <div className="card-tools" bis_skin_checked={1}>
+          <div className="input-group input-group-sm" style={{width: 150}} bis_skin_checked={1}>
+            <input type="text" name="table_search" className="form-control float-right" placeholder="Search" />
+            <div className="input-group-append" bis_skin_checked={1}>
+              <button type="submit" className="btn btn-default">
+                <i className="fas fa-search" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="card-body table-responsive p-0" bis_skin_checked={1}>
+        <table className="table table-hover text-nowrap">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>User</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>183</td>
+              <td>John Doe</td>
+              <td>11-7-2014</td>
+              <td><span className="tag tag-success">Approved</span></td>
+              <td>Bacon ipsum dolor sit amet salami venison chicken flank fatback doner.</td>
+            </tr>
+            <tr>
+              <td>219</td>
+              <td>Alexander Pierce</td>
+              <td>11-7-2014</td>
+              <td><span className="tag tag-warning">Pending</span></td>
+              <td>Bacon ipsum dolor sit amet salami venison chicken flank fatback doner.</td>
+            </tr>
+            <tr>
+              <td>657</td>
+              <td>Bob Doe</td>
+              <td>11-7-2014</td>
+              <td><span className="tag tag-primary">Approved</span></td>
+              <td>Bacon ipsum dolor sit amet salami venison chicken flank fatback doner.</td>
+            </tr>
+            <tr>
+              <td>175</td>
+              <td>Mike Doe</td>
+              <td>11-7-2014</td>
+              <td><span className="tag tag-danger">Denied</span></td>
+              <td>Bacon ipsum dolor sit amet salami venison chicken flank fatback doner.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
 
           </div>
         </section>
