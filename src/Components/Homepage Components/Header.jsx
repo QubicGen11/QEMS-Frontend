@@ -8,7 +8,8 @@ const Header = () => {
     const navigate=useNavigate()
     const handleLogout = async () => {
         try {
-            await axios.post('http://localhost:9988/qubinest/logout');
+            //
+            await axios.post('https://qubinest-backend-five.vercel.app/qubinest/logout');
             toast.success('Logout successful');
             navigate('/')
         } catch (error) {
