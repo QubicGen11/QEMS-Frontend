@@ -47,7 +47,7 @@ const [currentGameIndex, setCurrentGameIndex] = useState(0);
       setGameSrc(games[currentGameIndex]);
   
       // Set the timer for 10 minutes
-      const countdown = 500; // 10 minutes in seconds
+      const countdown = 10; // 10 minutes in seconds
       setTimeLeft(countdown);
   
       // Start the countdown timer
@@ -107,10 +107,31 @@ const handleResetGame = () => {
   
   
 
-    const handleStartGame = () => {
-        startGame();
-        setMessage('Game started!');
-    };
+const handleStartGame = () => {
+  const lastGameStartedDate = localStorage.getItem('lastGameStartedDate');
+  const today = new Date().toISOString().slice(0, 10);
+
+  // Check if the game was started today
+  if (lastGameStartedDate === today) {
+      // Game already started today, show an alert or toast message
+      toast.error('You have already started the game today!');
+      return;
+  }
+
+  // Proceed with starting the game
+  startGame();
+  setMessage('Game started!');
+  
+  // Save the current date as the last game started date
+  localStorage.setItem('lastGameStartedDate', today);
+};
+
+const handleResetstartgame = () => {
+  // Clear the localStorage data related to the game start
+  localStorage.removeItem('lastGameStartedDate');
+  toast.success('Game reset successfully!');
+};
+
 
     const handleNextGame = () => {
         // Move to the next game
@@ -532,6 +553,10 @@ const handleResetGame = () => {
             <button onClick={handleResetGame} class="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
   <span class="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
   Reset Game
+</button>
+            <button onClick={handleResetstartgame} class="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
+  <span class="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
+  Restart Game
 </button>
 
             <div>{timeLeft > 0 ? `Time left: ${Math.floor(timeLeft / 60)}:${timeLeft % 60}` : ''}</div>
