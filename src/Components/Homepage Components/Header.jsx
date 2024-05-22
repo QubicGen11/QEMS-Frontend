@@ -108,7 +108,7 @@ const Header = () => {
                     </li> */}
                     <li className="nav-item dropdown">
                         <a className="nav-link" data-toggle="dropdown" href="#">
-                            <li class="nav-item ">
+                            <li className="nav-item ">
 
                                 <div className="  inset-x-0 z-20 w-full px-6  transition-all duration-300 ease-in-out   md:mt-0 md:p-0 md:top-0 md:relative md:bg-transparent md:w-auto md:opacity-100 md:translate-x-0 md:flex md:items-center">
                                     <div className="flex flex-col md:flex-row md:mx-6 lg:relative lg:left-10 md:relative md:left-10 relative left-10">

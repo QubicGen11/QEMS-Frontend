@@ -382,32 +382,36 @@ const Dashboard = () => {
 
               <div className="col-12 col-lg-6 mt-1">
                 <div class="card" style={{ background: "url('https://res.cloudinary.com/defsu5bfc/image/upload/v1716373294/waves_hxaazs.png')", backgroundRepeat: 'no-repeat', backgroundSize: "cover", backgroundColor: '#009efb', borderRadius: '10px' }}>
-    <div className="card-body">
-      <h5 className="text-white font-semibold relative bottom-2" style={{ fontFamily: 'sans-serif' }}>Upcoming Holidays</h5>
-      <div className="flex justify-between items-center">
-        <div className="flex items-center">
-          <img
-            src="https://smarthr.dreamstechnologies.com/react/template/static/media/holiday-calendar.d66643357778e940f4b7d889afd5f589.svg"
-            style={{ width: '30px' }}
-            alt=""
-          />
-          <div className="ml-2">
-            <p className="font-sans text-white text-base lg:text-xl">Independence Day</p>
-            <p className="font-sans text-white text-sm lg:text-base">Mon 20 May 2024</p>
-          </div>
-        </div>
-        <div>
-          <a href="#" className="btn btn-primary text-black bg-white font-sans mt-3 rounded-xl">View all</a>
-        </div>
-      </div>
-    </div>
-  </div>
-  <iframe src="https://qubic-gen.blogspot.com/" frameborder="0" className="relative bottom-3 h-48 rounded-lg w-full"></iframe>
-</div>
-  <iframe src="https://www.nytimes.com/crosswords" frameborder="0"></iframe>
+                  <div className="card-body">
+                    <h5 className="text-white font-semibold relative bottom-2" style={{ fontFamily: 'sans-serif' }}>Upcoming Holidays</h5>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center">
+                        <img
+                          src="https://smarthr.dreamstechnologies.com/react/template/static/media/holiday-calendar.d66643357778e940f4b7d889afd5f589.svg"
+                          style={{ width: '30px' }}
+                          alt=""
+                        />
+                        <div className="ml-2">
+                          <p className="font-sans text-white text-base lg:text-xl">Independence Day</p>
+                          <p className="font-sans text-white text-sm lg:text-base">Mon 20 May 2024</p>
+                        </div>
+                      </div>
+                      <div>
+                        <a href="#" className="btn btn-primary text-black bg-white font-sans mt-3 rounded-xl">View all</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <iframe src="https://qubic-gen.blogspot.com/" frameborder="0" className="relative bottom-3 h-48 rounded-lg w-full"></iframe>
+              </div>
+
 
 
             </div>
+              <div className='col-12 col-lg-12 mt-2 ' >
+
+                <iframe src="https://shaiksajidhussain.github.io/menja_game/" frameborder="0" style={{width:'80vw',height:'60vh'}}></iframe>
+              </div>
 
 
           </div>
