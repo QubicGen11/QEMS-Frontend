@@ -29,7 +29,7 @@ const Sidemenu = () => {
           <Link to="/dashboard" className="nav-link">
             <i className="nav-icon fas fa-tachometer-alt" />
             <p>
-              Dashboard
+              Console
             </p>
           </Link>
           
