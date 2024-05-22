@@ -16,6 +16,114 @@ const Dashboard = () => {
   const [greetingMessage, setGreetingMessage] = useState('');
   const MIN_CHAR_LIMIT = 10; // Minimum character limit for the report
   const MAX_CHAR_LIMIT = 500; // Maximum character limit for the report
+  const games = [
+    "https://shaiksajidhussain.github.io/menja_game/",
+    "https://shaiksajidhussain.github.io/snake_game/",
+    "https://shaiksajidhussain.github.io/blast_game/",
+    "https://shaiksajidhussain.github.io/jump_game/",
+    "https://shaiksajidhussain.github.io/flip_game/",
+    "https://shaiksajidhussain.github.io/arrow_game/"
+];
+const [currentGameIndex, setCurrentGameIndex] = useState(0);
+    const [gameSrc, setGameSrc] = useState('');
+    const [timer, setTimer] = useState(null);
+    const [timeLeft, setTimeLeft] = useState(0);
+    const [message, setMessage] = useState('');
+
+    const startGame = () => {
+      // Check if the game was played today
+      const lastPlayed = localStorage.getItem('lastPlayed');
+      const today = new Date().toISOString().slice(0, 10);
+      const currentTime = new Date().getTime(); // Get the current time in milliseconds
+  
+      // If the game was played today and the current time is less than 1 day (in milliseconds) from the last played time
+      if (lastPlayed === today && currentTime - parseInt(localStorage.getItem('lastPlayedTime')) < 24 * 60 * 60 * 1000) {
+          // Game already played today, show an alert and return
+          toast.success('You have already played the game today! Please come back tomorrow.');
+          return;
+      }
+  
+      // Set the game source
+      setGameSrc(games[currentGameIndex]);
+  
+      // Set the timer for 10 minutes
+      const countdown = 500; // 10 minutes in seconds
+      setTimeLeft(countdown);
+  
+      // Start the countdown timer
+      const interval = setInterval(() => {
+          setTimeLeft(prevTime => prevTime - 1);
+      }, 1000);
+      setTimer(interval);
+  
+      // Set a timeout to stop the game after 10 minutes
+      setTimeout(() => {
+          clearInterval(interval); // Clear the interval
+          setMessage('Time is up!'); // Display time is up message
+          toast.success("Time is Up! Get Back Tomorrow"); // Show success toast
+          // Mark the game as played today
+          localStorage.setItem('lastPlayed', today);
+          localStorage.setItem('lastPlayedTime', currentTime.toString()); // Save the current time
+          // Attempt to close the game window
+          if (window.opener) { // If the game was opened from another window
+              window.close(); // Close the window
+          }
+          window.location.reload(); // Reload the window after the game is stopped
+      }, countdown * 1000);
+  };
+  
+  
+  const resetGame = () => {
+    // Clear the game data
+    localStorage.removeItem('lastPlayed');
+    localStorage.removeItem('lastPlayedTime');
+    // Reset the game source and timer
+    setGameSrc('');
+    clearInterval(timer);
+    setTimeLeft(0);
+    setMessage('');
+};
+
+const stopGame = () => {
+    clearInterval(timer); // Stop the timer
+    setMessage('Game stopped! Get back tomorrow.'); // Display message
+    toast.success('Game stopped! Get back tomorrow.'); // Assuming you are using a toast library
+    window.location.reload(); // Reload the window
+};
+
+const handleResetGame = () => {
+    resetGame();
+    toast.success('Game data has been reset!');
+};
+
+// Call handleResetGame function when you want to reset the game data
+
+  
+
+  
+  
+
+  
+  
+  
+
+    const handleStartGame = () => {
+        startGame();
+        setMessage('Game started!');
+    };
+
+    const handleNextGame = () => {
+        // Move to the next game
+        setCurrentGameIndex(prevIndex =>
+            prevIndex === games.length - 1 ? 0 : prevIndex + 1
+        );
+
+        // Reset the game source and timer
+        setGameSrc('');
+        clearInterval(timer);
+        setTimeLeft(0);
+        setMessage('');
+    };
 
 
 
@@ -408,11 +516,27 @@ const Dashboard = () => {
 
 
             </div>
-              <div className='col-12 col-lg-12 mt-2 ' >
+            <div className='col-12 col-lg-12 mt-2 bg-white'>
+              <h1 className='text-2xl'>Games</h1>
+            {gameSrc && <iframe src={gameSrc} frameborder="0" style={{width:'80vw',height:'60vh'}}></iframe>}
+            {/* <button >Start Game</button> */}
 
-                <iframe src="https://shaiksajidhussain.github.io/menja_game/" frameborder="0" style={{width:'80vw',height:'60vh'}}></iframe>
-              </div>
+            <button onClick={handleStartGame} class="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
+  <span class="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
+  Start Game
+</button>
+            <button onClick={handleNextGame} class="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
+  <span class="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
+  Next Game
+</button>
+            <button onClick={handleResetGame} class="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
+  <span class="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
+  Reset Game
+</button>
 
+            <div>{timeLeft > 0 ? `Time left: ${Math.floor(timeLeft / 60)}:${timeLeft % 60}` : ''}</div>
+            <div>{message}</div>
+        </div>
 
           </div>
         </section>
