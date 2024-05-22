@@ -1,13 +1,23 @@
+import axios from 'axios';
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Header = () => {
-
+    const navigate=useNavigate()
+    const handleLogout = async () => {
+        try {
+            await axios.post('http://localhost:9988/qubinest/logout');
+            toast.success('Logout successful');
+            navigate('/')
+        } catch (error) {
+            console.error(error);
+            toast.error('Logout not possible');
+        }
+    };
     return (
         <>
-
-
-
             <nav className="main-header navbar navbar-expand navbar-dark navbar-dark ">
                 <ul className="navbar-nav w-auto">
                     <li className="nav-item">
@@ -181,12 +191,12 @@ const Header = () => {
 
                                 <hr className="border-gray-200 dark:border-gray-700 " />
 
-                                <a
+                                <button onClick={handleLogout}
                                     href="/"
                                     className="block px-4 py-3 text-sm text-gray-600 capitalize transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
                                 >
                                     Sign Out
-                                </a>
+                                </button>
                             </div>
                         </div>
                     </li>
