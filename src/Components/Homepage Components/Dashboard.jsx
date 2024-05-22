@@ -404,8 +404,8 @@ const Dashboard = () => {
   </div>
   <iframe src="https://qubic-gen.blogspot.com/" frameborder="0" className="relative bottom-3 h-48 rounded-lg w-full"></iframe>
 </div>
-
   <iframe src="https://www.nytimes.com/crosswords" frameborder="0"></iframe>
+
 
             </div>
 
