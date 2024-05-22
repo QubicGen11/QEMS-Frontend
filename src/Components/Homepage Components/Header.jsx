@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const Header = () => {
-    const navigate=useNavigate()
+    const navigate = useNavigate()
     const handleLogout = async () => {
         try {
             //
@@ -147,7 +147,9 @@ const Header = () => {
 
 
                                 </div>
-                            </li>                        </a>
+                            </li>
+                        </a>
+                        
                         <div className="dropdown-menu dropdown-menu-lg dropdown-menu-right bg-gray-600 transition-all duration-300 ease-in-out">
 
                             <div
