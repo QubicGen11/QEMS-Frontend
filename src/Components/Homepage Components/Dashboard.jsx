@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Clock from '../Clock/Clock';
 const Dashboard = () => {
 
 
@@ -307,6 +308,8 @@ const handleResetstartgame = () => {
                   <div className="row h-20">
                     <div className="col-sm-6 col-6 border-right">
                       <div className="description-block">
+                        
+                        {/* <Clock/> */}
                         <button
                           onClick={clockIn}
                           className="w-20 bg-green-600 text-xs text-white font-semibold py-2 px-1 rounded-full shadow-lg transform hover:scale-105 transition duration-300 ease-in-out hover:bg-yellow-500"
