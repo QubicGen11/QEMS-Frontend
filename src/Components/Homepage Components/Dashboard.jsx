@@ -2,13 +2,13 @@ import React, { useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Clock from '../Clock/Clock';
+// import Clock from '../Clock/Clock';
 import { useUser } from '../context/UserContext';
 const Dashboard = () => {
-  const {username}=useUser()
+
+const {name} = useUser()
 
 
-  
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [reportText, setReportText] = useState('');
@@ -25,56 +25,56 @@ const Dashboard = () => {
     "https://shaiksajidhussain.github.io/jump_game/",
     "https://shaiksajidhussain.github.io/flip_game/",
     "https://shaiksajidhussain.github.io/arrow_game/"
-];
-const [currentGameIndex, setCurrentGameIndex] = useState(0);
-    const [gameSrc, setGameSrc] = useState('');
-    const [timer, setTimer] = useState(null);
-    const [timeLeft, setTimeLeft] = useState(0);
-    const [message, setMessage] = useState('');
+  ];
+  const [currentGameIndex, setCurrentGameIndex] = useState(0);
+  const [gameSrc, setGameSrc] = useState('');
+  const [timer, setTimer] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [message, setMessage] = useState('');
 
-    const startGame = () => {
-      // Check if the game was played today
-      const lastPlayed = localStorage.getItem('lastPlayed');
-      const today = new Date().toISOString().slice(0, 10);
-      const currentTime = new Date().getTime(); // Get the current time in milliseconds
-  
-      // If the game was played today and the current time is less than 1 day (in milliseconds) from the last played time
-      if (lastPlayed === today && currentTime - parseInt(localStorage.getItem('lastPlayedTime')) < 24 * 60 * 60 * 1000) {
-          // Game already played today, show an alert and return
-          toast.success('You have already played the game today! Please come back tomorrow.');
-          return;
+  const startGame = () => {
+    // Check if the game was played today
+    const lastPlayed = localStorage.getItem('lastPlayed');
+    const today = new Date().toISOString().slice(0, 10);
+    const currentTime = new Date().getTime(); // Get the current time in milliseconds
+
+    // If the game was played today and the current time is less than 1 day (in milliseconds) from the last played time
+    if (lastPlayed === today && currentTime - parseInt(localStorage.getItem('lastPlayedTime')) < 24 * 60 * 60 * 1000) {
+      // Game already played today, show an alert and return
+      toast.success('You have already played the game today! Please come back tomorrow.');
+      return;
+    }
+
+    // Set the game source
+    setGameSrc(games[currentGameIndex]);
+
+    // Set the timer for 10 minutes
+    const countdown = 600; // 10 minutes in seconds
+    setTimeLeft(countdown);
+
+    // Start the countdown timer
+    const interval = setInterval(() => {
+      setTimeLeft(prevTime => prevTime - 1);
+    }, 1000);
+    setTimer(interval);
+
+    // Set a timeout to stop the game after 10 minutes
+    setTimeout(() => {
+      clearInterval(interval); // Clear the interval
+      setMessage('Time is up!'); // Display time is up message
+      toast.success("Time is Up! Get Back Tomorrow"); // Show success toast
+      // Mark the game as played today
+      localStorage.setItem('lastPlayed', today);
+      localStorage.setItem('lastPlayedTime', currentTime.toString()); // Save the current time
+      // Attempt to close the game window
+      if (window.opener) { // If the game was opened from another window
+        window.close(); // Close the window
       }
-  
-      // Set the game source
-      setGameSrc(games[currentGameIndex]);
-  
-      // Set the timer for 10 minutes
-      const countdown = 600; // 10 minutes in seconds
-      setTimeLeft(countdown);
-  
-      // Start the countdown timer
-      const interval = setInterval(() => {
-          setTimeLeft(prevTime => prevTime - 1);
-      }, 1000);
-      setTimer(interval);
-  
-      // Set a timeout to stop the game after 10 minutes
-      setTimeout(() => {
-          clearInterval(interval); // Clear the interval
-          setMessage('Time is up!'); // Display time is up message
-          toast.success("Time is Up! Get Back Tomorrow"); // Show success toast
-          // Mark the game as played today
-          localStorage.setItem('lastPlayed', today);
-          localStorage.setItem('lastPlayedTime', currentTime.toString()); // Save the current time
-          // Attempt to close the game window
-          if (window.opener) { // If the game was opened from another window
-              window.close(); // Close the window
-          }
-          window.location.reload(); // Reload the window after the game is stopped
-      }, countdown * 1000);
+      window.location.reload(); // Reload the window after the game is stopped
+    }, countdown * 1000);
   };
-  
-  
+
+
   const resetGame = () => {
     // Clear the game data
     localStorage.removeItem('lastPlayed');
@@ -84,64 +84,69 @@ const [currentGameIndex, setCurrentGameIndex] = useState(0);
     clearInterval(timer);
     setTimeLeft(0);
     setMessage('');
-};
+  };
 
-const stopGame = () => {
+  const stopGame = () => {
     clearInterval(timer); // Stop the timer
     setMessage('Game stopped! Get back tomorrow.'); // Display message
     toast.success('Game stopped! Get back tomorrow.'); // Assuming you are using a toast library
     window.location.reload(); // Reload the window
-};
+  };
 
-const handleResetGame = () => {
+  const handleResetGame = () => {
     resetGame();
     toast.success('Game data has been reset!');
-};
+  };
 
-// Call handleResetGame function when you want to reset the game data
+  // Call handleResetGame function when you want to reset the game data
 
-  
 
-  
 
-const handleStartGame = () => {
-  const lastGameStartedDate = localStorage.getItem('lastGameStartedDate');
-  const today = new Date().toISOString().slice(0, 10);
 
-  // Check if the game was started today
-  if (lastGameStartedDate === today) {
+
+
+
+
+
+
+  const handleStartGame = () => {
+    const lastGameStartedDate = localStorage.getItem('lastGameStartedDate');
+    const today = new Date().toISOString().slice(0, 10);
+
+    // Check if the game was started today
+    if (lastGameStartedDate === today) {
       // Game already started today, show an alert or toast message
       toast.error('You have already started the game today!');
       return;
-  }
+    }
 
-  // Proceed with starting the game
-  startGame();
-  setMessage('Game started!');
-  
-  // Save the current date as the last game started date
-  localStorage.setItem('lastGameStartedDate', today);
-};
+    // Proceed with starting the game
+    startGame();
+    setMessage('Game started!');
 
-const handleResetstartgame = () => {
-  // Clear the localStorage data related to the game start
-  localStorage.removeItem('lastGameStartedDate');
-  toast.success('Game reset successfully!');
-};
+    // Save the current date as the last game started date
+    localStorage.setItem('lastGameStartedDate', today);
+  };
+
+  const handleResetstartgame = () => {
+    // Clear the localStorage data related to the game start
+    localStorage.removeItem('lastGameStartedDate');
+    toast.success('Game reset successfully!');
+  };
 
 
-    const handleNextGame = () => {
-        // Move to the next game
-        setCurrentGameIndex(prevIndex =>
-            prevIndex === games.length - 1 ? 0 : prevIndex + 1
-        );
+  const handleNextGame = () => {
+    // Move to the next game
+    setCurrentGameIndex(prevIndex =>
+      prevIndex === games.length - 1 ? 0 : prevIndex + 1
+    );
 
-        // Reset the game source and timer
-        setGameSrc('');
-        clearInterval(timer);
-        setTimeLeft(0);
-        setMessage('');
-    };
+    // Reset the game source and timer
+    setGameSrc('');
+    clearInterval(timer);
+    setTimeLeft(0);
+    setMessage('');
+  };
 
 
 
@@ -155,82 +160,57 @@ const handleResetstartgame = () => {
   }, []);
 
 
-  const clockIn = async () => {
+
+  const clockIn = () => {
     const lastClockInDate = localStorage.getItem('lastClockInDate');
     const currentDate = new Date().toLocaleDateString();
     if (lastClockInDate === currentDate) {
-        toast.error('You have already clocked in today!');
-        return;
+      toast.error('You have already clocked in today!');
+      return;
     }
 
-    try {
-        // Retrieve username from wherever it's stored (e.g., state, props, etc.)
-        const username = getUsernameFromSomewhere(); 
 
-        const response = await axios.post(
-            'http://localhost:9988/qubinest/clockin',
-            { username }
-        );
+    setIsClockedIn(true);
+    const now = new Date();
+    const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    // alert(`Employee Successfully Clocked In at ${formattedTime}`);
+    toast.success(`Employee Successfully Clocked In at ${formattedTime}`);
+    localStorage.setItem('lastClockInDate', currentDate);
 
-        if (response.status === 200) {
-            setIsClockedIn(true);
-            const now = new Date();
-            const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            toast.success(`Employee Successfully Clocked In at ${formattedTime}`);
-            localStorage.setItem('lastClockInDate', currentDate);
+    intervalRef.current = setInterval(() => {
+      setTime(prevTime => {
+        const newSeconds = prevTime.seconds + 1;
+        const newMinutes = prevTime.minutes + Math.floor(newSeconds / 60);
+        const newHours = prevTime.hours + Math.floor(newMinutes / 60);
+        return {
+          hours: newHours % 24,
+          minutes: newMinutes % 60,
+          seconds: newSeconds % 60,
+        };
+      });
+    }, 1000);
+  };
 
-            intervalRef.current = setInterval(() => {
-                setTime(prevTime => {
-                    const newSeconds = prevTime.seconds + 1;
-                    const newMinutes = prevTime.minutes + Math.floor(newSeconds / 60);
-                    const newHours = prevTime.hours + Math.floor(newMinutes / 60);
-                    return {
-                        hours: newHours % 24,
-                        minutes: newMinutes % 60,
-                        seconds: newSeconds % 60,
-                    };
-                });
-            }, 1000);
-        }
-    } catch (error) {
-        console.error('Error during clock-in:', error);
-        toast.error('Failed to clock in. Please try again.');
-    }
-};
 
-const clockOut = async () => {
+
+  const clockOut = () => {
     if (isClockedIn) {
-        if (isReportSubmitted) {
-            try {
-                // Retrieve username from wherever it's stored (e.g., state, props, etc.)
-                const username = getUsernameFromSomewhere(); 
+      if (isReportSubmitted) {
+        setIsClockedIn(false);
+        const now = new Date();
+        const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        toast.success(`Employee Successfully Clocked Out at ${formattedTime}`)
 
-                const response = await axios.post(
-                    'http://localhost:9988/qubinest/clockout',
-                    { username }
-                );
-
-                if (response.status === 200) {
-                    setIsClockedIn(false);
-                    const now = new Date();
-                    const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                    toast.success(`Employee Successfully Clocked Out at ${formattedTime}`);
-
-                    clearInterval(intervalRef.current);
-                    setTime({ hours: 0, minutes: 0, seconds: 0 }); // Reset the timer
-                    setIsReportSubmitted(false); // Reset report submission status
-                }
-            } catch (error) {
-                console.error('Error during clock-out:', error);
-                toast.error('Failed to clock out. Please try again.');
-            }
-        } else {
-            toast.error('You need to submit your daily update before clocking out!');
-        }
+        clearInterval(intervalRef.current);
+        setTime({ hours: 0, minutes: 0, seconds: 0 }); // Reset the timer
+        setIsReportSubmitted(false); // Reset report submission status
+      } else {
+        toast.error('You need to submit your daily update before clocking out!');
+      }
     } else {
-        toast.error('You need to clock in first!');
+      toast.error('You need to clock in first!');
     }
-};
+  };
 
 
   const resetClockInStatus = () => {
@@ -329,7 +309,7 @@ const clockOut = async () => {
                   <div className="row h-20">
                     <div className="col-sm-6 col-6 border-right">
                       <div className="description-block">
-                        
+
                         {/* <Clock/> */}
                         <button
                           onClick={clockIn}
@@ -436,7 +416,7 @@ const clockOut = async () => {
                       <div className="section_personal">
                         <h1 className='mx-2 font-bold'>Personal Information :</h1>
 
-                        <h5 className='px-2 text-xs mt-3 font-semibold'>First Name : </h5>
+                        <h5 className='px-2 text-xs mt-3 font-semibold'>First Name : {name} </h5>
                         <h5 className='px-2 text-xs mt-2 font-semibold'>Second Name :</h5>
                         <h5 className='px-2 text-xs mt-2 font-semibold'>Email(Personal) :</h5>
                         <h5 className='px-2 text-xs mt-2 font-semibold'>Phone Number :</h5>
@@ -563,29 +543,29 @@ const clockOut = async () => {
             </div>
             <div className='col-12 col-lg-12 mt-2 bg-white'>
               <h1 className='text-2xl'>Games</h1>
-            {gameSrc && <iframe src={gameSrc} frameborder="0" style={{width:'80vw',height:'70vh'}}></iframe>}
-            {/* <button >Start Game</button> */}
+              {gameSrc && <iframe src={gameSrc} frameborder="0" style={{ width: '80vw', height: '70vh' }}></iframe>}
+              {/* <button >Start Game</button> */}
 
-            <button onClick={handleStartGame} class="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
-  <span class="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
-  Start Game
-</button>
-            <button onClick={handleNextGame} class="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
-  <span class="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
-  Next Game
-</button>
-            <button onClick={handleResetGame} class="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
-  <span class="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
-  Reset Game
-</button>
-            <button onClick={handleResetstartgame} class="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
-  <span class="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
-  Restart Game
-</button>
+              <button onClick={handleStartGame} class="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
+                <span class="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
+                Start Game
+              </button>
+              <button onClick={handleNextGame} class="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
+                <span class="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
+                Next Game
+              </button>
+              <button onClick={handleResetGame} class="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
+                <span class="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
+                Reset Game
+              </button>
+              <button onClick={handleResetstartgame} class="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
+                <span class="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
+                Restart Game
+              </button>
 
-            <div>{timeLeft > 0 ? `Time left: ${Math.floor(timeLeft / 60)}:${timeLeft % 60}` : ''}</div>
-            <div>{message}</div>
-        </div>
+              <div>{timeLeft > 0 ? `Time left: ${Math.floor(timeLeft / 60)}:${timeLeft % 60}` : ''}</div>
+              <div>{message}</div>
+            </div>
 
           </div>
         </section>
