@@ -15,7 +15,7 @@ const Login = () => {
   const onSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await axios.post('https:///qubinest/login', { username, password });
+      const response = await axios.post('http://localhost:9988/qubinest/login', { username, password });
       console.log(response);
       Cookies.set('username',username,{secure:true,sameSite:'Strict'})
       setUsername('');

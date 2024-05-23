@@ -169,6 +169,7 @@ const {name} = useUser()
       return;
     }
 
+<<<<<<< HEAD
 
     setIsClockedIn(true);
     const now = new Date();
@@ -176,6 +177,15 @@ const {name} = useUser()
     // alert(`Employee Successfully Clocked In at ${formattedTime}`);
     toast.success(`Employee Successfully Clocked In at ${formattedTime}`);
     localStorage.setItem('lastClockInDate', currentDate);
+=======
+    try {
+        // Retrieve username from wherever it's stored (e.g., state, props, etc.)
+         
+        const response = await axios.post(
+            'http://localhost:9988/qubinest/clockin',
+            { username },{withCredentials:true}
+        );
+>>>>>>> 16a42a66240e806aa560d00e7fc4697c70ffd73c
 
     intervalRef.current = setInterval(() => {
       setTime(prevTime => {
@@ -195,6 +205,7 @@ const {name} = useUser()
 
   const clockOut = () => {
     if (isClockedIn) {
+<<<<<<< HEAD
       if (isReportSubmitted) {
         setIsClockedIn(false);
         const now = new Date();
@@ -207,6 +218,33 @@ const {name} = useUser()
       } else {
         toast.error('You need to submit your daily update before clocking out!');
       }
+=======
+        if (isReportSubmitted) {
+            try {
+
+                const response = await axios.post(
+                    'http://localhost:9988/qubinest/clockout',
+                    { username },{withCredentials:true}
+                );
+
+                if (response.status === 200) {
+                    setIsClockedIn(false);
+                    const now = new Date();
+                    const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    toast.success(`Employee Successfully Clocked Out at ${formattedTime}`);
+
+                    clearInterval(intervalRef.current);
+                    setTime({ hours: 0, minutes: 0, seconds: 0 }); // Reset the timer
+                    setIsReportSubmitted(false); // Reset report submission status
+                }
+            } catch (error) {
+                console.error('Error during clock-out:', error);
+                toast.error('Failed to clock out. Please try again.');
+            }
+        } else {
+            toast.error('You need to submit your daily update before clocking out!');
+        }
+>>>>>>> 16a42a66240e806aa560d00e7fc4697c70ffd73c
     } else {
       toast.error('You need to clock in first!');
     }
