@@ -17,7 +17,7 @@ const Register = () => {
     event.preventDefault();
     toast.success("Admin will approve your request shortly")
     try {
-      const response = await axios.post('https://qubinest-backend-five.vercel.app/qubinest/register', {role,username,password});
+      const response = await axios.post('http://localhost:9988/qubinest/register', {role,username,password});
       console.log(response);
       setUsername('');
       setPassword('');

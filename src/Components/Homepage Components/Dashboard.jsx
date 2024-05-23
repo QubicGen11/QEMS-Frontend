@@ -5,18 +5,13 @@ import axios from 'axios'
 import { toast, ToastContainer } from 'react-toastify';
 
 import 'react-toastify/dist/ReactToastify.css';
-
+import cookies from 'js-cookie';
 
 import { useUser } from '../context/UserContext';
 
 const Dashboard = () => {
-
-  const {name}=useUser()
- 
-
- 
-
- 
+  
+  
 
   const [isClockedIn, setIsClockedIn] = useState(false);
 
@@ -308,155 +303,83 @@ const handleResetstartgame = () => {
 
  
 
- 
-
   const clockIn = async () => {
-
     const lastClockInDate = localStorage.getItem('lastClockInDate');
-
+    const name = cookies.get('username'); // Assuming you have imported cookies properly
     const currentDate = new Date().toLocaleDateString();
-
     if (lastClockInDate === currentDate) {
-
         toast.error('You have already clocked in today!');
-
         return;
-
     }
-
- 
-
     try {
-
-        // Retrieve username from wherever it's stored (e.g., state, props, etc.)
-
-         
-
-        const response = await axios.post(
-
-            'http://localhost:9988/qubinest/clockin',
-
-            { username },{withCredentials:true}
-
-        );
-
- 
-
-        if (response.status === 200) {
-
-            setIsClockedIn(true);
-
-            const now = new Date();
-
-            const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-            toast.success(`Employee Successfully Clocked In at ${formattedTime}`);
-
-            localStorage.setItem('lastClockInDate', currentDate);
-
- 
-
-            intervalRef.current = setInterval(() => {
-
-                setTime(prevTime => {
-
-                    const newSeconds = prevTime.seconds + 1;
-
-                    const newMinutes = prevTime.minutes + Math.floor(newSeconds / 60);
-
-                    const newHours = prevTime.hours + Math.floor(newMinutes / 60);
-
-                    return {
-
-                        hours: newHours % 24,
-
-                        minutes: newMinutes % 60,
-
-                        seconds: newSeconds % 60,
-
-                    };
-
-                });
-
-            }, 1000);
-
+        if (!name) {
+            toast.error('Username is required to clock in.');
+            return;
         }
-
+        const response = await axios.post(
+            'http://localhost:9988/qubinest/clockin',
+            { name }, // Include the username in the request body
+            { withCredentials: true }
+        );
+        if (response.status === 200) {
+            setIsClockedIn(true);
+            const now = new Date();
+            const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            toast.success(`Employee Successfully Clocked In at ${formattedTime}`);
+            localStorage.setItem('lastClockInDate', currentDate);
+            intervalRef.current = setInterval(() => {
+                setTime(prevTime => {
+                    const newSeconds = prevTime.seconds + 1;
+                    const newMinutes = prevTime.minutes + Math.floor(newSeconds / 60);
+                    const newHours = prevTime.hours + Math.floor(newMinutes / 60);
+                    return {
+                        hours: newHours % 24,
+                        minutes: newMinutes % 60,
+                        seconds: newSeconds % 60,
+                    };
+                });
+            }, 1000);
+        }
     } catch (error) {
-
         console.error('Error during clock-in:', error);
-
-        toast.error('Failed to clock in. Please try again.');
-
+        // Handle errors
     }
-
 };
-
- 
 
 const clockOut = async () => {
-
     if (isClockedIn) {
-
         if (isReportSubmitted) {
-
             try {
-
- 
-
-                const response = await axios.post(
-
-                    'http://localhost:9988/qubinest/clockout',
-
-                    { username },{withCredentials:true}
-
-                );
-
- 
-
-                if (response.status === 200) {
-
-                    setIsClockedIn(false);
-
-                    const now = new Date();
-
-                    const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-                    toast.success(`Employee Successfully Clocked Out at ${formattedTime}`);
-
- 
-
-                    clearInterval(intervalRef.current);
-
-                    setTime({ hours: 0, minutes: 0, seconds: 0 }); // Reset the timer
-
-                    setIsReportSubmitted(false); // Reset report submission status
-
+                const username = cookies.get('username'); 
+                if (!username) {
+                    toast.error('Username is required to clock out.');
+                    return;
                 }
-
+                const response = await axios.post(
+                    'http://localhost:9988/qubinest/clockout',
+                    { username }, // Include the username in the request body
+                    { withCredentials: true }
+                );
+                if (response.status === 200) {
+                    setIsClockedIn(false);
+                    const now = new Date();
+                    const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    toast.success(`Employee Successfully Clocked Out at ${formattedTime}`);
+                    clearInterval(intervalRef.current);
+                    setTime({ hours: 0, minutes: 0, seconds: 0 }); // Reset the timer
+                    setIsReportSubmitted(false); // Reset report submission status
+                }
             } catch (error) {
-
                 console.error('Error during clock-out:', error);
-
-                toast.error('Failed to clock out. Please try again.');
-
+                // Handle errors
             }
-
         } else {
-
             toast.error('You need to submit your daily update before clocking out!');
-
         }
-
     } else {
-
         toast.error('You need to clock in first!');
-
     }
-
 };
-
- 
 
  
 
