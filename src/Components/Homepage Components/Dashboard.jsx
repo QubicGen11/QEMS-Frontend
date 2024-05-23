@@ -165,11 +165,10 @@ const handleResetstartgame = () => {
 
     try {
         // Retrieve username from wherever it's stored (e.g., state, props, etc.)
-        const username = getUsernameFromSomewhere(); 
-
+         
         const response = await axios.post(
             'http://localhost:9988/qubinest/clockin',
-            { username }
+            { username },{withCredentials:true}
         );
 
         if (response.status === 200) {
@@ -202,12 +201,10 @@ const clockOut = async () => {
     if (isClockedIn) {
         if (isReportSubmitted) {
             try {
-                // Retrieve username from wherever it's stored (e.g., state, props, etc.)
-                const username = getUsernameFromSomewhere(); 
 
                 const response = await axios.post(
                     'http://localhost:9988/qubinest/clockout',
-                    { username }
+                    { username },{withCredentials:true}
                 );
 
                 if (response.status === 200) {
