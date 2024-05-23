@@ -324,7 +324,9 @@ const handleResetstartgame = () => {
         
 
       const response = await axios.post(
-        'http://localhost:9988/qubinest/clockin',
+        // https://qubinest-backend-five.vercel.app/
+        // 'http://localhost:9988/qubinest/clockin',
+        'https://qubinest-backend-five.vercel.app/qubinest/clockin',
         { username }, 
         { withCredentials: true }
       );
@@ -366,7 +368,13 @@ const handleResetstartgame = () => {
             return;
           }
           const response = await axios.post(
-            'http://localhost:9988/qubinest/clockout',
+            // https://qubinest-backend-five.vercel.app/
+
+            // 'http://localhost:9988/qubinest/clockout',
+
+
+
+            'https://qubinest-backend-five.vercel.app/clockout',
             { username }, // Include the username in the request body
             { withCredentials: true }
           );

@@ -17,7 +17,8 @@ const Login = () => {
   const onSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await axios.post('http://localhost:9988/qubinest/login', { username, password });
+      // https://qubinest-backend-five.vercel.app/
+      const response = await axios.post('https://qubinest-backend-five.vercel.app/qubinest/login', { username, password });
       console.log(response);
       Cookies.set('username', username, { secure: true, sameSite: 'Strict' });
       setUsername('');
