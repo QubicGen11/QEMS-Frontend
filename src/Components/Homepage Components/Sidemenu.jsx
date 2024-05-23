@@ -68,10 +68,10 @@ const Sidemenu = () => {
                 </a>
                 <ul className={`nav nav-treeview ${isTimeSheetsOpen ? 'd-block' : 'd-none'}`}>
                   <li className="nav-item">
-                    <a href="pages/layout/top-nav.html" className="nav-link">
+                    <Link to="/viewtimesheets" className="nav-link">
                       <i className="far fa-circle nav-icon" />
-                      <p>New Timesheets</p>
-                    </a>
+                      <p>View Timesheets</p>
+                    </Link>
                   </li>
                   <li className="nav-item">
                     <a href="pages/layout/top-nav-sidebar.html" className="nav-link">
