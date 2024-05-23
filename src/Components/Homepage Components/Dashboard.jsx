@@ -11,8 +11,7 @@ import { useUser } from '../context/UserContext';
 
 const Dashboard = () => {
   
-  
-
+  const {name}=useUser()
   const [isClockedIn, setIsClockedIn] = useState(false);
 
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
@@ -68,8 +67,6 @@ const [currentGameIndex, setCurrentGameIndex] = useState(0);
       const today = new Date().toISOString().slice(0, 10);
 
       const currentTime = new Date().getTime(); // Get the current time in milliseconds
-
- 
 
       // If the game was played today and the current time is less than 1 day (in milliseconds) from the last played time
 
@@ -304,21 +301,23 @@ const handleResetstartgame = () => {
  
 
   const clockIn = async () => {
+    const {username}=name
     const lastClockInDate = localStorage.getItem('lastClockInDate');
-    const name = cookies.get('username'); // Assuming you have imported cookies properly
+    // Assuming you have imported cookies properly
+    
     const currentDate = new Date().toLocaleDateString();
     if (lastClockInDate === currentDate) {
         toast.error('You have already clocked in today!');
         return;
     }
     try {
-        if (!name) {
+        if (!username) {
             toast.error('Username is required to clock in.');
             return;
         }
         const response = await axios.post(
             'http://localhost:9988/qubinest/clockin',
-            { name }, // Include the username in the request body
+            { username}, // Include the username in the request body
             { withCredentials: true }
         );
         if (response.status === 200) {
@@ -347,10 +346,11 @@ const handleResetstartgame = () => {
 };
 
 const clockOut = async () => {
+  const {username}=name
     if (isClockedIn) {
         if (isReportSubmitted) {
             try {
-                const username = cookies.get('username'); 
+                
                 if (!username) {
                     toast.error('Username is required to clock out.');
                     return;
