@@ -21,7 +21,7 @@ const Header = () => {
     };
     return (
         <>
-            <nav className="main-header navbar navbar-expand navbar-dark navbar-dark ">
+            <nav className="main-header navbar navbar-expand navbar-dark navbar-dark  ">
                 <ul className="navbar-nav w-auto">
                     <li className="nav-item">
                         <a className="nav-link" data-widget="pushmenu" href="#" role="button"><i className="fas fa-bars" /></a>

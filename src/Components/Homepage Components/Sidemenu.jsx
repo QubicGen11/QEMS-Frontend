@@ -17,12 +17,15 @@ const Sidemenu = () => {
       <aside className="main-sidebar sidebar-dark-primary elevation-4">
         <div className="sidebar">
           <div className="w-40 mt-3 pb-3 mb-3 d-flex">
-            <div className="">
+            <div className="flex gap-9">
               <img
                 src="https://res.cloudinary.com/defsu5bfc/image/upload/v1715348582/og_6_jqnrvf.png"
                 className="w-96"
                 alt="User Image"
               />
+               <li className="nav-item lg:hidden w-3">
+                        <a className="nav-link" data-widget="pushmenu" href="#" role="button"><i className="fas fa-bars" /></a>
+                    </li>
             </div>
           </div>
           <div className="form-inline">
