@@ -5,11 +5,12 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie'
+import { useUser } from "../context/UserContext";
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-
+  const {setName}=useUser()
   // Handle form submission
   const onSubmit = async (event) => {
     event.preventDefault();
@@ -19,6 +20,7 @@ const Login = () => {
       Cookies.set('username',username,{secure:true,sameSite:'Strict'})
       setUsername('');
       setPassword('');
+      setName(username)
       toast.success('Login successful');
       navigate('/dashboard'); // Navigate to /dashboard
       

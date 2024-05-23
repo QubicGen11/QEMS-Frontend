@@ -3,11 +3,12 @@ import axios from 'axios'
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Clock from '../Clock/Clock';
+import { useUser } from '../context/UserContext';
 const Dashboard = () => {
+  const {username}=useUser()
 
 
-
-
+  
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [reportText, setReportText] = useState('');
@@ -102,11 +103,6 @@ const handleResetGame = () => {
   
 
   
-  
-
-  
-  
-  
 
 const handleStartGame = () => {
   const lastGameStartedDate = localStorage.getItem('lastGameStartedDate');
@@ -159,57 +155,82 @@ const handleResetstartgame = () => {
   }, []);
 
 
-
-  const clockIn = () => {
+  const clockIn = async () => {
     const lastClockInDate = localStorage.getItem('lastClockInDate');
     const currentDate = new Date().toLocaleDateString();
     if (lastClockInDate === currentDate) {
-      toast.error('You have already clocked in today!');
-      return;
+        toast.error('You have already clocked in today!');
+        return;
     }
 
+    try {
+        // Retrieve username from wherever it's stored (e.g., state, props, etc.)
+        const username = getUsernameFromSomewhere(); 
 
-    setIsClockedIn(true);
-    const now = new Date();
-    const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    // alert(`Employee Successfully Clocked In at ${formattedTime}`);
-    toast.success(`Employee Successfully Clocked In at ${formattedTime}`);
-    localStorage.setItem('lastClockInDate', currentDate);
+        const response = await axios.post(
+            'http://localhost:9988/qubinest/clockin',
+            { username }
+        );
 
-    intervalRef.current = setInterval(() => {
-      setTime(prevTime => {
-        const newSeconds = prevTime.seconds + 1;
-        const newMinutes = prevTime.minutes + Math.floor(newSeconds / 60);
-        const newHours = prevTime.hours + Math.floor(newMinutes / 60);
-        return {
-          hours: newHours % 24,
-          minutes: newMinutes % 60,
-          seconds: newSeconds % 60,
-        };
-      });
-    }, 1000);
-  };
+        if (response.status === 200) {
+            setIsClockedIn(true);
+            const now = new Date();
+            const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            toast.success(`Employee Successfully Clocked In at ${formattedTime}`);
+            localStorage.setItem('lastClockInDate', currentDate);
 
+            intervalRef.current = setInterval(() => {
+                setTime(prevTime => {
+                    const newSeconds = prevTime.seconds + 1;
+                    const newMinutes = prevTime.minutes + Math.floor(newSeconds / 60);
+                    const newHours = prevTime.hours + Math.floor(newMinutes / 60);
+                    return {
+                        hours: newHours % 24,
+                        minutes: newMinutes % 60,
+                        seconds: newSeconds % 60,
+                    };
+                });
+            }, 1000);
+        }
+    } catch (error) {
+        console.error('Error during clock-in:', error);
+        toast.error('Failed to clock in. Please try again.');
+    }
+};
 
-
-  const clockOut = () => {
+const clockOut = async () => {
     if (isClockedIn) {
-      if (isReportSubmitted) {
-        setIsClockedIn(false);
-        const now = new Date();
-        const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        toast.success(`Employee Successfully Clocked Out at ${formattedTime}`)
+        if (isReportSubmitted) {
+            try {
+                // Retrieve username from wherever it's stored (e.g., state, props, etc.)
+                const username = getUsernameFromSomewhere(); 
 
-        clearInterval(intervalRef.current);
-        setTime({ hours: 0, minutes: 0, seconds: 0 }); // Reset the timer
-        setIsReportSubmitted(false); // Reset report submission status
-      } else {
-        toast.error('You need to submit your daily update before clocking out!');
-      }
+                const response = await axios.post(
+                    'http://localhost:9988/qubinest/clockout',
+                    { username }
+                );
+
+                if (response.status === 200) {
+                    setIsClockedIn(false);
+                    const now = new Date();
+                    const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    toast.success(`Employee Successfully Clocked Out at ${formattedTime}`);
+
+                    clearInterval(intervalRef.current);
+                    setTime({ hours: 0, minutes: 0, seconds: 0 }); // Reset the timer
+                    setIsReportSubmitted(false); // Reset report submission status
+                }
+            } catch (error) {
+                console.error('Error during clock-out:', error);
+                toast.error('Failed to clock out. Please try again.');
+            }
+        } else {
+            toast.error('You need to submit your daily update before clocking out!');
+        }
     } else {
-      toast.error('You need to clock in first!');
+        toast.error('You need to clock in first!');
     }
-  };
+};
 
 
   const resetClockInStatus = () => {
@@ -294,7 +315,7 @@ const handleResetstartgame = () => {
                 <div className="card card-widget widget-user-2" bis_skin_checked={1}>
                   <div className="card card-widget widget-user shadow-lg">
                     <div className="widget-user-header text-white" style={{ background: 'url("../distingg/img/photo1.png") center center' }}>
-                      <h3 className="widget-user-username text-left ml-auto text-base shadow-xl-black " style={{ fontWeight: 'bolder', textShadow: '5px 5px black' }}>{`${greetingMessage}, Shaik Sajid Hussain`}</h3>
+                      <h3 className="widget-user-username text-left ml-auto text-base shadow-xl-black " style={{ fontWeight: 'bolder', textShadow: '5px 5px black' }}>{`${greetingMessage}, ${name}`}</h3>
                       <h5 className="widget-user-desc text-left ml-auto">Web Developer</h5>
                     </div>
                     <div className="widget-user-image">

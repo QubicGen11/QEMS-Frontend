@@ -3,8 +3,9 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import { useUser } from '../context/UserContext';
 const Header = () => {
+    const {name}=useUser()
     const navigate = useNavigate()
     const handleLogout = async () => {
         try {
@@ -121,7 +122,7 @@ const Header = () => {
                                                 alt="avatar"
                                             />
                                             <button className="w-auto z-10 flex flex-wrap items-center p-2 text-sm ml-auto text-gray-600 bg-white border border-transparent rounded-md focus:border-blue-500 focus:ring-opacity-40 dark:focus:ring-opacity-40 focus:ring-blue-300 dark:focus:ring-blue-400 focus:ring dark:text-white dark:bg-gray-800 focus:outline-none">
-                                                <span className="mx-1 hover:text-yellow-500 dark:hover:text-yellow-400 text-xs">Shaik Sajid Hussain</span>
+                                                <span className="mx-1 hover:text-yellow-500 dark:hover:text-yellow-400 text-xs">{name}</span>
                                                 <svg
                                                     className="w-5 h-5 mx-1"
                                                     viewBox="0 0 24 24"
@@ -169,7 +170,7 @@ const Header = () => {
                                     />
                                     <div className="mx-1">
                                         <h1 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                                            Sajid Hussain
+                                            {name}
                                         </h1>
                                         <p className="text-sm text-gray-500 dark:text-gray-400">
                                             SajidHussain@exampl.com
