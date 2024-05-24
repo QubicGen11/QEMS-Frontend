@@ -6,18 +6,23 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import config from "../config"; 
+
 const Register = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('');
   const navigate = useNavigate();
+
   // Handle form submission
-  //https://qubinest-backend-five.vercel.app/ dev-link
   const onSubmit = async (event) => {
     event.preventDefault();
-    toast.success("Admin will approve your request shortly")
+    if (!role) {
+      toast.error('Please select a role');
+      return;
+    }
+    toast.success("Admin will approve your request shortly");
     try {
-      const response = await axios.post(`${config.apiUrl}/qubinest/register`, {role,username,password});
+      const response = await axios.post(`${config.apiUrl}/qubinest/register`, { role, username, password });
       console.log(response);
       setUsername('');
       setPassword('');
