@@ -333,7 +333,7 @@ const handleResetstartgame = () => {
         // 'https://qubinest-backend-five.vercel.app/qubinest/clockin',
         { username }, 
         { withCredentials: true }
-      );
+      );``
 
       if (response.status === 200) {
         setIsClockedIn(true);
