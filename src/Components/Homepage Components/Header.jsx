@@ -4,21 +4,20 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useUser } from '../context/UserContext';
+import config from "../config"; // Import the config file
 const Header = () => {
     const {name}=useUser()
     const navigate = useNavigate()
     const handleLogout = async () => {
         try {
-            //
-            // await axios.post('http://localhost:9988/qubinest/logout');
-            await axios.post('https://qubinest-backend-five.vercel.app/qubinest/logout');
-            toast.success('Logout successful');
-            navigate('/')
+          await axios.post(`${config.apiUrl}/qubinest/logout`);
+          toast.success('Logout successful');
+          navigate('/');
         } catch (error) {
-            console.error(error);
-            toast.error('Logout not possible');
+          console.error(error);
+          toast.error('Logout not possible');
         }
-    };
+      };
     return (
         <>
             <nav className="main-header navbar navbar-expand navbar-dark navbar-dark  ">

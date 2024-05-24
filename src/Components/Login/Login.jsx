@@ -6,7 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie'
 import { useUser } from "../context/UserContext";
-
+import config from "../config"; 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -17,8 +17,9 @@ const Login = () => {
   const onSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await axios.post('https://qubinest-backend-five.vercel.app/qubinest/login', { username, password });
+      // const response = await axios.post('https://qubinest-backend-five.vercel.app/qubinest/login', { username, password });
       // const response = await axios.post('http://localhost:9988/qubinest/login', { username, password });
+      const response = await axios.post(`${config.apiUrl}/qubinest/login`, { username, password });
       console.log(response);
       Cookies.set('username', username, { secure: true, sameSite: 'Strict' });
       setUsername('');
@@ -40,7 +41,7 @@ const Login = () => {
 
   return (
     <>
-  <div className="Careersmain">
+      <div className="Careersmain">
         <div className="logo">
           <img
             className="w-6/12"
@@ -74,15 +75,15 @@ const Login = () => {
                     Email
                   </label>
                   <input
-  type="text"
-  id="email"
-  name="email"
-  placeholder="Enter your username"
-  value={username}
-  onChange={(e) => setUsername(e.target.value)}
-  className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
-  autocomplete="username"
-/>
+                    type="text"
+                    id="email"
+                    name="email"
+                    placeholder="Enter your username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
+                    autocomplete="username"
+                  />
 
                 </div>
                 <div className="block relative">
@@ -93,15 +94,15 @@ const Login = () => {
                     Password
                   </label>
                   <input
-  type="password"
-  id="password"
-  name="password"
-  placeholder="Enter your password"
-  value={password}
-  onChange={(e) => setPassword(e.target.value)}
-  className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
-  autoComplete="current-password" // Add this line
-/>
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
+                    autoComplete="current-password" // Add this line
+                  />
 
                 </div>
                 <div>
