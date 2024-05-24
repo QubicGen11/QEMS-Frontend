@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
-
+import config from "../config"; 
 const Register = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -17,13 +17,12 @@ const Register = () => {
     event.preventDefault();
     toast.success("Admin will approve your request shortly")
     try {
-      const response = await axios.post('http://localhost:9988/qubinest/register', {role,username,password});
+      const response = await axios.post(`${config.apiUrl}/qubinest/register`, {role,username,password});
       console.log(response);
       setUsername('');
       setPassword('');
       setRole('');
       toast.success('Registration successful');
-      navigate('/dashboard'); // Navigate to /dashboard
     } catch (error) {
       if (error.response) {
         const errorMessage = error.response.data.message || 'An error occurred';
