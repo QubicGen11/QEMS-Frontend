@@ -8,6 +8,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import cookies from 'js-cookie';
 
 import { useUser } from '../context/UserContext';
+import config from "../config"; 
+
 
 const Dashboard = () => {
   
@@ -323,8 +325,11 @@ const handleResetstartgame = () => {
 
         
 
-      const response = await axios.post(
-        'http://localhost:9988/qubinest/clockin',
+      const response = await axios.post(`${config.apiUrl}/qubinest/clockin`,
+
+
+
+
         // 'https://qubinest-backend-five.vercel.app/qubinest/clockin',
         { username }, 
         { withCredentials: true }
@@ -369,7 +374,8 @@ const handleResetstartgame = () => {
           const response = await axios.post(
             // https://qubinest-backend-five.vercel.app/
 
-            'http://localhost:9988/qubinest/clockout',
+            `${config.apiUrl}/qubinest/clockout`,
+
 
 
 
