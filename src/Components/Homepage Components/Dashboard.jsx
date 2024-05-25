@@ -2,13 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import cookies from 'js-cookie';
-import { useUser } from '../context/UserContext';
 import config from "../config"; 
 
 const Dashboard = () => {
-  const { name } = useUser();
   const [attendance, setAttendance] = useState([]);
+  const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+  
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [reportText, setReportText] = useState('');
@@ -31,13 +31,34 @@ const Dashboard = () => {
   const [timer, setTimer] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [message, setMessage] = useState('');
-
+  const storedUser = localStorage.getItem('username'); // Retrieves the username from local storage
+  let name = ''; // Initializes a variable to store the username
+  
+  if (storedUser) { // Checks if a username is stored in local storage
+    try {
+      const parsedUser = JSON.parse(storedUser); // Parses the stored username as JSON
+      name = parsedUser.name; // Extracts the username from the parsed JSON object
+    } catch (e) {
+      console.warn('Stored username is not in JSON format, assuming it is a plain string:', storedUser);
+      name = storedUser; // If parsing fails, assumes the stored username is a plain string
+    }
+  }
+  
+  console.log(name); // Logs the extracted or assumed username to the console
+  
   useEffect(() => {
     const fetchAttendance = async () => {
       try {
-        const response = await fetch('http://localhost:9989/qubinest/attendance');
-        const data = await response.json();
-
+        // Replace 'usernameValue' with the actual username value you want to send
+        // Include the username parameter in the request
+        const response = await axios.get('http://localhost:9989/qubinest/attendance', {
+          params: {
+            name
+          },
+        });
+  
+        const data = response.data;
+  
         // Check if the response is an array
         if (Array.isArray(data)) {
           setAttendance(data);
@@ -50,11 +71,13 @@ const Dashboard = () => {
         setAttendance([]);
       }
     };
-
+  
     fetchAttendance();
   }, []);
+  
+  
 
-  const onChangesubmit = (event) => {
+    const onChangesubmit = (event) => {
 
     if (event.target.value.length <= MAX_CHAR_LIMIT) {
 
@@ -63,6 +86,23 @@ const Dashboard = () => {
     }
 
   };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (reportText.length < MIN_CHAR_LIMIT || reportText.length > MAX_CHAR_LIMIT) {
+      toast.error(`Report must be between ${MIN_CHAR_LIMIT} and ${MAX_CHAR_LIMIT} characters.`);
+      return;
+    }
+    setIsReportSubmitted(true);
+    toast.success('Daily report submitted successfully!');
+    
+    // Clear the reportText after submission
+    setReportText("");
+    console.log(reportText); // Log the value of reportText
+  };
+  
+  
+
 
 
   const startGame = () => {
@@ -152,9 +192,10 @@ const Dashboard = () => {
 
     return () => clearInterval(timer);
   }, []);
+  
 
   const clockIn = async () => {
-    const username = name; // Ensure `name` is defined and accessible
+    const username = name; // Ensure name is defined and accessible
     const currentDate = new Date().toLocaleDateString();
     const usersClockedIn = JSON.parse(localStorage.getItem('usersClockedIn')) || {};
   
@@ -202,42 +243,40 @@ const Dashboard = () => {
     }
   };
   
-  
 
   const clockOut = async () => {
-    const username = name; // Ensure `name` is defined and accessible
-    const currentDate = new Date().toLocaleDateString();
-    const usersClockedIn = JSON.parse(localStorage.getItem('usersClockedIn')) || {};
-  
-    // Check if the user has clocked in today
-    if (!usersClockedIn[username] || usersClockedIn[username].date !== currentDate) {
-      toast.error('You have not clocked in today!');
-      return;
-    }
-  
-    try {
-      const response = await axios.post(`${config.apiUrl}/qubinest/clockout`, { username }, { withCredentials: true });
-  
-      if (response.status === 200) {
-        setIsClockedIn(false);
-        const now = new Date();
-        const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        toast.success(`Employee Successfully Clocked Out at ${formattedTime}`);
-  
-        // Remove the user's clock-in information from localStorage
-        delete usersClockedIn[username];
-        localStorage.setItem('usersClockedIn', JSON.stringify(usersClockedIn));
-  
-        // Clear the interval timer
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
+    const username = name;
+    if (isClockedIn) {
+      if (isReportSubmitted) {
+        try {
+          if (!username) {
+            toast.error('Username is required to clock out.');
+            return;
+          }
+          const response = await axios.post(`${config.apiUrl}/qubinest/clockout`, { username }, { withCredentials: true });
+          if (response.status === 200) {
+            setIsClockedIn(false);
+            const now = new Date();
+            const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            toast.success(`Employee Successfully Clocked Out at ${formattedTime}`);
+            clearInterval(intervalRef.current);
+            setTime({ hours: 0, minutes: 0, seconds: 0 });
+            setIsReportSubmitted(false);
+            
+            // Clear the user's clock-in information from localStorage
+            localStorage.removeItem('usersClockedIn');
+          }
+        } catch (error) {
+          console.error('Error during clock-out:', error);
         }
+      } else {
+        toast.error('You need to submit your daily update before clocking out!');
       }
-    } catch (error) {
-      console.error('Error during clock-out:', error);
-      toast.error('Failed to clock out. Please try again.');
+    } else {
+      toast.error('You need to clock in first!');
     }
   };
+  
   
 
   const resetClockInStatus = () => {
@@ -247,6 +286,7 @@ const Dashboard = () => {
     toast.success('Clock-in status has been reset!');
   };
 
+  
   useEffect(() => {
     const currentDate = new Date();
     const currentHour = currentDate.getHours();
@@ -260,15 +300,8 @@ const Dashboard = () => {
     }
   }, []);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (reportText.length < MIN_CHAR_LIMIT || reportText.length > MAX_CHAR_LIMIT) {
-      toast.error(`Report must be between ${MIN_CHAR_LIMIT} and ${MAX_CHAR_LIMIT} characters.`);
-      return;
-    }
-    setIsReportSubmitted(true);
-    toast.success('Daily report submitted successfully!');
-  };
+ 
+  
 
 
  

@@ -26,6 +26,7 @@ const Login = () => {
       setName(username);
       toast.success('Login successful');
       navigate('/dashboard'); // Navigate to /dashboard
+      localStorage.setItem('username',username)
     } catch (error) {
       if (error.response) {
         const errorMessage = error.response.data.message || 'An error occurred';
