@@ -1,346 +1,188 @@
-import React, { useEffect, useRef, useState } from 'react'
-
-import axios from 'axios'
-
+import React, { useEffect, useRef, useState } from 'react';
+import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
-
 import 'react-toastify/dist/ReactToastify.css';
 import cookies from 'js-cookie';
-
 import { useUser } from '../context/UserContext';
 import config from "../config"; 
 
-
 const Dashboard = () => {
-  
   const { name } = useUser();
-    const [isClockedIn, setIsClockedIn] = useState(false);
-
+  const [attendance, setAttendance] = useState([]);
+  const [isClockedIn, setIsClockedIn] = useState(false);
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
-
   const [reportText, setReportText] = useState('');
-
   const [isReportSubmitted, setIsReportSubmitted] = useState(false);
-
   const intervalRef = useRef(null);
-
   const [currentTime, setCurrentTime] = useState(new Date());
-
   const [greetingMessage, setGreetingMessage] = useState('');
-
-  const MIN_CHAR_LIMIT = 10; // Minimum character limit for the report
-
-  const MAX_CHAR_LIMIT = 500; // Maximum character limit for the report
-
+  const MIN_CHAR_LIMIT = 10;
+  const MAX_CHAR_LIMIT = 500;
   const games = [
-
     "https://shaiksajidhussain.github.io/menja_game/",
-
     "https://shaiksajidhussain.github.io/snake_game/",
-
     "https://shaiksajidhussain.github.io/blast_game/",
-
     "https://shaiksajidhussain.github.io/jump_game/",
-
     "https://shaiksajidhussain.github.io/flip_game/",
-
     "https://shaiksajidhussain.github.io/arrow_game/"
+  ];
+  const [currentGameIndex, setCurrentGameIndex] = useState(0);
+  const [gameSrc, setGameSrc] = useState('');
+  const [timer, setTimer] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [message, setMessage] = useState('');
 
-];
+  useEffect(() => {
+    const fetchAttendance = async () => {
+      try {
+        const response = await fetch('http://localhost:9989/qubinest/attendance');
+        const data = await response.json();
 
-const [currentGameIndex, setCurrentGameIndex] = useState(0);
-
-    const [gameSrc, setGameSrc] = useState('');
-
-    const [timer, setTimer] = useState(null);
-
-    const [timeLeft, setTimeLeft] = useState(0);
-
-    const [message, setMessage] = useState('');
-
- 
-
-    const startGame = () => {
-
-      // Check if the game was played today
-
-      const lastPlayed = localStorage.getItem('lastPlayed');
-
-      const today = new Date().toISOString().slice(0, 10);
-
-      const currentTime = new Date().getTime(); // Get the current time in milliseconds
-
-      // If the game was played today and the current time is less than 1 day (in milliseconds) from the last played time
-
-      if (lastPlayed === today && currentTime - parseInt(localStorage.getItem('lastPlayedTime')) < 24 * 60 * 60 * 1000) {
-
-          // Game already played today, show an alert and return
-
-          toast.success('You have already played the game today! Please come back tomorrow.');
-
-          return;
-
+        // Check if the response is an array
+        if (Array.isArray(data)) {
+          setAttendance(data);
+        } else {
+          console.error('Fetched data is not an array:', data);
+          setAttendance([]);
+        }
+      } catch (error) {
+        console.error('Error fetching attendance data:', error);
+        setAttendance([]);
       }
+    };
 
- 
+    fetchAttendance();
+  }, []);
 
-      // Set the game source
+  const onChangesubmit = (event) => {
 
-      setGameSrc(games[currentGameIndex]);
+    if (event.target.value.length <= MAX_CHAR_LIMIT) {
 
- 
+      setReportText(event.target.value);
 
-      // Set the timer for 10 minutes
-
-      const countdown = 600; // 10 minutes in seconds
-
-      setTimeLeft(countdown);
-
- 
-
-      // Start the countdown timer
-
-      const interval = setInterval(() => {
-
-          setTimeLeft(prevTime => prevTime - 1);
-
-      }, 1000);
-
-      setTimer(interval);
-
- 
-
-      // Set a timeout to stop the game after 10 minutes
-
-      setTimeout(() => {
-
-          clearInterval(interval); // Clear the interval
-
-          setMessage('Time is up!'); // Display time is up message
-
-          toast.success("Time is Up! Get Back Tomorrow"); // Show success toast
-
-          // Mark the game as played today
-
-          localStorage.setItem('lastPlayed', today);
-
-          localStorage.setItem('lastPlayedTime', currentTime.toString()); // Save the current time
-
-          // Attempt to close the game window
-
-          if (window.opener) { // If the game was opened from another window
-
-              window.close(); // Close the window
-
-          }
-
-          window.location.reload(); // Reload the window after the game is stopped
-
-      }, countdown * 1000);
+    }
 
   };
 
- 
 
- 
+  const startGame = () => {
+    const lastPlayed = localStorage.getItem('lastPlayed');
+    const today = new Date().toISOString().slice(0, 10);
+    const currentTime = new Date().getTime();
 
-  const resetGame = () => {
-
-    // Clear the game data
-
-    localStorage.removeItem('lastPlayed');
-
-    localStorage.removeItem('lastPlayedTime');
-
-    // Reset the game source and timer
-
-    setGameSrc('');
-
-    clearInterval(timer);
-
-    setTimeLeft(0);
-
-    setMessage('');
-
-};
-
- 
-
-const stopGame = () => {
-
-    clearInterval(timer); // Stop the timer
-
-    setMessage('Game stopped! Get back tomorrow.'); // Display message
-
-    toast.success('Game stopped! Get back tomorrow.'); // Assuming you are using a toast library
-
-    window.location.reload(); // Reload the window
-
-};
-
- 
-
-const handleResetGame = () => {
-
-    resetGame();
-
-    toast.success('Game data has been reset!');
-
-};
-
- 
-
-// Call handleResetGame function when you want to reset the game data
-
- 
-
- 
-
- 
-
- 
-
- 
-
-const handleStartGame = () => {
-
-  const lastGameStartedDate = localStorage.getItem('lastGameStartedDate');
-
-  const today = new Date().toISOString().slice(0, 10);
-
- 
-
-  // Check if the game was started today
-
-  if (lastGameStartedDate === today) {
-
-      // Game already started today, show an alert or toast message
-
-      toast.error('You have already started the game today!');
-
-      return;
-
-  }
-
- 
-
-  // Proceed with starting the game
-
-  startGame();
-
-  setMessage('Game started!');
-
- 
-
-  // Save the current date as the last game started date
-
-  localStorage.setItem('lastGameStartedDate', today);
-
-};
-
- 
-
-const handleResetstartgame = () => {
-
-  // Clear the localStorage data related to the game start
-
-  localStorage.removeItem('lastGameStartedDate');
-
-  toast.success('Game reset successfully!');
-
-};
-
- 
-
- 
-
-    const handleNextGame = () => {
-
-        // Move to the next game
-
-        setCurrentGameIndex(prevIndex =>
-
-            prevIndex === games.length - 1 ? 0 : prevIndex + 1
-
-        );
-
- 
-
-        // Reset the game source and timer
-
-        setGameSrc('');
-
-        clearInterval(timer);
-
-        setTimeLeft(0);
-
-        setMessage('');
-
-    };
-
- 
-
- 
-
- 
-
- 
-
-  useEffect(() => {
-
-    const timer = setInterval(() => {
-
-      setCurrentTime(new Date());
-
-    }, 1000);
-
- 
-
-    return () => clearInterval(timer); // Cleanup interval on component unmount
-
-  }, []);
-
- 
-  const clockIn = async () => {
-    const username = name; // Adjust according to your user object structure
-    const lastClockInDate = localStorage.getItem('lastClockInDate');
-    const currentDate = new Date().toLocaleDateString();
-
-    if (lastClockInDate === currentDate) {
-      toast.error('You have already clocked in today!');
+    if (lastPlayed === today && currentTime - parseInt(localStorage.getItem('lastPlayedTime')) < 24 * 60 * 60 * 1000) {
+      toast.success('You have already played the game today! Please come back tomorrow.');
       return;
     }
 
+    setGameSrc(games[currentGameIndex]);
+    const countdown = 600;
+    setTimeLeft(countdown);
+    const interval = setInterval(() => {
+      setTimeLeft(prevTime => prevTime - 1);
+    }, 1000);
+    setTimer(interval);
+
+    setTimeout(() => {
+      clearInterval(interval);
+      setMessage('Time is up!');
+      toast.success("Time is Up! Get Back Tomorrow");
+      localStorage.setItem('lastPlayed', today);
+      localStorage.setItem('lastPlayedTime', currentTime.toString());
+
+      if (window.opener) {
+        window.close();
+      }
+      window.location.reload();
+    }, countdown * 1000);
+  };
+
+  const resetGame = () => {
+    localStorage.removeItem('lastPlayed');
+    localStorage.removeItem('lastPlayedTime');
+    setGameSrc('');
+    clearInterval(timer);
+    setTimeLeft(0);
+    setMessage('');
+  };
+
+  const stopGame = () => {
+    clearInterval(timer);
+    setMessage('Game stopped! Get back tomorrow.');
+    toast.success('Game stopped! Get back tomorrow.');
+    window.location.reload();
+  };
+
+  const handleResetGame = () => {
+    resetGame();
+    toast.success('Game data has been reset!');
+  };
+
+  const handleStartGame = () => {
+    const lastGameStartedDate = localStorage.getItem('lastGameStartedDate');
+    const today = new Date().toISOString().slice(0, 10);
+
+    if (lastGameStartedDate === today) {
+      toast.error('You have already started the game today!');
+      return;
+    }
+
+    startGame();
+    setMessage('Game started!');
+    localStorage.setItem('lastGameStartedDate', today);
+  };
+
+  const handleResetstartgame = () => {
+    localStorage.removeItem('lastGameStartedDate');
+    toast.success('Game reset successfully!');
+  };
+
+  const handleNextGame = () => {
+    setCurrentGameIndex(prevIndex => prevIndex === games.length - 1 ? 0 : prevIndex + 1);
+    setGameSrc('');
+    clearInterval(timer);
+    setTimeLeft(0);
+    setMessage('');
+  };
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const clockIn = async () => {
+    const username = name; // Ensure `name` is defined and accessible
+    const currentDate = new Date().toLocaleDateString();
+    const usersClockedIn = JSON.parse(localStorage.getItem('usersClockedIn')) || {};
   
-
-
+    // Check if the user has already clocked in today
+    if (usersClockedIn[username] && usersClockedIn[username].date === currentDate) {
+      toast.error('You have already clocked in today!');
+      return;
+    }
+  
     try {
       if (!username) {
         toast.error('Username is required to clock in.');
         return;
       }
-
-   
-
-
-        
-
-      const response = await axios.post(`${config.apiUrl}/qubinest/clockin`,
-
-
-
-
-        // 'https://qubinest-backend-five.vercel.app/qubinest/clockin',
-        { username }, 
-        { withCredentials: true }
-      );``
-
+  
+      const response = await axios.post(`${config.apiUrl}/qubinest/clockin`, { username }, { withCredentials: true });
+  
       if (response.status === 200) {
         setIsClockedIn(true);
         const now = new Date();
         const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         toast.success(`Employee Successfully Clocked In at ${formattedTime}`);
-        localStorage.setItem('lastClockInDate', currentDate);
+  
+        // Store the clock-in information in localStorage
+        usersClockedIn[username] = { date: currentDate, clockInTime: formattedTime };
+        localStorage.setItem('usersClockedIn', JSON.stringify(usersClockedIn));
+  
+        // Start a timer to update the clock-in duration
         intervalRef.current = setInterval(() => {
           setTime(prevTime => {
             const newSeconds = prevTime.seconds + 1;
@@ -359,150 +201,75 @@ const handleResetstartgame = () => {
       toast.error('Failed to clock in. Please try again.');
     }
   };
-
-
+  
+  
 
   const clockOut = async () => {
-    const username = name;
-    if (isClockedIn) {
-      if (isReportSubmitted) {
-        try {
-          if (!username) {
-            toast.error('Username is required to clock out.');
-            return;
-          }
-          const response = await axios.post(
-            // https://qubinest-backend-five.vercel.app/
-
-            `${config.apiUrl}/qubinest/clockout`,
-
-
-
-
-            // 'https://qubinest-backend-five.vercel.app/clockout',
-            { username }, // Include the username in the request body
-            { withCredentials: true }
-          );
-          if (response.status === 200) {
-            setIsClockedIn(false);
-            const now = new Date();
-            const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            toast.success(`Employee Successfully Clocked Out at ${formattedTime}`);
-            clearInterval(intervalRef.current);
-            setTime({ hours: 0, minutes: 0, seconds: 0 });
-            setIsReportSubmitted(false);
-          }
-        } catch (error) {
-          console.error('Error during clock-out:', error);
+    const username = name; // Ensure `name` is defined and accessible
+    const currentDate = new Date().toLocaleDateString();
+    const usersClockedIn = JSON.parse(localStorage.getItem('usersClockedIn')) || {};
+  
+    // Check if the user has clocked in today
+    if (!usersClockedIn[username] || usersClockedIn[username].date !== currentDate) {
+      toast.error('You have not clocked in today!');
+      return;
+    }
+  
+    try {
+      const response = await axios.post(`${config.apiUrl}/qubinest/clockout`, { username }, { withCredentials: true });
+  
+      if (response.status === 200) {
+        setIsClockedIn(false);
+        const now = new Date();
+        const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        toast.success(`Employee Successfully Clocked Out at ${formattedTime}`);
+  
+        // Remove the user's clock-in information from localStorage
+        delete usersClockedIn[username];
+        localStorage.setItem('usersClockedIn', JSON.stringify(usersClockedIn));
+  
+        // Clear the interval timer
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
         }
-      } else {
-        toast.error('You need to submit your daily update before clocking out!');
       }
-    } else {
-      toast.error('You need to clock in first!');
+    } catch (error) {
+      console.error('Error during clock-out:', error);
+      toast.error('Failed to clock out. Please try again.');
     }
   };
-
-
- 
+  
 
   const resetClockInStatus = () => {
-
     localStorage.removeItem('lastClockInDate');
-
     setIsClockedIn(false);
-
     setTime({ hours: 0, minutes: 0, seconds: 0 });
-
     toast.success('Clock-in status has been reset!');
-
   };
 
- 
-
- 
-
   useEffect(() => {
-
     const currentDate = new Date();
-
     const currentHour = currentDate.getHours();
 
- 
-
     if (currentHour < 12) {
-
       setGreetingMessage('Good Morning');
-
     } else if (currentHour < 18) {
-
       setGreetingMessage('Good Afternoon');
-
     } else {
-
       setGreetingMessage('Good Evening');
-
     }
-
   }, []);
-
- 
-
- 
 
   const handleSubmit = (event) => {
-
     event.preventDefault();
-
-    if (reportText.length < MIN_CHAR_LIMIT) { // Check if reportText is below the minimum length
-
-      toast.error(`Report must be at least ${MIN_CHAR_LIMIT} characters`);
-
+    if (reportText.length < MIN_CHAR_LIMIT || reportText.length > MAX_CHAR_LIMIT) {
+      toast.error(`Report must be between ${MIN_CHAR_LIMIT} and ${MAX_CHAR_LIMIT} characters.`);
       return;
-
     }
-
-    console.log('Daily Update Submitted:', reportText);
-
-    toast.success('Report Submitted Successfully, now you can clock out');
-
     setIsReportSubmitted(true);
-
-    setReportText('');
-
+    toast.success('Daily report submitted successfully!');
   };
 
- 
-
-  const onChangesubmit = (event) => {
-
-    if (event.target.value.length <= MAX_CHAR_LIMIT) {
-
-      setReportText(event.target.value);
-
-    }
-
-  };
-
-  // Cleanup interval on component unmount
-
-  useEffect(() => {
-
-    return () => clearInterval(intervalRef.current);
-
-  }, []);
-
- 
-
- 
-
- 
-
- 
-
- 
-
- 
 
  
 
@@ -913,88 +680,32 @@ const handleResetstartgame = () => {
 
                   <div className="card-body table-responsive p-0" bis_skin_checked={1}>
 
-                    <table className="table table-hover text-nowrap">
-
-                      <thead>
-
-                        <tr>
-
-                          <th>Date</th>
-
-                          <th>Check In</th>
-
-                          <th>Check Out</th>
-
-
-                          <th>Reason</th>
-                          <th>Report</th>
-
-                        </tr>
-
-                      </thead>
-
-                      <tbody>
-
-                        <tr>
-
-                          <td>183</td>
-
-                          <td>John Doe</td>
-
-                          <td>11-7-2014</td>
-
-                          <td><span className="tag tag-success">Approved</span></td>
-
-                          <td>Bacon ipsum dolor sit amet salami venison chicken flank fatback doner.</td>
-
-                        </tr>
-
-                        <tr>
-
-                          <td>219</td>
-
-                          <td>Alexander Pierce</td>
-
-                          <td>11-7-2014</td>
-
-                          <td><span className="tag tag-warning">Pending</span></td>
-
-                          <td>Bacon ipsum dolor sit amet salami venison chicken flank fatback doner.</td>
-
-                        </tr>
-
-                        <tr>
-
-                          <td>657</td>
-
-                          <td>Bob Doe</td>
-
-                          <td>11-7-2014</td>
-
-                          <td><span className="tag tag-primary">Approved</span></td>
-
-                          <td>Bacon ipsum dolor sit amet salami venison chicken flank fatback doner.</td>
-
-                        </tr>
-
-                        <tr>
-
-                          <td>175</td>
-
-                          <td>Mike Doe</td>
-
-                          <td>11-7-2014</td>
-
-                          <td><span className="tag tag-danger">Denied</span></td>
-
-                          <td>Bacon ipsum dolor sit amet salami venison chicken flank fatback doner.</td>
-
-                        </tr>
-
-                      </tbody>
-
-                    </table>
-
+                  <table className="table table-hover text-nowrap">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Check In</th>
+            <th>Check Out</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {attendance.length > 0 ? (
+            attendance.map((a, index) => (
+              <tr key={index}>
+                <td>{new Date(a.date).toLocaleDateString()}</td>
+                <td>{new Date(a.check_in_time).toLocaleTimeString()}</td>
+                <td>{new Date(a.check_out_time).toLocaleTimeString()}</td>
+                <td>{a.status}</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="4">No attendance records found</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
  
 
  
