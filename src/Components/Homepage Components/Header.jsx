@@ -38,15 +38,15 @@ const Header = () => {
 
   return (
     <>
-      <nav className="main-header navbar navbar-expand navbar-dark navbar-dark" style={{overflow:'hidden'}}>
-        <ul className="navbar-nav w-auto">
+      <nav className="main-header navbar navbar-expand navbar-dark navbar-dark" >
+        <ul className="navbar-nav w-auto" >
           <li className="nav-item">
             <a className="nav-link" data-widget="pushmenu" href="#" role="button">
               <i className="fas fa-bars" />
             </a>
           </li>
         </ul>
-        <ul className="navbar-nav ml-auto">
+        <ul className="navbar-nav ml-auto mr-4 " >
           <li className="nav-item dropdown">
             <a className="nav-link" data-toggle="dropdown" href="#">
               <li className="nav-item">
@@ -77,7 +77,7 @@ const Header = () => {
                 </div>
               </li>
             </a>
-            <div className="dropdown-menu dropdown-menu-lg dropdown-menu-right mt-3 bg-gray-600 transition-all duration-300 ease-in-out">
+            <div className="dropdown-menu dropdown-menu-lg dropdown-menu-right mt-2 relative right-30 bg-gray-600 transition-all duration-300 ease-in-out w-[30vw]">
               <div className="bg-gray-800 rounded-md shadow-xl dark:bg-gray-800">
                 <a
                   href="#"

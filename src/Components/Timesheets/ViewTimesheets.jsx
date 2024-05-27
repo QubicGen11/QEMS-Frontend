@@ -12,13 +12,14 @@ const ViewTimesheets = () => {
 
       <div className="content-wrapper">
         <div className="card-body" bis_skin_checked={1}>
-          <h1 className="text-3xl">Time Sheets</h1>
+          <h1 className="text-3xl px-10">Time Sheets</h1>
           <div
             id="example1_wrapper"
             className="dataTables_wrapper dt-bootstrap4"
             bis_skin_checked={1}
+            style={{width:'80vw'}}
           >
-            <div className="row" bis_skin_checked={1}>
+            <div className="row px-10" bis_skin_checked={1}>
               <div className="col-sm-12 col-md-6 " bis_skin_checked={1}>
                 <div
                   className="dt-buttons btn-group flex-wrap"
@@ -96,7 +97,7 @@ const ViewTimesheets = () => {
                 </div>
               </div>
             </div>
-            <div className="row" bis_skin_checked={1}>
+            <div className="row px-10" bis_skin_checked={1} >
               <div className="col-sm-12" bis_skin_checked={1}>
                 <table
                   id="example1"
@@ -253,7 +254,7 @@ const ViewTimesheets = () => {
                 </table>
               </div>
             </div>
-            <div className="row" bis_skin_checked={1}>
+            <div className="row px-10" bis_skin_checked={1}>
               <div className="col-sm-12 col-md-5" bis_skin_checked={1}>
                 <div
                   className="dataTables_info"

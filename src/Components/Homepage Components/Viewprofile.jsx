@@ -35,7 +35,7 @@ const Viewprofile = () => {
                         <div className="row" bis_skin_checked={1}>
                            <Viewleftpart/>
 
-                            <div className="col-12 col-lg-8 col-xl-9" bis_skin_checked={1}>
+                            <div className="col-12 col-md-9 col-lg-8 col-xl-9" bis_skin_checked={1}>
                                 <div className="card widget-card border-light shadow-sm" bis_skin_checked={1}>
                                     <div className="card-body p-4" bis_skin_checked={1}>
                                         <ul className="nav nav-tabs" id="profileTab" role="tablist">
@@ -120,20 +120,16 @@ const Viewprofile = () => {
 
                                             >
 
-                                                <div className='flex justify-between'>
-
-                                                    <h5 className="mb-3">About</h5>
-                                                    {/* <h5 className="mb-3">Edit Profile</h5> */}
-                                                </div>
+                                               
 
 
-                                                <p className="lead mb-3">
+                                                {/* <p className="lead mb-3">
                                                     Sajid Hussain is a seasoned and results-driven Project Manager who
                                                     brings experience and expertise to project management. With a proven
                                                     track record of successfully delivering complex projects on time and
                                                     within budget, Ethan Leo is the go-to professional for organizations
                                                     seeking efficient and effective project leadership.
-                                                </p>
+                                                </p> */}
 
 
                                                 {/* This is for profile  */}

@@ -465,7 +465,7 @@ const Dashboard = () => {
                 <div className="card bg-light d-flex flex-fill bg-white" bis_skin_checked={1}>
                   <div className=' flex justify-between'>
                   <div className="card-header text-muted border-bottom-0" bis_skin_checked={1}>
-                    Digital Strategist
+                    Web Developer
                   </div>
                   <div className="card-header text-muted border-bottom-0" bis_skin_checked={1}>
                     <Link to="/viewprofile" className="btn btn-sm btn-primary" cursorshover="true">
@@ -479,14 +479,15 @@ const Dashboard = () => {
                   <div className="card-body pt-0" bis_skin_checked={1}>
                     <div className="row" bis_skin_checked={1}>
                       <div className="col-7" bis_skin_checked={1}>
-                        <h2 className="lead"><b>Nicole Pearson</b></h2>
-                        <p className="text-muted text-sm"><b>About: </b> Web Designer / UX / Graphic Artist / Coffee Lover </p>
-                        <ul className="ml-4 mb-0 fa-ul text-muted">
-                          <li className="small"><span className="fa-li"><i className="fas fa-lg fa-building" /></span> Address: Demo Street 123, Demo City 04312, NJ</li>
-                          <li className="small"><span className="fa-li"><i className="fas fa-lg fa-phone" /></span> Phone #: + 800 - 12 12 23 52</li>
+                        <h2 className="lead"><b>Sajid Hussain</b></h2>
+                        <p className="text-muted text-sm"><b>About: </b> Web Designer / UX / Graphic Artist / </p>
+                        <ul className="ml-4 mb-0 fa-ul text-muted ">
+                          <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-id-card" /></span> Emp Id : 2668</li>
+                          <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-building" /></span> Address: Demo Street 123, Demo City 04312, NJ</li>
+                          <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-phone" /></span> Phone #: + 800 - 12 12 23 52</li>
                         </ul>
                       </div>
-                      <div className="col-5 text-center" bis_skin_checked={1}>
+                      <div className="col-5 text-center pt-3" bis_skin_checked={1}>
                         <img src="../../distingg/img/user1-128x128.jpg" alt="user-avatar" className="img-circle img-fluid" />
                       </div>
                     </div>

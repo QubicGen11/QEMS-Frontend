@@ -50,7 +50,7 @@ const Sidemenu = () => {
               role="menu"
               data-accordion="false"
             >
-              <li className="nav-item menu-open">
+              <li className="nav-item ">
                 <Link to="/dashboard" className="nav-link">
                   <i className="nav-icon fas fa-tachometer-alt" />
                   <p>Console</p>
