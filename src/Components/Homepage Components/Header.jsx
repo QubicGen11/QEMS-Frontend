@@ -27,7 +27,7 @@ const Header = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post(`${config.apiUrl}/qubinest/logout`);
+      await axios.post(`http://localhost:3000/qubinest/logout`);
       toast.success('Logout successful');
       navigate('/');
     } catch (error) {
