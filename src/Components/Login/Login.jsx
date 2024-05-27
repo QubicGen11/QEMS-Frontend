@@ -25,6 +25,7 @@ const Login = () => {
       Cookies.set('email', email, { secure: true, sameSite: 'Strict' }); // Fixed this line to use email instead of username
       setEmail('');
       setPassword('');
+      setName(email)
       toast.success('Login successful');
       navigate('/dashboard'); // Navigate to /dashboard
       localStorage.setItem('email', email); // Fixed this line to use email instead of username
