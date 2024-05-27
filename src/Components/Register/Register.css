@@ -74,6 +74,46 @@
     color: blue; /* Change color when focused */
   }
   
+  @media (max-width: 650px) {
+    
+
+    .logo {
+        position: relative;
+        
+        transform: translateX(20%);
+        transform: translatey(20%);
+    }
+
+    #welcome{
+      display: none;
+    }
+
+   
+
+
+    #form {
+     
+        position: relative;
+        top: 10%;
+        height: auto;
+        right: 5%;
+        width: 80vw;
+        
+    }
+   
+
+
+
+
+}
+
+
+
+  
+
+
+
+
 
 
 
