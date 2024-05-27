@@ -25,6 +25,8 @@
 }
 
 
+
+
 /* Styling for the custom select */
 .custom-select {
     border: solid 2px black;
@@ -73,6 +75,40 @@
   .custom-select:focus::before {
     color: blue; /* Change color when focused */
   }
+
+
+  @media (max-width: 650px) {
+    
+
+    .logo {
+        position: relative;
+        top: 10px;
+        left: 50%;
+        transform: translateX(20%);
+        margin-bottom: 20px;
+    }
+
+    #welcome{
+      display: none;
+    }
+
+   
+
+
+    #form {
+        width: 70%;
+     
+        position: relative;
+        top: 30%;
+        height: auto;
+        
+    }
+
+
+}
+
+
+
   
 
 

@@ -2,13 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import config from "../config"; 
+import config from "../config";
 
 const Dashboard = () => {
   const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-  
+  const [error, setError] = useState(null);
+
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [reportText, setReportText] = useState('');
@@ -33,7 +33,7 @@ const Dashboard = () => {
   const [message, setMessage] = useState('');
   const storedUser = localStorage.getItem('username'); // Retrieves the username from local storage
   let name = ''; // Initializes a variable to store the username
-  
+
   if (storedUser) { // Checks if a username is stored in local storage
     try {
       const parsedUser = JSON.parse(storedUser); // Parses the stored username as JSON
@@ -43,9 +43,9 @@ const Dashboard = () => {
       name = storedUser; // If parsing fails, assumes the stored username is a plain string
     }
   }
-  
+
   console.log(name); // Logs the extracted or assumed username to the console
-  
+
   useEffect(() => {
     const fetchAttendance = async () => {
       try {
@@ -56,28 +56,28 @@ const Dashboard = () => {
             name
           },
         });
-  
+
         const data = response.data;
-  
+
         // Check if the response is an array
         if (Array.isArray(data)) {
           setAttendance(data);
         } else {
-          console.error('Fetched data is not an array:', data);
           setAttendance([]);
+          console.error('Fetched data is not an array:', data);
         }
       } catch (error) {
-        console.error('Error fetching attendance data:', error);
         setAttendance([]);
+        console.error('Error fetching attendance data:', error);
       }
     };
-  
+
     fetchAttendance();
   }, []);
-  
-  
 
-    const onChangesubmit = (event) => {
+
+
+  const onChangesubmit = (event) => {
 
     if (event.target.value.length <= MAX_CHAR_LIMIT) {
 
@@ -95,13 +95,13 @@ const Dashboard = () => {
     }
     setIsReportSubmitted(true);
     toast.success('Daily report submitted successfully!');
-    
+
     // Clear the reportText after submission
     setReportText("");
     console.log(reportText); // Log the value of reportText
   };
-  
-  
+
+
 
 
 
@@ -192,37 +192,37 @@ const Dashboard = () => {
 
     return () => clearInterval(timer);
   }, []);
-  
+
 
   const clockIn = async () => {
     const username = name; // Ensure name is defined and accessible
     const currentDate = new Date().toLocaleDateString();
     const usersClockedIn = JSON.parse(localStorage.getItem('usersClockedIn')) || {};
-  
+
     // Check if the user has already clocked in today
     if (usersClockedIn[username] && usersClockedIn[username].date === currentDate) {
       toast.error('You have already clocked in today!');
       return;
     }
-  
+
     try {
       if (!username) {
         toast.error('Username is required to clock in.');
         return;
       }
-  
+
       const response = await axios.post(`${config.apiUrl}/qubinest/clockin`, { username }, { withCredentials: true });
-  
+
       if (response.status === 200) {
         setIsClockedIn(true);
         const now = new Date();
         const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         toast.success(`Employee Successfully Clocked In at ${formattedTime}`);
-  
+
         // Store the clock-in information in localStorage
         usersClockedIn[username] = { date: currentDate, clockInTime: formattedTime };
         localStorage.setItem('usersClockedIn', JSON.stringify(usersClockedIn));
-  
+
         // Start a timer to update the clock-in duration
         intervalRef.current = setInterval(() => {
           setTime(prevTime => {
@@ -242,7 +242,7 @@ const Dashboard = () => {
       toast.error('Failed to clock in. Please try again.');
     }
   };
-  
+
 
   const clockOut = async () => {
     const username = name;
@@ -262,7 +262,7 @@ const Dashboard = () => {
             clearInterval(intervalRef.current);
             setTime({ hours: 0, minutes: 0, seconds: 0 });
             setIsReportSubmitted(false);
-            
+
             // Clear the user's clock-in information from localStorage
             localStorage.removeItem('usersClockedIn');
           }
@@ -276,8 +276,8 @@ const Dashboard = () => {
       toast.error('You need to clock in first!');
     }
   };
-  
-  
+
+
 
   const resetClockInStatus = () => {
     localStorage.removeItem('lastClockInDate');
@@ -286,7 +286,7 @@ const Dashboard = () => {
     toast.success('Clock-in status has been reset!');
   };
 
-  
+
   useEffect(() => {
     const currentDate = new Date();
     const currentHour = currentDate.getHours();
@@ -300,19 +300,19 @@ const Dashboard = () => {
     }
   }, []);
 
- 
-  
 
 
- 
 
- 
+
+
+
+
 
   return (
 
     <>
 
- 
+
 
       <div className="content-wrapper">
 
@@ -346,15 +346,15 @@ const Dashboard = () => {
 
         </div>
 
- 
 
- 
+
+
 
         {/* This is clock in function */}
 
- 
 
- 
+
+
 
         <section className="content">
 
@@ -382,13 +382,13 @@ const Dashboard = () => {
 
                     </div>
 
- 
 
- 
 
- 
 
- 
+
+
+
+
 
                   </div>
 
@@ -398,7 +398,7 @@ const Dashboard = () => {
 
                       <div className="description-block">
 
-                       
+
 
                         {/* <Clock/> */}
 
@@ -436,7 +436,7 @@ const Dashboard = () => {
 
                         <button
 
- 
+
 
                           className={`w-20 bg-red-400 text-xs text-white font-semibold py-2 px-1 rounded-full shadow-lg transform hover:scale-105 transition duration-300 ease-in-out ml-4 `}
 
@@ -450,21 +450,62 @@ const Dashboard = () => {
 
                     </div>
 
- 
+
 
                   </div>
 
- 
+
 
                 </div>
 
+              </div>
+
+              <div className="col-12 col-sm-12 col-md-12 col-lg-6 d-flex align-items-stretch flex-column" bis_skin_checked={1} style={{ height: 'auto' }}>
+                <div className="card bg-light d-flex flex-fill bg-white" bis_skin_checked={1}>
+                  <div className=' flex justify-between'>
+                  <div className="card-header text-muted border-bottom-0" bis_skin_checked={1}>
+                    Digital Strategist
+                  </div>
+                  <div className="card-header text-muted border-bottom-0" bis_skin_checked={1}>
+                    <a href="#" className="btn btn-sm btn-primary" cursorshover="true">
+                      <i className="fas fa-user" /> View Profile
+                    </a>
+                  </div>
+
+                  </div>
+                 
+
+                  <div className="card-body pt-0" bis_skin_checked={1}>
+                    <div className="row" bis_skin_checked={1}>
+                      <div className="col-7" bis_skin_checked={1}>
+                        <h2 className="lead"><b>Nicole Pearson</b></h2>
+                        <p className="text-muted text-sm"><b>About: </b> Web Designer / UX / Graphic Artist / Coffee Lover </p>
+                        <ul className="ml-4 mb-0 fa-ul text-muted">
+                          <li className="small"><span className="fa-li"><i className="fas fa-lg fa-building" /></span> Address: Demo Street 123, Demo City 04312, NJ</li>
+                          <li className="small"><span className="fa-li"><i className="fas fa-lg fa-phone" /></span> Phone #: + 800 - 12 12 23 52</li>
+                        </ul>
+                      </div>
+                      <div className="col-5 text-center" bis_skin_checked={1}>
+                        <img src="../../distingg/img/user1-128x128.jpg" alt="user-avatar" className="img-circle img-fluid" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="card-footer bg-white" bis_skin_checked={1}>
+                    <div className="text-right bg-white" bis_skin_checked={1}>
+                      {/* <a href="#" className="btn btn-sm bg-teal">
+          <i className="fas fa-comments" />
+        </a> */}
+
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="col-lg-6 col-12  ">
 
                 <div className="small-box bg-white" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:142,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}">
 
-                  <div className="inner h-4/6" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:112,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}" >
+                  <div className="inner h-6/6" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:112,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}" >
 
                     {/* <h3 bis_size="{&quot;x&quot;:381,&quot;y&quot;:82,&quot;w&quot;:321,&quot;h&quot;:42,&quot;abs_x&quot;:631,&quot;abs_y&quot;:179}" style={{fontSize:'25px'}}>Statistics<sup style={{fontSize: '20px'}} bis_size="{&quot;x&quot;:418,&quot;y&quot;:85,&quot;w&quot;:17,&quot;h&quot;:25,&quot;abs_x&quot;:668,&quot;abs_y&quot;:182}"></sup></h3> */}
 
@@ -474,9 +515,9 @@ const Dashboard = () => {
 
                     </p>
 
-                    <p className='text-center ' style={{ fontSize: '20px' }}> {`${time.hours} Hrs : ${time.minutes} Min : ${time.seconds} Sec`}</p>
+                    <p className='text-center ' style={{ fontSize: '20px',height:'30px' }}> {`${time.hours} Hrs : ${time.minutes} Min : ${time.seconds} Sec`}</p>
 
- 
+
 
                     {/* <a href="#" className="small-box-footer ml-3" bis_size="{&quot;x&quot;:371,&quot;y&quot;:184,&quot;w&quot;:341,&quot;h&quot;:30,&quot;abs_x&quot;:621,&quot;abs_y&quot;:281}">View Attendence <i className="fas fa-arrow-circle-right" bis_size="{&quot;x&quot;:567,&quot;y&quot;:191,&quot;w&quot;:16,&quot;h&quot;:16,&quot;abs_x&quot;:817,&quot;abs_y&quot;:288}" /></a> */}
 
@@ -492,7 +533,7 @@ const Dashboard = () => {
 
                             <div className='flex justify-between'>
 
- 
+
 
                               <p bis_size="{&quot;x&quot;:381,&quot;y&quot;:134,&quot;w&quot;:321,&quot;h&quot;:24,&quot;abs_x&quot;:631,&quot;abs_y&quot;:231}" className='text-left text-sm'>Task Reports</p>
 
@@ -500,7 +541,7 @@ const Dashboard = () => {
 
                             </div>
 
- 
+
 
                             <div className="card-footer bg-w p-0" bis_skin_checked={1}>
 
@@ -546,17 +587,17 @@ const Dashboard = () => {
 
                           </div>
 
- 
 
- 
+
+
 
                         </li>
 
- 
 
- 
 
- 
+
+
+
 
                       </ul>
 
@@ -564,97 +605,24 @@ const Dashboard = () => {
 
                   </div>
 
- 
+
 
                 </div>
 
- 
+
 
               </div>
 
- 
 
- 
 
- 
+
+
+
 
               {/* This is Reports */}
 
-              <div className="col-lg-6 shadow-md bg-white rounded-xl" >
+             
 
-                <div className=" h-6/6" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:112,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}" >
-
- 
-
-                  <div className='flex justify-between'>
-
-                    <p bis_size="{&quot;x&quot;:381,&quot;y&quot;:134,&quot;w&quot;:321,&quot;h&quot;:24,&quot;abs_x&quot;:631,&quot;abs_y&quot;:231}" className='text-left mx-2 font-bold' >My Details</p>
-
- 
-
-                    <p bis_size="{&quot;x&quot;:381,&quot;y&quot;:134,&quot;w&quot;:321,&quot;h&quot;:24,&quot;abs_x&quot;:631,&quot;abs_y&quot;:231}" className='text-left mx-2 text-sm  text-black font-bold py-1 px-3 my-1 transform hover:scale-105 transition duration-300 ease-in-out hover:bg-yellow-300 rounded-xl'  >More Details  </p>
-
-                  </div>
-
-                  <div className="card-footer p-2 bg-white" bis_skin_checked={1}>
-
- 
-
- 
-
-                    <div className='flex justify-evenly '>
-
- 
-
-                      <div className="section_personal">
-
-                        <h1 className='mx-2 font-bold'>Personal Information :</h1>
-
- 
-
-                        <h5 className='px-2 text-xs mt-3 font-semibold'>First Name : </h5>
-
-                        <h5 className='px-2 text-xs mt-2 font-semibold'>Second Name :</h5>
-
-                        <h5 className='px-2 text-xs mt-2 font-semibold'>Email(Personal) :</h5>
-
-                        <h5 className='px-2 text-xs mt-2 font-semibold'>Phone Number :</h5>
-
-                        <h5 className='px-2 text-xs mt-2 font-semibold'>Address :</h5>
-
-                      </div>
-
-                      <div className="section_personal">
-
-                        <h1 className='mx-2 font-bold'>Project Information :</h1>
-
- 
-
-                        <h5 className='px-2 text-xs mt-3 font-semibold'>Associate ID :</h5>
-
-                        <h5 className='px-2 text-xs mt-2 font-semibold'>Designaton :</h5>
-
-                        <h5 className='px-2 text-xs mt-2 font-semibold'>Company Mail :</h5>
-
-                        <h5 className='px-2 text-xs mt-2 font-semibold'>Business Unit :</h5>
-
-                        <h5 className='px-2 text-xs mt-2 font-semibold'>Project Name :</h5>
-
-                        <h5 className='px-2 text-xs mt-2 font-semibold'>Project Location :</h5>
-
-                      </div>
-
-                    </div>
-
- 
-
- 
-
-                  </div>
-
-                </div>
-
-              </div>
 
               {/* <div className="small-box bg-white h-[33vh] lg:h-[20vh] md:h-[23vh]" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:142,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}">
 
@@ -664,15 +632,15 @@ const Dashboard = () => {
 
                 </div> */}
 
- 
+
 
             </div>
 
- 
+
 
             {/* This is time hseet row */}
 
- 
+
 
             <div className="row mt-3" bis_skin_checked={1}>
 
@@ -686,25 +654,25 @@ const Dashboard = () => {
 
                     <div className="card-tools" bis_skin_checked={1}>
 
-                    <button
-  class="cursor-pointer flex justify-between bg-gray-800 px-3 py-2 rounded-full text-xs text-white tracking-wider shadow-xl hover:bg-gray-900 hover:scale-105 duration-500 hover:ring-1 font-mono w-[120px]"
->
-  View More
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke-width="2"
-    stroke="currentColor"
-    class="w-5 h-5 animate-bounce"
-  >
-    <path
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"
-    ></path>
-  </svg>
-</button>
+                      <button
+                        class="cursor-pointer flex justify-between bg-gray-800 px-3 py-2 rounded-full text-xs text-white tracking-wider shadow-xl hover:bg-gray-900 hover:scale-105 duration-500 hover:ring-1 font-mono w-[120px]"
+                      >
+                        View More
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="2"
+                          stroke="currentColor"
+                          class="w-5 h-5 animate-bounce"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"
+                          ></path>
+                        </svg>
+                      </button>
 
 
                     </div>
@@ -713,47 +681,47 @@ const Dashboard = () => {
 
                   <div className="card-body table-responsive p-0" bis_skin_checked={1}>
 
-                  <table className="table table-hover text-nowrap">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Check In</th>
-            <th>Check Out</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {attendance.length > 0 ? (
-            attendance.map((a, index) => (
-              <tr key={index}>
-                <td>{new Date(a.date).toLocaleDateString()}</td>
-                <td>{new Date(a.check_in_time).toLocaleTimeString()}</td>
-                <td>{new Date(a.check_out_time).toLocaleTimeString()}</td>
-                <td>{a.status}</td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="4">No attendance records found</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
- 
+                    <table className="table table-hover text-nowrap">
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Check In</th>
+                          <th>Check Out</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {attendance.length > 0 ? (
+                          attendance.map((a, index) => (
+                            <tr key={index}>
+                              <td>{new Date(a.date).toLocaleDateString()}</td>
+                              <td>{new Date(a.check_in_time).toLocaleTimeString()}</td>
+                              <td>{new Date(a.check_out_time).toLocaleTimeString()}</td>
+                              <td>{a.status}</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="4">No attendance records found</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
 
- 
+
+
 
                   </div>
 
- 
 
- 
+
+
 
                 </div>
 
               </div>
 
- 
+
 
               <div className="col-12 col-lg-6 mt-1">
 
@@ -803,11 +771,11 @@ const Dashboard = () => {
 
               </div>
 
- 
 
- 
 
- 
+
+
+
 
             </div>
 
@@ -815,53 +783,53 @@ const Dashboard = () => {
 
               <h1 className='text-2xl'>Games</h1>
 
-            {gameSrc && <iframe src={gameSrc} frameborder="0" style={{width:'80vw',height:'70vh'}}></iframe>}
+              {gameSrc && <iframe src={gameSrc} frameborder="0" style={{ width: '80vw', height: '70vh' }}></iframe>}
 
-            {/* <button >Start Game</button> */}
+              {/* <button >Start Game</button> */}
 
- 
 
-            <button onClick={handleStartGame} class="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
 
-  <span class="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
+              <button onClick={handleStartGame} class="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
 
-  Start Game
+                <span class="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
 
-</button>
+                Start Game
 
-            <button onClick={handleNextGame} class="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
+              </button>
 
-  <span class="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
+              <button onClick={handleNextGame} class="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
 
-  Next Game
+                <span class="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
 
-</button>
+                Next Game
 
-            <button onClick={handleResetGame} class="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
+              </button>
 
-  <span class="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
+              <button onClick={handleResetGame} class="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
 
-  Reset Game
+                <span class="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
 
-</button>
+                Reset Game
 
-            <button onClick={handleResetstartgame} class="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
+              </button>
 
-  <span class="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
+              <button onClick={handleResetstartgame} class="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
 
-  Restart Game
+                <span class="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
 
-</button>
+                Restart Game
 
- 
+              </button>
 
-            <div>{timeLeft > 0 ? `Time left: ${Math.floor(timeLeft / 60)}:${timeLeft % 60}` : ''}</div>
 
-            <div>{message}</div>
 
-        </div>
+              <div>{timeLeft > 0 ? `Time left: ${Math.floor(timeLeft / 60)}:${timeLeft % 60}` : ''}</div>
 
- 
+              <div>{message}</div>
+
+            </div>
+
+
 
           </div>
 
@@ -869,9 +837,9 @@ const Dashboard = () => {
 
       </div>
 
- 
 
- 
+
+
 
     </>
 
@@ -879,6 +847,6 @@ const Dashboard = () => {
 
 }
 
- 
+
 
 export default Dashboard

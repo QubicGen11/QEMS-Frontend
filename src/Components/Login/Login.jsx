@@ -6,7 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie'
 import { useUser } from "../context/UserContext";
-import config from "../config"; 
+import config from "../config";
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -17,7 +17,7 @@ const Login = () => {
   const onSubmit = async (event) => {
     event.preventDefault();
     try {
-   
+
       const response = await axios.post(`${config.apiUrl}/qubinest/login`, { username, password });
       console.log(response);
       Cookies.set('username', username, { secure: true, sameSite: 'Strict' });
@@ -26,7 +26,7 @@ const Login = () => {
       setName(username);
       toast.success('Login successful');
       navigate('/dashboard'); // Navigate to /dashboard
-      localStorage.setItem('username',username)
+      localStorage.setItem('username', username)
     } catch (error) {
       if (error.response) {
         const errorMessage = error.response.data.message || 'An error occurred';
@@ -52,17 +52,17 @@ const Login = () => {
 
         <div className="login-left flex justify-around ">
           <div>
-            <h1 className="text-white text-4xl font-bold font-sans relative z-50 h-[100vh] w-[30vw] flex justify-center items-center ">
+            <h1 className= "text-white text-4xl font-bold font-sans relative z-50 h-[100vh] w-[30vw] flex justify-center items-center " id="welcome">
               WELCOME
             </h1>
           </div>
 
           <div className='loginform z-40 flex justify-center items-center data-aos="flip-left" '>
-            <div className="max-w-md relative flex flex-col rounded-lg text-black bg-[#EEF7FF] p-10">
+            <div className="max-w-md relative flex flex-col rounded-lg text-black bg-[#EEF7FF] p-10" id="form">
               <div className="text-2xl font-bold mb-2 text-[#1e0e4b] text-center px-9">
                 Welcome to <span className="text-yellow-400">QubiNest</span>
               </div>
-              <div className="text-sm font-normal mb-4 text-center text-[#1e0e4b]">
+              <div className=" text-sm font-normal mb-4 text-center text-[#1e0e4b]">
                 Log in to your account
               </div>
 
@@ -120,7 +120,8 @@ const Login = () => {
             </div>
           </div>
         </div>
-      </div>    </>
+      </div>  
+        </>
   );
 };
 
