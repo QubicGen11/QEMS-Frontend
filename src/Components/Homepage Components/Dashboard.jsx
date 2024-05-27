@@ -3,6 +3,7 @@ import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import config from "../config";
+import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
   const [attendance, setAttendance] = useState([]);
@@ -467,9 +468,9 @@ const Dashboard = () => {
                     Digital Strategist
                   </div>
                   <div className="card-header text-muted border-bottom-0" bis_skin_checked={1}>
-                    <a href="#" className="btn btn-sm btn-primary" cursorshover="true">
+                    <Link to="/viewprofile" className="btn btn-sm btn-primary" cursorshover="true">
                       <i className="fas fa-user" /> View Profile
-                    </a>
+                    </Link>
                   </div>
 
                   </div>
@@ -654,9 +655,12 @@ const Dashboard = () => {
 
                     <div className="card-tools" bis_skin_checked={1}>
 
+                    <Link to="/viewtimesheets">
+                          
                       <button
                         class="cursor-pointer flex justify-between bg-gray-800 px-3 py-2 rounded-full text-xs text-white tracking-wider shadow-xl hover:bg-gray-900 hover:scale-105 duration-500 hover:ring-1 font-mono w-[120px]"
                       >
+                     
                         View More
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -673,6 +677,8 @@ const Dashboard = () => {
                           ></path>
                         </svg>
                       </button>
+                          </Link>
+
 
 
                     </div>

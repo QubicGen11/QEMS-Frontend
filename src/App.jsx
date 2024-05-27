@@ -7,6 +7,7 @@ import Register from "./Components/Register/Register";
 import ViewTimesheets from "./Components/Timesheets/ViewTimesheets";
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import Viewprofile from "./Components/Homepage Components/Viewprofile";
 
 const App = () => {
   return (
@@ -19,6 +20,7 @@ const App = () => {
           <Route path="/dashboard" element={<Dashboardmain />} />
           <Route path="/viewtimesheets" element={<ViewTimesheets />} />
           <Route path="*" element={<Nopage />} />
+          <Route path="/viewprofile" element={<Viewprofile />} />
         </Routes>
       </BrowserRouter>
     </>
