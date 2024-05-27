@@ -9,10 +9,10 @@ import config from "../config";
 
 const Register = () => {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('');
   const navigate = useNavigate();
-
   // Handle form submission
   const onSubmit = async (event) => {
     event.preventDefault();
@@ -22,7 +22,7 @@ const Register = () => {
     }
     toast.success("Admin will approve your request shortly");
     try {
-      const response = await axios.post(`${config.apiUrl}/qubinest/register`, { role, username, password });
+      const response = await axios.post(`http://localhost:3000/qubinest/register`, { role, username,email, password });
       console.log(response);
       setUsername('');
       setPassword('');
@@ -98,6 +98,23 @@ const Register = () => {
                   placeholder="Enter your username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
+                  className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
+                />
+              </div>
+              <div className="block relative">
+                <label
+                  htmlFor="username"
+                  className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2"
+                >
+                  Email
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  placeholder="Enter your username"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
                 />
               </div>
