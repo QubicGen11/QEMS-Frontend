@@ -370,7 +370,7 @@ const Dashboard = () => {
 
                     <div className="widget-user-header text-white" style={{ background: 'url("../distingg/img/photo1.png") center center' }}>
 
-                      <h3 className="widget-user-username text-left ml-auto text-base shadow-xl-black " style={{ fontWeight: 'bolder', textShadow: '5px 5px black' }}>{`${greetingMessage}, ${name}`}</h3>
+                      <h3 className="widget-user-username text-left ml-auto text-base shadow-xl-black " style={{ fontWeight: 'bolder', textShadow: '5px 5px black' }}>{`${greetingMessage}, Sajid`}</h3>
 
                       <h5 className="widget-user-desc text-left ml-auto">Web Developer</h5>
 
