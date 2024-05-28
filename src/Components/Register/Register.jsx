@@ -12,35 +12,28 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-
   const [role, setRole] = useState('');
   const navigate = useNavigate();
   // Handle form submission
-  const onSubmit = async (event) => {
-    event.preventDefault();
-    if (!role) {
-      toast.error('Please select a role');
-      return;
-    }
-    toast.success("Admin will approve your request shortly");
-    try {
-      const response = await axios.post(`http://localhost:3000/qubinest/register`, { role, username,email, password });
-      console.log(response);
-      setUsername('');
-      setPassword('');
-      setRole('');
-      toast.success('Registration successful');
-    } catch (error) {
-      if (error.response) {
-        const errorMessage = error.response.data.message || 'An error occurred';
-        toast.error(errorMessage);
-      } else if (error.request) {
-        toast.error('No response from server');
-      } else {
-        toast.error('Error occurred while sending request');
-      }
-    }
-  };
+ // Frontend: Ensure form sends correct data
+const onSubmit = async (event) => {
+  event.preventDefault();
+  if (!role) {
+    toast.error('Please select a role');
+    return;
+  }
+  try {
+    const response = await axios.post(`http://localhost:3000/qubinest/register`, { role, username, email, password });
+    console.log(response);
+    setEmail('');
+    setPassword('');
+    setRole('');
+    toast.success('Registration successful');
+  } catch (error) {
+    // Handle error
+  }
+};
+
 
   return (
     <div className="Careersmain">
