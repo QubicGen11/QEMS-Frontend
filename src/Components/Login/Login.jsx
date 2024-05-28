@@ -20,7 +20,7 @@ const Login = () => {
   const onSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await axios.post(`http://localhost:3000/qubinest/login`, { email, password });
+      const response = await axios.post(`${config.apiUrl}/qubinest/login`, { email, password });
       console.log(response);
       Cookies.set('email', email, { secure: true, sameSite: 'Strict' }); // Fixed this line to use email instead of username
       setEmail('');

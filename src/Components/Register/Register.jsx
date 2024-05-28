@@ -23,7 +23,7 @@ const onSubmit = async (event) => {
     return;
   }
   try {
-    const response = await axios.post(`http://localhost:3000/qubinest/register`, { role, username, email, password });
+    const response = await axios.post(`${config.apiUrl}/qubinest/register`, { role, username, email, password });
     console.log(response);
     setEmail('');
     setPassword('');
