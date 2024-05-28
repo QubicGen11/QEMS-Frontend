@@ -123,13 +123,13 @@ const Viewprofile = () => {
                                                
 
 
-                                                {/* <p className="lead mb-3">
+                                                <p className="lead mb-3 font-sans text-md">
                                                     Sajid Hussain is a seasoned and results-driven Project Manager who
                                                     brings experience and expertise to project management. With a proven
                                                     track record of successfully delivering complex projects on time and
                                                     within budget, Ethan Leo is the go-to professional for organizations
                                                     seeking efficient and effective project leadership.
-                                                </p> */}
+                                                </p>
 
 
                                                 {/* This is for profile  */}

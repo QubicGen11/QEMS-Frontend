@@ -8,6 +8,7 @@ import ViewTimesheets from "./Components/Timesheets/ViewTimesheets";
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import Viewprofile from "./Components/Homepage Components/Viewprofile";
+import Holiday from "./Components/Homepage Components/Holiday Components/Holiday";
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
           <Route path="/viewtimesheets" element={<ViewTimesheets />} />
           <Route path="*" element={<Nopage />} />
           <Route path="/viewprofile" element={<Viewprofile />} />
+          <Route path="/holiday" element={<Holiday />} />
         </Routes>
       </BrowserRouter>
     </>
