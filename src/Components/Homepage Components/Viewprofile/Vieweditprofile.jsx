@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import "./Vieweditprofile.css"
 const ViewEditProfile = ({ employeeId }) => {
     const [formData, setFormData] = useState({
         firstname: '',
@@ -15,6 +16,26 @@ const ViewEditProfile = ({ employeeId }) => {
         linkedin: '',
         about: ''
     });
+
+    const [imagePreview, setImagePreview] = useState("https://res.cloudinary.com/defsu5bfc/image/upload/v1716836865/IMG_20231030_105454_660_x6loyi.jpg");
+    const [hover, setHover] = useState(false);
+    const fileInputRef = useRef(null);
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleClickImage = () => {
+        fileInputRef.current.click();
+    };
+
     useEffect(() => {
         const fetchEmployee = async () => {
             if (employeeId) {
@@ -75,6 +96,42 @@ const ViewEditProfile = ({ employeeId }) => {
     return (
         <div className="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabIndex={0}>
             <form onSubmit={handleSubmit} className="row gy-3 gy-xxl-4">
+
+                <div className="col-12 col-md-12 flex">
+                    <div className="text-start"
+                        onMouseEnter={() => setHover(true)}
+                        onMouseLeave={() => setHover(false)}
+                        style={{ position: 'relative', display: 'inline-block' }}>
+                        <img
+                            className="profile-user-img img-fluid img-circle"
+                            src={imagePreview}
+                            alt="User profile picture"
+                            onClick={handleClickImage}
+                            style={{ cursor: 'pointer', width: '120px', height: '120px' }}
+                        />
+                        {hover && (
+                            <div style={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                color: 'white',
+                                fontSize: '17px',
+                                pointerEvents: 'none'  // Prevents the label from interfering with the image's onClick
+                            }}>
+                                Edit
+                            </div>
+                        )}
+                        <input
+                            type="file"
+                            id="imageUpload"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            ref={fileInputRef}
+                            style={{ display: 'none' }}
+                        />
+                    </div>
+                </div>
                 <div className="col-12 col-md-6">
                     <label htmlFor="inputFirstName" className="form-label">First Name</label>
                     <input type="text" className="form-control" id="inputFirstName" name="firstname" value={formData.firstname} onChange={handleChange} />
@@ -93,6 +150,10 @@ const ViewEditProfile = ({ employeeId }) => {
                 </div>
                 <div className="col-12">
                     <label htmlFor="inputAddress" className="form-label">Address</label>
+                    <input type="text" className="form-control" id="inputAddress" name="address" value={formData.address} onChange={handleChange} />
+                </div>
+                <div className="col-12">
+                    <label htmlFor="inputAddress" className="form-label">Education</label>
                     <input type="text" className="form-control" id="inputAddress" name="address" value={formData.address} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">

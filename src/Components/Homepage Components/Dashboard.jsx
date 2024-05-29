@@ -461,13 +461,13 @@ const Dashboard = () => {
 
               </div>
 
-              <div className="col-12 col-sm-12 col-md-12 col-lg-6 d-flex align-items-stretch flex-column" bis_skin_checked={1} style={{ height: 'auto' }}>
+              <div className="col-12 col-sm-12 col-md-12 col-lg-6 d-flex align-items-stretch flex-column bg-white" bis_skin_checked={1} style={{ height: 'auto' }}>
                 <div className="card bg-light d-flex flex-fill bg-white" bis_skin_checked={1}>
-                  <div className=' flex justify-between'>
-                  <div className="card-header text-muted border-bottom-0" bis_skin_checked={1}>
-                    Web Developer
+                  <div className=' flex justify-between bg-white'>
+                  <div className="card-header text-muted border-bottom-0 " bis_skin_checked={1}>
+                    Associate Details
                   </div>
-                  <div className="card-header text-muted border-bottom-0" bis_skin_checked={1}>
+                  <div className="card-header text-muted border-bottom-0 " bis_skin_checked={1}>
                     <Link to="/viewprofile" className="btn btn-sm btn-primary" cursorshover="true">
                       <i className="fas fa-user" /> View Profile
                     </Link>
@@ -480,15 +480,15 @@ const Dashboard = () => {
                     <div className="row" bis_skin_checked={1}>
                       <div className="col-7" bis_skin_checked={1}>
                         <h2 className="lead"><b>Sajid Hussain</b></h2>
-                        <p className="text-muted text-sm"><b>About: </b> Web Designer / UX / Graphic Artist / </p>
+                        <p className="text-muted text-sm"><b>Role: </b> Web Developer </p>
                         <ul className="ml-4 mb-0 fa-ul text-muted ">
-                          <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-id-card" /></span> Emp Id : 2668</li>
-                          <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-building" /></span> Address: Demo Street 123, Demo City 04312, NJ</li>
-                          <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-phone" /></span> Phone #: + 800 - 12 12 23 52</li>
+                          <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-id-card" /></span> <span className='font-bold'> Emp Id :</span>   2668</li>
+                          <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-envelope" /></span> <span className='font-bold'> Email :</span>  sajidhussain@qubicgen.com</li>
+                          <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-briefcase" /></span> <span className='font-bold'> Business Unit : </span> Front End Developer</li>
                         </ul>
                       </div>
                       <div className="col-5 text-center pt-3" bis_skin_checked={1}>
-                        <img src="../../distingg/img/user1-128x128.jpg" alt="user-avatar" className="img-circle img-fluid" />
+                        <img src="https://res.cloudinary.com/defsu5bfc/image/upload/v1716836865/IMG_20231030_105454_660_x6loyi.jpg"  alt="user-avatar" className="img-circle img-fluid w-28" />
                       </div>
                     </div>
                   </div>

@@ -7,6 +7,7 @@ import Viewpersonaldetails from './Viewprofile/Viewpersonaldetails'
 import Viewprojectdetails from './Viewprofile/Viewprojectdetails'
 import Viewpassword from './Viewprofile/Viewpassword'
 import Vieweditprofile from './Viewprofile/Vieweditprofile'
+import ViewEditProfile from './Viewprofile/Vieweditprofile'
 
 const Viewprofile = () => {
     return (
@@ -141,7 +142,7 @@ const Viewprofile = () => {
 
                                             {/* This is for edit Profile */}
 
-                                          <Vieweditprofile/>
+                                          <ViewEditProfile/>
 
 
                                             {/* This is for Project Details */}
