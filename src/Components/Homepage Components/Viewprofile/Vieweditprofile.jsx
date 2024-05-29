@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const ViewEditProfile = ({ employeeId }) => {
     const [formData, setFormData] = useState({
         firstname: '',
@@ -14,7 +15,6 @@ const ViewEditProfile = ({ employeeId }) => {
         linkedin: '',
         about: ''
     });
-
     useEffect(() => {
         const fetchEmployee = async () => {
             if (employeeId) {
@@ -23,6 +23,7 @@ const ViewEditProfile = ({ employeeId }) => {
                     setFormData(response.data);
                 } catch (error) {
                     console.error('Error fetching employee:', error);
+                    toast.error('Error fetching employee details');
                 }
             }
         };
@@ -46,10 +47,12 @@ const ViewEditProfile = ({ employeeId }) => {
                 // Update existing employee
                 const response = await axios.put(`http://localhost:3000/qubinest/employees/${employeeId}`, formData);
                 console.log('Form updated successfully!', response.data);
+                toast.success('Employee updated successfully');
             } else {
                 // Create new employee
                 const response = await axios.post('http://localhost:3000/qubinest/employees', formData);
                 console.log('Form submitted successfully!', response.data);
+                toast.success('Employee created successfully');
             }
             setFormData({
                 firstname: '',
@@ -65,6 +68,7 @@ const ViewEditProfile = ({ employeeId }) => {
             });
         } catch (error) {
             console.error('Error submitting form:', error);
+            toast.error('Error submitting form');
         }
     };
 
@@ -80,32 +84,28 @@ const ViewEditProfile = ({ employeeId }) => {
                     <input type="text" className="form-control" id="inputLastName" name="lastname" value={formData.lastname} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
-                    <label htmlFor="inputDOB" className="form-label">Date of Birth</label>
-                    <input type="date" className="form-control" id="inputDOB" name="dob" value={formData.dob} onChange={handleChange} />
+                    <label htmlFor="inputDob" className="form-label">Date of Birth</label>
+                    <input type="date" className="form-control" id="inputDob" name="dob" value={formData.dob} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
                     <label htmlFor="inputGender" className="form-label">Gender</label>
-                    <select className="form-control" id="inputGender" name="gender" value={formData.gender} onChange={handleChange}>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Others">Others</option>
-                    </select>
+                    <input type="text" className="form-control" id="inputGender" name="gender" value={formData.gender} onChange={handleChange} />
                 </div>
-                <div className="col-12 col-md-6">
+                <div className="col-12">
                     <label htmlFor="inputAddress" className="form-label">Address</label>
                     <input type="text" className="form-control" id="inputAddress" name="address" value={formData.address} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
                     <label htmlFor="inputPhone" className="form-label">Phone</label>
-                    <input type="tel" className="form-control" id="inputPhone" name="phone" value={formData.phone} onChange={handleChange} />
-                </div>
-                <div className="col-12 col-md-6">
-                    <label htmlFor="inputEmail" className="form-label">Email</label>
-                    <input type="email" className="form-control" id="inputEmail" name="email" value={formData.email} onChange={handleChange} />
+                    <input type="text" className="form-control" id="inputPhone" name="phone" value={formData.phone} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
                     <label htmlFor="inputPosition" className="form-label">Position</label>
                     <input type="text" className="form-control" id="inputPosition" name="position" value={formData.position} onChange={handleChange} />
+                </div>
+                <div className="col-12 col-md-6">
+                    <label htmlFor="inputEmail" className="form-label">Email</label>
+                    <input type="email" className="form-control" id="inputEmail" name="email" value={formData.email} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
                     <label htmlFor="inputLinkedin" className="form-label">LinkedIn</label>
@@ -122,5 +122,4 @@ const ViewEditProfile = ({ employeeId }) => {
         </div>
     );
 };
-
 export default ViewEditProfile;
