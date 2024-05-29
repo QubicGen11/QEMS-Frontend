@@ -3,7 +3,12 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import "./Vieweditprofile.css"
+import { useUser } from '../../context/UserContext';
+
 const ViewEditProfile = ({ employeeId }) => {
+    const { email: userEmail } = useUser();
+    console.log(userEmail);
+
     const [formData, setFormData] = useState({
         firstname: '',
         lastname: '',
@@ -14,7 +19,8 @@ const ViewEditProfile = ({ employeeId }) => {
         position: '',
         email: '',
         linkedin: '',
-        about: ''
+        about: '',
+        companyEmail: userEmail
     });
 
     const [imagePreview, setImagePreview] = useState("https://res.cloudinary.com/defsu5bfc/image/upload/v1716836865/IMG_20231030_105454_660_x6loyi.jpg");
@@ -85,7 +91,8 @@ const ViewEditProfile = ({ employeeId }) => {
                 position: '',
                 email: '',
                 linkedin: '',
-                about: ''
+                about: '',
+                companyEmail:userEmail
             });
         } catch (error) {
             console.error('Error submitting form:', error);
@@ -117,7 +124,7 @@ const ViewEditProfile = ({ employeeId }) => {
                                 transform: 'translate(-50%, -50%)',
                                 color: 'white',
                                 fontSize: '17px',
-                                pointerEvents: 'none'  // Prevents the label from interfering with the image's onClick
+                                pointerEvents: 'none'
                             }}>
                                 Edit
                             </div>
@@ -152,10 +159,6 @@ const ViewEditProfile = ({ employeeId }) => {
                     <label htmlFor="inputAddress" className="form-label">Address</label>
                     <input type="text" className="form-control" id="inputAddress" name="address" value={formData.address} onChange={handleChange} />
                 </div>
-                <div className="col-12">
-                    <label htmlFor="inputAddress" className="form-label">Education</label>
-                    <input type="text" className="form-control" id="inputAddress" name="address" value={formData.address} onChange={handleChange} />
-                </div>
                 <div className="col-12 col-md-6">
                     <label htmlFor="inputPhone" className="form-label">Phone</label>
                     <input type="text" className="form-control" id="inputPhone" name="phone" value={formData.phone} onChange={handleChange} />
@@ -183,4 +186,5 @@ const ViewEditProfile = ({ employeeId }) => {
         </div>
     );
 };
+
 export default ViewEditProfile;

@@ -14,7 +14,6 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { setName } = useUser();
-  
 
   // Handle form submission
   const onSubmit = async (event) => {
@@ -22,19 +21,20 @@ const Login = () => {
     try {
       const response = await axios.post(`${config.apiUrl}/qubinest/login`, { email, password });
       console.log(response);
-      Cookies.set('email', email, { secure: true, sameSite: 'Strict' }); // Fixed this line to use email instead of username
+      Cookies.set('email', email, { secure: true, sameSite: 'Strict' });
       setEmail('');
       setPassword('');
-      setName(email)
+      setName(email); // Correctly setting the name to email
+      console.log(email)
       toast.success('Login successful');
       navigate('/dashboard'); // Navigate to /dashboard
-      localStorage.setItem('email', email); // Fixed this line to use email instead of username
+      localStorage.setItem('email', email);
     } catch (error) {
       if (error.response) {
         const errorMessage = error.response.data.message || 'An error occurred';
         toast.error(errorMessage);
       } else if (error.request) {
-        toast.error('No response from server');
+        toast.error('invalid credentials');
       } else {
         toast.error('Error occurred while sending request');
       }
@@ -57,7 +57,7 @@ const Login = () => {
             WELCOME
           </h1>
         </div>
-        <div className='loginform z-40 flex justify-center items-center data-aos="flip-left"'>
+        <div className='loginform z-40 flex justify-center items-center' data-aos="flip-left">
           <div className="max-w-md relative flex flex-col rounded-lg text-black bg-[#EEF7FF] p-10" id="form">
             <div className="text-2xl font-bold mb-2 text-[#1e0e4b] text-center px-9">
               Welcome to <span className="text-yellow-400">QubiNest</span>

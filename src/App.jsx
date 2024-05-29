@@ -9,11 +9,13 @@ import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import Viewprofile from "./Components/Homepage Components/Viewprofile";
 import Holiday from "./Components/Homepage Components/Holiday Components/Holiday";
+import { UserProvider } from "./Components/context/UserContext";
 
 const App = () => {
   return (
     <>
       <ToastContainer autoClose={1000} />
+      <UserProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Login />} />
@@ -25,6 +27,7 @@ const App = () => {
           <Route path="/holiday" element={<Holiday />} />
         </Routes>
       </BrowserRouter>
+      </UserProvider>
     </>
   );
 };
