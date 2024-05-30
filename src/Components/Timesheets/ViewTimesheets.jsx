@@ -2,8 +2,37 @@ import React from 'react';
 import Header from '../Homepage Components/Header';
 import Sidemenu from '../Homepage Components/Sidemenu';
 import Footer from '../Homepage Components/Footer';
-
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 const ViewTimesheets = () => {
+
+  // This is for exporting into xl
+  const exportToExcel = () => {
+    const table = document.getElementById('example1');
+    const ws = XLSX.utils.table_to_sheet(table);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    XLSX.writeFile(wb, "table_data.xlsx");
+  };
+
+// This is for pdf
+  
+const exportToPDF = () => {
+  const input = document.getElementById('example1');
+  html2canvas(input)
+    .then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: "landscape",
+      });
+      const imgProps= pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save("table_data.pdf");
+    });
+};
   return (
     <>
       <Header />
@@ -13,71 +42,53 @@ const ViewTimesheets = () => {
       <div className="content-wrapper">
         <div className="card-body" bis_skin_checked={1}>
           <h1 className="text-3xl px-10">Time Sheets</h1>
+
+
+
+
           <div
             id="example1_wrapper"
-            className="dataTables_wrapper dt-bootstrap4"
+            className="dataTables_wrapper dt-bootstrap4 mt-2"
             bis_skin_checked={1}
-            style={{width:'80vw'}}
+            style={{ width: '80vw' }}
           >
             <div className="row px-10" bis_skin_checked={1}>
               <div className="col-sm-12 col-md-6 " bis_skin_checked={1}>
-                <div
-                  className="dt-buttons btn-group flex-wrap"
-                  bis_skin_checked={1}
-                >
-                  <button
-                    className="btn btn-secondary buttons-copy buttons-html5"
-                    tabIndex={0}
-                    aria-controls="example1"
-                    type="button"
-                  >
-                    <span>Copy</span>
-                  </button>{" "}
-                  <button
-                    className="btn btn-secondary buttons-csv buttons-html5"
-                    tabIndex={0}
-                    aria-controls="example1"
-                    type="button"
-                  >
-                    <span>CSV</span>
-                  </button>{" "}
-                  <button
-                    className="btn btn-secondary buttons-excel buttons-html5"
-                    tabIndex={0}
-                    aria-controls="example1"
-                    type="button"
-                  >
-                    <span>Excel</span>
-                  </button>{" "}
-                  <button
-                    className="btn btn-secondary buttons-pdf buttons-html5"
-                    tabIndex={0}
-                    aria-controls="example1"
-                    type="button"
-                  >
-                    <span>PDF</span>
-                  </button>{" "}
-                  <button
-                    className="btn btn-secondary buttons-print"
-                    tabIndex={0}
-                    aria-controls="example1"
-                    type="button"
-                  >
-                    <span>Print</span>
-                  </button>{" "}
-                  <div className="btn-group" bis_skin_checked={1}>
-                    <button
-                      className="btn btn-secondary buttons-collection dropdown-toggle buttons-colvis"
-                      tabIndex={0}
-                      aria-controls="example1"
-                      type="button"
-                      aria-haspopup="true"
-                    >
-                      <span>Column visibility</span>
-                      <span className="dt-down-arrow" />
-                    </button>
-                  </div>{" "}
+
+                {/* This is for export btn  */}
+                <div className="btn-group">
+                  <button type="button" className="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Export as
+                  </button>
+                  <div className="dropdown-menu">
+                  <button className="dropdown-item" onClick={exportToExcel}>Excel</button>
+        <button className="dropdown-item" onClick={exportToPDF}>PDF</button>
+                    </div>
                 </div>
+
+                
+                {/* This is for filter btn */}
+                <div className="btn-group ml-4">
+                  <button type="button" className="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                   Filter by
+                  </button>
+                  <div className="dropdown-menu">
+                  <button className="dropdown-item" onClick={exportToExcel}>Month</button>
+        <button className="dropdown-item" onClick={exportToPDF}>Year</button>
+                    </div>
+                </div>
+
+
+                {/* This is for Approve btn */}
+                <div className="btn-group ml-4">
+                  <button type="button" className="btn btn-success" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                   Approve
+                  </button>
+                 
+                </div>
+
+
+
               </div>
               <div className="col-sm-12 col-md-6" bis_skin_checked={1}>
                 <div
@@ -97,6 +108,8 @@ const ViewTimesheets = () => {
                 </div>
               </div>
             </div>
+
+
             <div className="row px-10" bis_skin_checked={1} >
               <div className="col-sm-12" bis_skin_checked={1}>
                 <table

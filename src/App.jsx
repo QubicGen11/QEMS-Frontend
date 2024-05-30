@@ -10,6 +10,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Viewprofile from "./Components/Homepage Components/Viewprofile";
 import Holiday from "./Components/Homepage Components/Holiday Components/Holiday";
 import { UserProvider } from "./Components/context/UserContext";
+import Booktimeoff from "./Components/Timesheets/Booktimeoff";
 
 const App = () => {
   return (
@@ -25,6 +26,7 @@ const App = () => {
           <Route path="*" element={<Nopage />} />
           <Route path="/viewprofile" element={<Viewprofile />} />
           <Route path="/holiday" element={<Holiday />} />
+          <Route path="/booktimeoff" element={<Booktimeoff />} />
         </Routes>
       </BrowserRouter>
       </UserProvider>
