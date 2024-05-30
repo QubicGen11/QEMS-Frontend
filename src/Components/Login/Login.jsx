@@ -7,28 +7,24 @@ import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { useUser } from "../context/UserContext";
 import config from "../config";
-
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const { setName } = useUser();
+  const { setEmail: setUserEmail } = useUser();
 
-  // Handle form submission
   const onSubmit = async (event) => {
     event.preventDefault();
     try {
       const response = await axios.post(`${config.apiUrl}/qubinest/login`, { email, password });
       console.log(response);
       Cookies.set('email', email, { secure: true, sameSite: 'Strict' });
+      setUserEmail(email); // Set the email in context
       setEmail('');
       setPassword('');
-      setName(email); // Correctly setting the name to email
-      console.log(email)
       toast.success('Login successful');
-      navigate('/dashboard'); // Navigate to /dashboard
-      localStorage.setItem('email', email);
+      navigate('/dashboard');
     } catch (error) {
       if (error.response) {
         const errorMessage = error.response.data.message || 'An error occurred';
