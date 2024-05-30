@@ -8,8 +8,8 @@ const Viewleftpart = () => {
                                     <div className="card-body box-profile" bis_skin_checked={1}>
                                         <div className="text-center" bis_skin_checked={1}>
                                             <img
-                                                className="profile-user-img img-fluid img-circle"
-                                                src="https://res.cloudinary.com/defsu5bfc/image/upload/v1716836865/IMG_20231030_105454_660_x6loyi.jpg"
+                                                className="profile-user-img img-fluid img-circle h-24"
+                                                src="https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp"
                                                 alt="User profile picture"
                                             />
                                         </div>

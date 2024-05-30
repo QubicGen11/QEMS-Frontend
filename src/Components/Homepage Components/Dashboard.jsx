@@ -518,7 +518,7 @@ const Dashboard = () => {
                         </ul>
                       </div>
                       <div className="col-5 text-center pt-3" bis_skin_checked={1}>
-                        <img src="https://res.cloudinary.com/defsu5bfc/image/upload/v1716836865/IMG_20231030_105454_660_x6loyi.jpg" alt="user-avatar" className="img-circle img-fluid w-28" />
+                        <img src="https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp" alt="user-avatar" className="img-circle img-fluid w-28 h-28" />
                       </div>
                     </div>
                   </div>
