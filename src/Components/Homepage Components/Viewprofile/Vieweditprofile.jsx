@@ -65,6 +65,13 @@ const ViewEditProfile = ({ employeeId }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        for (const key in formData) {
+            if (formData[key] === '') {
+                toast.error(`${key} is required`);
+                return;
+            }
+        }
+
 
         try {
             if (employeeId) {
@@ -149,9 +156,44 @@ const ViewEditProfile = ({ employeeId }) => {
                     <input type="date" className="form-control" id="inputDob" name="dob" value={formData.dob} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
-                    <label htmlFor="inputGender" className="form-label">Gender</label>
-                    <input type="text" className="form-control" id="inputGender" name="gender" value={formData.gender} onChange={handleChange} />
-                </div>
+    <label className="form-label">Gender</label>
+    <div>
+        <label>
+            <input
+                type="radio"
+                name="gender"
+                value="male"
+                checked={formData.gender === "male"}
+                onChange={handleChange}
+                className='mx-2'
+            />
+            Male
+        </label>
+        <label>
+            <input
+                type="radio"
+                name="gender"
+                value="female"
+                checked={formData.gender === "female"}
+                onChange={handleChange}
+                className='mx-2'
+            />
+            Female
+        </label>
+        <label>
+            <input
+                type="radio"
+                name="gender"
+                value="other"
+                checked={formData.gender === "other"}
+                onChange={handleChange}
+                className='mx-2'
+            />
+            Other
+        </label>
+    </div>
+</div>
+
                 <div className="col-12">
                     <label htmlFor="inputAddress" className="form-label">Address</label>
                     <input type="text" className="form-control" id="inputAddress" name="address" value={formData.address} onChange={handleChange} />

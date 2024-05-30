@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { useUser } from "../context/UserContext";
 import config from "../config";
+
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,16 +22,25 @@ const Login = () => {
       console.log(response);
       Cookies.set('email', email, { secure: true, sameSite: 'Strict' });
       setUserEmail(email); // Set the email in context
+      
+      // Retrieve existing emails from local storage
+      const existingEmails = JSON.parse(localStorage.getItem('userEmails')) || [];
+      // Add new email if it doesn't already exist
+      if (!existingEmails.includes(email)) {
+        existingEmails.push(email);
+      }
+      localStorage.setItem('userEmails', JSON.stringify(existingEmails)); // Save emails in local storage
+
       setEmail('');
       setPassword('');
       toast.success('Login successful');
       navigate('/dashboard');
     } catch (error) {
       if (error.response) {
-        const errorMessage = error.response.data.message || 'An error occurred';
+        const errorMessage = error.response.data.message || 'Invalid Credentials';
         toast.error(errorMessage);
       } else if (error.request) {
-        toast.error('invalid credentials');
+        toast.error('Something went wrong');
       } else {
         toast.error('Error occurred while sending request');
       }
@@ -47,7 +57,7 @@ const Login = () => {
         />
       </div>
 
-      <div className="login-left flex justify-around ">
+      <div className="login-left flex justify-around">
         <div>
           <h1 className="text-white text-4xl font-bold font-sans relative z-50 h-[100vh] w-[30vw] flex justify-center items-center" id="welcome">
             WELCOME
@@ -124,4 +134,5 @@ const Login = () => {
     </div>
   );
 };
+
 export default Login;

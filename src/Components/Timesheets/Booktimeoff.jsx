@@ -22,7 +22,7 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-const MyCalendar = () => {
+const Booktimeoff = () => {
   const [events, setEvents] = useState([
     // Existing events
   ]);
@@ -73,4 +73,4 @@ const MyCalendar = () => {
   );
 };
 
-export default MyCalendar;
+export default Booktimeoff;

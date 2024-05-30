@@ -8,12 +8,18 @@ import Cookies from 'js-cookie';
 import { useUser } from '../context/UserContext';
 
 const Dashboard = () => {
-  
+
   const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   // const {email}=Cookies.get('email')
-  const email=Cookies.get('email')
+  const [clockInTime, setClockInTime] = useState('');
+  const [clockOutTime, setClockOutTime] = useState('');
+  const email = Cookies.get('email')
+  const { useremail } = useUser();
+  const [isFirstLogin, setIsFirstLogin] = useState(false);
+  
+  
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [reportText, setReportText] = useState('');
@@ -23,7 +29,8 @@ const Dashboard = () => {
   const [greetingMessage, setGreetingMessage] = useState('');
   const MIN_CHAR_LIMIT = 10;
   const MAX_CHAR_LIMIT = 500;
-  const games = [
+  const EXPIRATION_HOURS = 24; 
+   const games = [
     "https://shaiksajidhussain.github.io/menja_game/",
     "https://shaiksajidhussain.github.io/snake_game/",
     "https://shaiksajidhussain.github.io/blast_game/",
@@ -36,60 +43,72 @@ const Dashboard = () => {
   const [timer, setTimer] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [message, setMessage] = useState('');
-  const storedUser = localStorage.getItem('username'); // Retrieves the username from local storage
-  let name = ''; // Initializes a variable to store the username
+ 
 
-  if (storedUser) { // Checks if a username is stored in local storage
-    try {
-      const parsedUser = JSON.parse(storedUser); // Parses the stored username as JSON
-      name = parsedUser.name; // Extracts the username from the parsed JSON object
-    } catch (e) {
-      console.warn('Stored username is not in JSON format, assuming it is a plain string:', storedUser);
-      name = storedUser; // If parsing fails, assumes the stored username is a plain string
-    }
-  }
-
-  console.log(name); // Logs the extracted or assumed username to the console
+  // This is for checking login 
 
   useEffect(() => {
-    const fetchAttendance = async () => {
-      try {
-        // Replace 'usernameValue' with the actual username value you want to send
-        // Include the username parameter in the request
-        const response = await axios.get('http://localhost:9989/qubinest/attendance', {
-          params: {
-            name
-          },
-        });
-
-        const data = response.data;
-
-        // Check if the response is an array
-        if (Array.isArray(data)) {
-          setAttendance(data);
-        } else {
-          setAttendance([]);
-          console.error('Fetched data is not an array:', data);
-        }
-      } catch (error) {
-        setAttendance([]);
-        console.error('Error fetching attendance data:', error);
-      }
-    };
-
-    fetchAttendance();
+    const checkFirstLogin = localStorage.getItem('firstLoginCompleted');
+    if (!checkFirstLogin) {
+      // Trigger modal or alert here
+      alert("Please fill your details to get clock in and clock out active.");
+      
+      
+      setIsFirstLogin(true);
+    }
   }, []);
 
 
 
-  const onChangesubmit = (event) => {
 
-    if (event.target.value.length <= MAX_CHAR_LIMIT) {
-
-      setReportText(event.target.value);
-
+  // This is for submittint the reports
+  useEffect(() => {
+    const userClockInKey = `lastClockIn_${email}`;
+    const userClockOutKey = `lastClockOut_${email}`;
+    const now = new Date().getTime();
+    
+    const lastClockIn = JSON.parse(localStorage.getItem(userClockInKey));
+    const lastClockOut = JSON.parse(localStorage.getItem(userClockOutKey));
+    
+    if (lastClockIn && now - new Date(lastClockIn.timestamp).getTime() > EXPIRATION_HOURS * 3600 * 1000) {
+      localStorage.removeItem(userClockInKey);
+    } else if (lastClockIn && new Date(lastClockIn.date).toLocaleDateString() === new Date().toLocaleDateString()) {
+      setIsClockedIn(true);
+      setClockInTime(lastClockIn.time);
     }
+    
+    if (lastClockOut && now - new Date(lastClockOut.timestamp).getTime() > EXPIRATION_HOURS * 3600 * 1000) {
+      localStorage.removeItem(userClockOutKey);
+    } else if (lastClockOut && new Date(lastClockOut.date).toLocaleDateString() === new Date().toLocaleDateString()) {
+      setIsClockedIn(false);
+      setClockOutTime(lastClockOut.time);
+    }
+  }, [email]);
 
+  useEffect(() => {
+    if (isClockedIn) {
+      intervalRef.current = setInterval(() => {
+        setTime(prevTime => {
+          const { hours, minutes, seconds } = prevTime;
+          if (seconds < 59) {
+            return { hours, minutes, seconds: seconds + 1 };
+          } else if (minutes < 59) {
+            return { hours, minutes: minutes + 1, seconds: 0 };
+          } else {
+            return { hours: hours + 1, minutes: 0, seconds: 0 };
+          }
+        });
+      }, 1000);
+    } else {
+      clearInterval(intervalRef.current);
+    }
+    return () => clearInterval(intervalRef.current);
+  }, [isClockedIn]);
+
+  const onChangesubmit = (event) => {
+    if (event.target.value.length <= MAX_CHAR_LIMIT) {
+      setReportText(event.target.value);
+    }
   };
 
   const handleSubmit = (event) => {
@@ -100,15 +119,108 @@ const Dashboard = () => {
     }
     setIsReportSubmitted(true);
     toast.success('Daily report submitted successfully!');
-
-    // Clear the reportText after submission
     setReportText("");
-    console.log(reportText); // Log the value of reportText
+    console.log(reportText);
   };
 
+  const clockIn = async () => {
+    const today = new Date().toLocaleDateString();
+    const currentTime = new Date().toLocaleTimeString();
+    const timestamp = new Date().getTime();
+    const userClockInKey = `lastClockIn_${email}`;
+    const lastClockIn = JSON.parse(localStorage.getItem(userClockInKey));
 
+    if (lastClockIn && lastClockIn.date === today) {
+      toast.error('You have already clocked in today.');
+      return;
+    }
 
+    try {
+      console.log('Sending clock-in request...');
+      const response = await axios.post(`${config.apiUrl}/qubinest/clockin`, { email });
+      toast.success('Clock-in successful!');
+      setIsClockedIn(true);
+      setClockInTime(currentTime);
+      localStorage.setItem(userClockInKey, JSON.stringify({ date: today, time: currentTime, timestamp }));
+      return response.data;
+    } catch (error) {
+      const errorMessage = error.response ? error.response.data.message : error.message;
+      toast.error(errorMessage);
+      console.error('Error clocking in:', error);
+      throw error;
+    }
+  };
 
+  const clockOut = async () => {
+    if (!isClockedIn) {
+      toast.error('You need to clock in first.');
+      return;
+    }
+  
+    const today = new Date().toLocaleDateString();
+    const currentTime = new Date().toLocaleTimeString();
+    const timestamp = new Date().getTime();
+    const userClockOutKey = `lastClockOut_${email}`;
+    const lastClockOut = JSON.parse(localStorage.getItem(userClockOutKey));
+  
+    if (lastClockOut && lastClockOut.date === today) {
+      toast.error('You have already clocked out today.');
+      return;
+    }
+  
+    if (!isReportSubmitted) {
+      toast.error('Please submit your daily report before clocking out.');
+      return;
+    }
+  
+    try {
+      console.log('Sending clock-out request...');
+      const response = await axios.post(`${config.apiUrl}/qubinest/clockout`, { email });
+      toast.success('Clock-out successful!');
+      setIsClockedIn(false);
+      setClockOutTime(currentTime);
+      localStorage.setItem(userClockOutKey, JSON.stringify({ date: today, time: currentTime, timestamp }));
+      // Store final time data in local storage
+      localStorage.setItem('You have worked for : ', JSON.stringify(time));
+      // Reset the time state to { hours: 0, minutes: 0, seconds: 0 }
+      setTime({ hours: 0, minutes: 0, seconds: 0 });
+      
+      // Clear all local storage after 30 seconds (for testing)
+      setTimeout(() => {
+        // Iterate over all keys in local storage and remove them
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          localStorage.removeItem(key);
+        }
+        // Show toast message after clearing local storage
+        toast.success('Data has been successfully reset.');
+      }, 10000); 
+  
+      return response.data;
+    } catch (error) {
+      const errorMessage = error.response ? error.response.data.message : error.message;
+      toast.error(errorMessage);
+      console.error('Error clocking out:', error);
+      throw error;
+    }
+  };
+  
+  
+  
+  
+
+  const resetClockInStatus = () => {
+    const userClockInKey = `lastClockIn_${email}`;
+    const userClockOutKey = `lastClockOut_${email}`;
+    localStorage.removeItem(userClockInKey);
+    localStorage.removeItem(userClockOutKey);
+    setIsClockedIn(false);
+    setIsReportSubmitted(false);
+    setClockInTime('');
+    setClockOutTime('');
+    toast.success('Clock-in status has been reset!');
+  };
+  // This is for game components
 
   const startGame = () => {
     const lastPlayed = localStorage.getItem('lastPlayed');
@@ -199,45 +311,10 @@ const Dashboard = () => {
   }, []);
 
 
-  const clockIn = async () => {
-    try {
-        console.log('Sending clock-in request...');
-        const response = await axios.post('http://localhost:3000/qubinest/clockin', {email});
-        console.log(email)
-        toast.success('Clock-in successful!');
-        console.log('Clock-in successful:', response.data);
-        return response.data;
-    } catch (error) {
-        const errorMessage = error.response ? error.response.data.message : error.message;
-        toast.error(errorMessage);
-        console.error('Error clocking in:', error);
-        throw error;
-    }
-};
-
-const clockOut = async () => {
-    try {
-        console.log('Sending clock-out request...');
-        const response = await axios.post('http://localhost:3000/qubinest/clockout', {email});
-        toast.success('Clock-out successful!');
-        console.log('Clock-out successful:', response.data);
-        return response.data;
-    } catch (error) {
-        const errorMessage = error.response ? error.response.data.message : error.message;
-        toast.error(errorMessage);
-        console.error('Error clocking out:', error);
-        throw error;
-    }
-};
 
 
 
-  const resetClockInStatus = () => {
-    localStorage.removeItem('lastClockInDate');
-    setIsClockedIn(false);
-    setTime({ hours: 0, minutes: 0, seconds: 0 });
-    toast.success('Clock-in status has been reset!');
-  };
+
 
 
   useEffect(() => {
@@ -278,6 +355,7 @@ const clockOut = async () => {
               <div className="col-sm-6">
 
                 <h1 className="m-0">Console</h1>
+                
 
               </div>
 
@@ -315,7 +393,7 @@ const clockOut = async () => {
 
             <div className="row">
 
-              <div className="col-lg-12 col-12 col-sm-12">
+              <div className="col-lg-12 col-12 col-sm-12">  
 
                 <div className="card card-widget widget-user-2" bis_skin_checked={1}>
 
@@ -323,7 +401,7 @@ const clockOut = async () => {
 
                     <div className="widget-user-header text-white" style={{ background: 'url("../distingg/img/photo1.png") center center' }}>
 
-                      <h3 className="widget-user-username text-left ml-auto text-base shadow-xl-black " style={{ fontWeight: 'bolder', textShadow: '5px 5px black' }}>{`${greetingMessage}, Sajid`}</h3>
+                      <h3 className="widget-user-username text-left ml-auto text-base shadow-xl-black " style={{ fontWeight: 'bolder', textShadow: '5px 5px black' }}>{`${greetingMessage}, ${email}`}</h3>
 
                       <h5 className="widget-user-desc text-left ml-auto">Web Developer</h5>
 
@@ -416,17 +494,17 @@ const clockOut = async () => {
               <div className="col-12 col-sm-12 col-md-12 col-lg-6 d-flex align-items-stretch flex-column bg-white" bis_skin_checked={1} style={{ height: 'auto' }}>
                 <div className="card bg-light d-flex flex-fill bg-white" bis_skin_checked={1}>
                   <div className=' flex justify-between bg-white'>
-                  <div className="card-header text-muted border-bottom-0 " bis_skin_checked={1}>
-                    Associate Details
-                  </div>
-                  <div className="card-header text-muted border-bottom-0 " bis_skin_checked={1}>
-                    <Link to="/viewprofile" className="btn btn-sm btn-primary" cursorshover="true">
-                      <i className="fas fa-user" /> View Profile
-                    </Link>
-                  </div>
+                    <div className="card-header text-muted border-bottom-0 " bis_skin_checked={1}>
+                      Associate Details
+                    </div>
+                    <div className="card-header text-muted border-bottom-0 " bis_skin_checked={1}>
+                      <Link to="/viewprofile" className="btn btn-sm btn-primary" cursorshover="true">
+                        <i className="fas fa-user" /> View Profile
+                      </Link>
+                    </div>
 
                   </div>
-                 
+
 
                   <div className="card-body pt-0" bis_skin_checked={1}>
                     <div className="row" bis_skin_checked={1}>
@@ -440,7 +518,7 @@ const clockOut = async () => {
                         </ul>
                       </div>
                       <div className="col-5 text-center pt-3" bis_skin_checked={1}>
-                        <img src="https://res.cloudinary.com/defsu5bfc/image/upload/v1716836865/IMG_20231030_105454_660_x6loyi.jpg"  alt="user-avatar" className="img-circle img-fluid w-28" />
+                        <img src="https://res.cloudinary.com/defsu5bfc/image/upload/v1716836865/IMG_20231030_105454_660_x6loyi.jpg" alt="user-avatar" className="img-circle img-fluid w-28" />
                       </div>
                     </div>
                   </div>
@@ -469,7 +547,7 @@ const clockOut = async () => {
 
                     </p>
 
-                    <p className='text-center ' style={{ fontSize: '20px',height:'30px' }}> {`${time.hours} Hrs : ${time.minutes} Min : ${time.seconds} Sec`}</p>
+                    <p className='text-center ' style={{ fontSize: '20px', height: '30px' }}> {`${time.hours} Hrs : ${time.minutes} Min : ${time.seconds} Sec`}</p>
 
 
 
@@ -575,7 +653,7 @@ const clockOut = async () => {
 
               {/* This is Reports */}
 
-             
+
 
 
               {/* <div className="small-box bg-white h-[33vh] lg:h-[20vh] md:h-[23vh]" bis_size="{&quot;x&quot;:371,&quot;y&quot;:72,&quot;w&quot;:341,&quot;h&quot;:142,&quot;abs_x&quot;:621,&quot;abs_y&quot;:169}">
@@ -608,29 +686,29 @@ const clockOut = async () => {
 
                     <div className="card-tools" bis_skin_checked={1}>
 
-                    <Link to="/viewtimesheets">
-                          
-                      <button
-                        class="cursor-pointer flex justify-between bg-gray-800 px-3 py-2 rounded-full text-xs text-white tracking-wider shadow-xl hover:bg-gray-900 hover:scale-105 duration-500 hover:ring-1 font-mono w-[120px]"
-                      >
-                     
-                        View More
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke-width="2"
-                          stroke="currentColor"
-                          class="w-5 h-5 animate-bounce"
+                      <Link to="/viewtimesheets">
+
+                        <button
+                          class="cursor-pointer flex justify-between bg-gray-800 px-3 py-2 rounded-full text-xs text-white tracking-wider shadow-xl hover:bg-gray-900 hover:scale-105 duration-500 hover:ring-1 font-mono w-[120px]"
                         >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"
-                          ></path>
-                        </svg>
-                      </button>
-                          </Link>
+
+                          View More
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="2"
+                            stroke="currentColor"
+                            class="w-5 h-5 animate-bounce"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"
+                            ></path>
+                          </svg>
+                        </button>
+                      </Link>
 
 
 

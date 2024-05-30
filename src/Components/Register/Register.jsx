@@ -18,6 +18,41 @@ const Register = () => {
  // Frontend: Ensure form sends correct data
 const onSubmit = async (event) => {
   event.preventDefault();
+
+
+
+  // Check if email is empty
+  if (!email && !password && !role) {
+    toast.error('Please Check all the details');
+    return;
+  }
+  
+  if (!email) {
+    toast.error('Please enter your email address.');
+    return;
+  }
+
+  // Check if password is empty
+  if (!password) {
+    toast.error('Please enter your password.');
+    return;
+  }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error('Please enter a valid email address.');
+      return;
+    }
+
+    
+  
+    // Validate email domain
+    if (!email.endsWith('@qubicgen.com')) {
+      toast.error('Please use an email address with @qubicgen.com domain.');
+      return;
+    }
+
   if (!role) {
     toast.error('Please select a role');
     return;

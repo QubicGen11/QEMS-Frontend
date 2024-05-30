@@ -4,24 +4,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import config from "../config"; // Import the config file
+import { useUser } from '../context/UserContext';
+
 
 const Header = () => {
-  // Retrieve the item from localStorage and parse it if it exists
-  const storedUser = localStorage.getItem('username');
-  let name = '';
+  const { email } = useUser();
 
-  if (storedUser) {
-    try {
-      const parsedUser = JSON.parse(storedUser);
-      name = parsedUser.name;
-    } catch (e) {
-      console.error('Failed to parse stored username as JSON:', e);
-      // If parsing fails, assume storedUser is a plain string
-      name = storedUser;
-    }
-  }
-
-  console.log(name);
+  const userEmail = email || Cookies.get('email');
 
   const navigate = useNavigate();
 
@@ -90,7 +79,7 @@ const Header = () => {
                   />
                   <div className="mx-1">
                     <h1 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{name}</h1>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">SajidHussain@exampl.com</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{userEmail}</p>
                   </div>
                 </a>
                 <hr className="border-gray-200 dark:border-gray-700" />
