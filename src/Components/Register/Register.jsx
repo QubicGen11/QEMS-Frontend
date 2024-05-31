@@ -19,8 +19,6 @@ const Register = () => {
 const onSubmit = async (event) => {
   event.preventDefault();
 
-
-
   // Check if email is empty
   if (!email && !password && !role) {
     toast.error('Please Check all the details');
@@ -46,7 +44,6 @@ const onSubmit = async (event) => {
     }
 
     
-  
     // Validate email domain
     if (!email.endsWith('@qubicgen.com')) {
       toast.error('Please use an email address with @qubicgen.com domain.');
@@ -65,7 +62,7 @@ const onSubmit = async (event) => {
     setRole('');
     toast.success('Registration successful');
   } catch (error) {
-    // Handle error
+    console.error(error)
   }
 };
 
