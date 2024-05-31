@@ -16,9 +16,8 @@ const Dashboard = () => {
   const [clockInTime, setClockInTime] = useState('');
   const [clockOutTime, setClockOutTime] = useState('');
   const email = Cookies.get('email')
-  const { useremail } = useUser();
   const [isFirstLogin, setIsFirstLogin] = useState(false);
-  
+  const [employeeData, setEmployeeData] = useState(null);
   
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
@@ -126,6 +125,18 @@ const Dashboard = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchEmployeeData = async () => {
+      try {
+        const response = await axios.post('http://localhost:3000/qubinest/getemployees', { email:'' });
+        setEmployeeData(response.data);
+      } catch (error) {
+        console.error('Error fetching employee data:', error);
+      }
+    };
+
+    fetchEmployeeData();
+  }, []);
   const handleSubmit = (event) => {
     event.preventDefault();
     if (reportText.length < MIN_CHAR_LIMIT || reportText.length > MAX_CHAR_LIMIT) {
