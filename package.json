@@ -8,9 +8,7 @@
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
-  }
-  ,
-  
+  },
   "dependencies": {
     "admin-lte": "^3.2.0",
     "aos": "^2.3.4",
@@ -24,12 +22,12 @@
     "react": "^18.2.0",
     "react-big-calendar": "^1.12.2",
     "react-calendar": "^5.0.0",
+    "react-datepicker": "^6.9.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.51.4",
     "react-router-dom": "^6.23.1",
     "react-toastify": "^10.0.5",
     "xlsx": "^0.18.5"
-    
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
@@ -43,8 +41,7 @@
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.3",
     "vite": "^5.2.0"
-    
-  } ,
+  },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "4.9.5"
   }

@@ -43,6 +43,8 @@ const Dashboard = () => {
   const [timer, setTimer] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [message, setMessage] = useState('');
+  const [employeeData, setEmployeeData] = useState(null);
+
  
 
   // This is for checking login 
@@ -59,6 +61,19 @@ const Dashboard = () => {
   // }, []);
 
 
+  useEffect(() => {
+    const fetchEmployeeData = async () => {
+      try {
+        const response = await axios.get(`http://localhost:3000/qubinest/getemployees/${email}`);
+        setEmployeeData(response.data);
+        console.log(employeeData)
+      } catch (error) {
+        console.error('Error fetching employee data:', error);
+      }
+    };
+
+    fetchEmployeeData();
+  }, []);
 
 
   // This is for submittint the reports
