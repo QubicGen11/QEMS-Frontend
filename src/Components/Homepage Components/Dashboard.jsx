@@ -144,6 +144,9 @@ const Dashboard = () => {
       localStorage.setItem(userClockInKey, JSON.stringify({ date: today, time: currentTime, timestamp }));
       return response.data;
     } catch (error) {
+      if(error.response.status===500){
+        toast.error('please register as employee before clocking in')
+      }
       const errorMessage = error.response ? error.response.data.message : error.message;
       toast.error(errorMessage);
       console.error('Error clocking in:', error);
