@@ -144,19 +144,19 @@ const ViewEditProfile = ({ employeeId }) => {
                     </div>
                 </div>
                 <div className="col-12 col-md-6">
-                    <label htmlFor="inputFirstName" className="form-label">First Name</label>
+                    <label htmlFor="inputFirstName" className="form-label">First Name <span>*</span> </label>
                     <input type="text" className="form-control" id="inputFirstName" name="firstname" value={formData.firstname} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
-                    <label htmlFor="inputLastName" className="form-label">Last Name</label>
+                    <label htmlFor="inputLastName" className="form-label">Last Name<span>*</span> </label>
                     <input type="text" className="form-control" id="inputLastName" name="lastname" value={formData.lastname} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
-                    <label htmlFor="inputDob" className="form-label">Date of Birth</label>
+                    <label htmlFor="inputDob" className="form-label">Date of Birth<span>*</span> </label>
                     <input type="date" className="form-control" id="inputDob" name="dob" value={formData.dob} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
-    <label className="form-label">Gender</label>
+    <label className="form-label">Gender<span>*</span> </label>
     <div>
         <label>
             <input
@@ -195,31 +195,31 @@ const ViewEditProfile = ({ employeeId }) => {
 </div>
 
                 <div className="col-12">
-                    <label htmlFor="inputAddress" className="form-label">Address</label>
+                    <label htmlFor="inputAddress" className="form-label">Address<span>*</span> </label>
                     <input type="text" className="form-control" id="inputAddress" name="address" value={formData.address} onChange={handleChange} />
                 </div>
                 <div className="col-12">
-                    <label htmlFor="inputAddress" className="form-label">Education</label>
+                    <label htmlFor="inputAddress" className="form-label">Education<span>*</span> </label>
                     <input type="text" className="form-control" id="inputAddress" name="educato" value={formData.education} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
-                    <label htmlFor="inputPhone" className="form-label">Phone</label>
+                    <label htmlFor="inputPhone" className="form-label">Phone<span>*</span> </label>
                     <input type="text" className="form-control" id="inputPhone" name="phone" value={formData.phone} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
-                    <label htmlFor="inputPosition" className="form-label">Position</label>
+                    <label htmlFor="inputPosition" className="form-label">Position<span>*</span> </label>
                     <input type="text" className="form-control" id="inputPosition" name="position" value={formData.position} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
-                    <label htmlFor="inputEmail" className="form-label">Email</label>
+                    <label htmlFor="inputEmail" className="form-label">Email<span>*</span> </label>
                     <input type="email" className="form-control" id="inputEmail" name="email" value={formData.email} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
-                    <label htmlFor="inputLinkedin" className="form-label">LinkedIn</label>
+                    <label htmlFor="inputLinkedin" className="form-label">LinkedIn<span>*</span> </label>
                     <input type="text" className="form-control" id="inputLinkedin" name="linkedin" value={formData.linkedin} onChange={handleChange} />
                 </div>
                 <div className="col-12">
-                    <label htmlFor="inputAbout" className="form-label">About</label>
+                    <label htmlFor="inputAbout" className="form-label">About<span>*</span> </label>
                     <textarea className="form-control" id="inputAbout" name="about" value={formData.about} onChange={handleChange}></textarea>
                 </div>
                 <div className="col-12">

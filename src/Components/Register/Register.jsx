@@ -13,15 +13,28 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
   const navigate = useNavigate();
   // Handle form submission
  // Frontend: Ensure form sends correct data
 const onSubmit = async (event) => {
   event.preventDefault();
 
+
+  if (!confirmPassword) {
+    toast.error('Please enter your confirm password.');
+    return;
+  }
+
   // Check if email is empty
   if (!email && !password && !role) {
-    toast.error('Please Check all the details');
+    toast.error('Please Fill all the details');
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    toast.error('Passwords do not match.');
     return;
   }
   
@@ -35,6 +48,7 @@ const onSubmit = async (event) => {
     toast.error('Please enter your password.');
     return;
   }
+
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -55,14 +69,28 @@ const onSubmit = async (event) => {
     return;
   }
   try {
-    const response = await axios.post(`${config.apiUrl}/qubinest/register`, { role, username, email, password });
-    console.log(response);
-    setEmail('');
-    setPassword('');
-    setRole('');
-    toast.success('Registration successful');
+    const response = await axios.post(`${config.apiUrl}/qubinest/register`, {
+      username,
+      email,
+      password,
+      role
+    });
+
+    if (response.status === 201) { // Check if the user was created successfully
+      toast.success('Registration successful');
+      setUsername('');
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('')
+      setRole('');
+    }
   } catch (error) {
-    console.error(error)
+    if (error.response && error.response.status === 400) {
+      toast.error(error.response.data.message); // Display the error message from the server
+    } else {
+      console.error('Registration error:', error);
+      toast.error('Registration failed. Please try again.');
+    }
   }
 };
 
@@ -163,9 +191,9 @@ const onSubmit = async (event) => {
                     type="password"
                     id="confrimpassword"
                   name="confrimpassword"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Confirm your password"
+                  value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
                   className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
                 />
                   <span
