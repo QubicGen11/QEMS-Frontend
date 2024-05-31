@@ -47,16 +47,16 @@ const Dashboard = () => {
 
   // This is for checking login 
 
-  useEffect(() => {
-    const checkFirstLogin = localStorage.getItem('firstLoginCompleted');
-    if (!checkFirstLogin) {
-      // Trigger modal or alert here
-      alert("Please fill your details to get clock in and clock out active.");
+  // useEffect(() => {
+  //   const checkFirstLogin = localStorage.getItem('firstLoginCompleted');
+  //   if (!checkFirstLogin) {
+  //     // Trigger modal or alert here
+  //     alert("Please fill your details to get clock in and clock out active.");
       
       
-      setIsFirstLogin(true);
-    }
-  }, []);
+  //     setIsFirstLogin(true);
+  //   }
+  // }, []);
 
 
 
@@ -354,7 +354,7 @@ const Dashboard = () => {
 
               <div className="col-sm-6">
 
-                <h1 className="m-0">Console</h1>
+                {/* <h1 className="m-0">Console</h1> */}
                 
 
               </div>
@@ -399,7 +399,7 @@ const Dashboard = () => {
 
                   <div className="card card-widget widget-user shadow-lg">
 
-                    <div className="widget-user-header text-white" style={{ background: 'url("../distingg/img/photo1.png") center center' }}>
+                    <div className="widget-user-header text-white" style={{ background: 'url("https://res.cloudinary.com/defsu5bfc/image/upload/v1717134578/qubinest_banner_xm9lwr.jpg") ' , backgroundPositionX:'8vh' }}>
 
                       <h3 className="widget-user-username text-left ml-auto text-base shadow-xl-black " style={{ fontWeight: 'bolder', textShadow: '5px 5px black' }}>{`${greetingMessage}, ${email}`}</h3>
 

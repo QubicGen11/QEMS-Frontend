@@ -99,7 +99,7 @@ const onSubmit = async (event) => {
                   htmlFor="role"
                   className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2"
                 >
-                  Role
+                  Role <span className="text-red-600 "> * </span> 
                 </label>
                 <select
                   id="role"
@@ -120,7 +120,7 @@ const onSubmit = async (event) => {
                   htmlFor="username"
                   className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2"
                 >
-                  Email
+                  Email  <span className="text-red-600 "> * </span> 
                 </label>
                 <input
                   type="email"
@@ -137,7 +137,7 @@ const onSubmit = async (event) => {
                   htmlFor="password"
                   className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2"
                 >
-                  Password
+                  Password  <span className="text-red-600 "> * </span> 
                 </label>
                 <input
                     type={showPassword ? "text" : "password"}
@@ -160,12 +160,12 @@ const onSubmit = async (event) => {
                   htmlFor="password"
                   className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2"
                 >
-                  Confirm Password
+                  Confirm Password  <span className="text-red-600 " > * </span> 
                 </label>
                 <input
                     type="password"
-                    id="password"
-                  name="password"
+                    id="confrimpassword"
+                  name="confrimpassword"
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

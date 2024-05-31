@@ -5,6 +5,8 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import config from "../config"; // Import the config file
 import { useUser } from '../context/UserContext';
+import Cookies from 'js-cookie';
+
 
 
 const Header = () => {
