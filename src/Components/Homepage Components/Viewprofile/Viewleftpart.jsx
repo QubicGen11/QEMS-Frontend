@@ -14,7 +14,6 @@ const Viewleftpart = () => {
           toast.error('No email found in cookies');
           return;
         }
-  
         try {
           const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
           console.log('API response:', response.data); // Log the response data
@@ -26,10 +25,8 @@ const Viewleftpart = () => {
           }
         } catch (error) {
           console.error('Error fetching employee data:', error);
-          toast.error('Failed to fetch employee data');
         }
       };
-  
       fetchEmployeeData();
     }, [email]);
   
@@ -94,11 +91,7 @@ const Viewleftpart = () => {
                                             <i className="fas fa-pencil-alt mr-1" /> Skills
                                         </strong>
                                         <p className="text-muted p-2">
-                                            <li className="tag tag-danger">UI Design</li>
-                                            <li className="tag tag-success">Coding</li>
-                                            <li className="tag tag-info">Javascript</li>
-                                            <li className="tag tag-warning">PHP</li>
-                                            <li className="tag tag-primary">Node.js</li>
+                                            {emp.skills}
                                         </p>
                                         <hr />
                                         {/* <strong>

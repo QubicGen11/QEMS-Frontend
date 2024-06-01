@@ -2,24 +2,25 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import "./Vieweditprofile.css"
-import 'js-cookie'
+import "./Vieweditprofile.css";
 import Cookies from 'js-cookie';
+
 const ViewEditProfile = ({ employeeId }) => {
-    const userEmail=Cookies.get('email')
+    const userEmail = Cookies.get('email');
     const [formData, setFormData] = useState({
         firstname: '',
         lastname: '',
         dob: '',
         gender: '',
         address: '',
-        education:'',
+        education: '',
+        skills:'',
         phone: '',
         position: '',
         email: '',
         linkedin: '',
         about: '',
-        companyEmail:userEmail
+        companyEmail: userEmail
     });
     const [imagePreview, setImagePreview] = useState("https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp");
     const [hover, setHover] = useState(false);
@@ -33,11 +34,26 @@ const ViewEditProfile = ({ employeeId }) => {
                 setImagePreview(reader.result);
             };
             reader.readAsDataURL(file);
+            setFormData({ ...formData, employeeImg: file });
         }
     };
 
-    const handleClickImage = () => {
-        fileInputRef.current.click();
+    const handleClickImage = async () => {
+        const form = new FormData();
+        form.append('employeeImg', formData.employeeImg);
+        form.append('companyEmail', formData.companyEmail);
+
+        try {
+            const response = await axios.post('http://localhost:3000/qubinest/employee/upload', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            toast.success('Image uploaded successfully');
+        } catch (error) {
+            toast.error('Failed to upload image');
+            console.error('Upload error:', error);
+        }
     };
 
     useEffect(() => {
@@ -73,17 +89,12 @@ const ViewEditProfile = ({ employeeId }) => {
             }
         }
 
-
         try {
             if (employeeId) {
-                // Update existing employee
                 const response = await axios.put(`http://localhost:3000/qubinest/employees/${employeeId}`, formData);
-                console.log('Form updated successfully!', response.data);
                 toast.success('Employee updated successfully');
             } else {
-                // Create new employee
                 const response = await axios.post('http://localhost:3000/qubinest/employees', formData);
-                console.log('Form submitted successfully!', response.data);
                 toast.success('Employee created successfully');
             }
             setFormData({
@@ -95,10 +106,11 @@ const ViewEditProfile = ({ employeeId }) => {
                 phone: '',
                 position: '',
                 email: '',
+                skills:'',
                 linkedin: '',
-                education:'',
+                education: '',
                 about: '',
-                companyEmail:''
+                companyEmail: userEmail
             });
         } catch (error) {
             console.error('Error submitting form:', error);
@@ -109,7 +121,6 @@ const ViewEditProfile = ({ employeeId }) => {
     return (
         <div className="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabIndex={0}>
             <form onSubmit={handleSubmit} className="row gy-3 gy-xxl-4">
-
                 <div className="col-12 col-md-12 flex">
                     <div className="text-start"
                         onMouseEnter={() => setHover(true)}
@@ -119,7 +130,7 @@ const ViewEditProfile = ({ employeeId }) => {
                             className="profile-user-img img-fluid img-circle"
                             src={imagePreview}
                             alt="User profile picture"
-                            onClick={handleClickImage}
+                            onClick={() => fileInputRef.current.click()}
                             style={{ cursor: 'pointer', width: '120px', height: '120px' }}
                         />
                         {hover && (
@@ -130,7 +141,7 @@ const ViewEditProfile = ({ employeeId }) => {
                                 transform: 'translate(-50%, -50%)',
                                 color: 'white',
                                 fontSize: '17px',
-                                pointerEvents: 'none'  // Prevents the label from interfering with the image's onClick
+                                pointerEvents: 'none'
                             }}>
                                 Edit
                             </div>
@@ -158,51 +169,54 @@ const ViewEditProfile = ({ employeeId }) => {
                     <input type="date" className="form-control" id="inputDob" name="dob" value={formData.dob} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
-    <label className="form-label">Gender<span>*</span> </label>
-    <div>
-        <label>
-            <input
-                type="radio"
-                name="gender"
-                value="male"
-                checked={formData.gender === "male"}
-                onChange={handleChange}
-                className='mx-2'
-            />
-            Male
-        </label>
-        <label>
-            <input
-                type="radio"
-                name="gender"
-                value="female"
-                checked={formData.gender === "female"}
-                onChange={handleChange}
-                className='mx-2'
-            />
-            Female
-        </label>
-        <label>
-            <input
-                type="radio"
-                name="gender"
-                value="other"
-                checked={formData.gender === "other"}
-                onChange={handleChange}
-                className='mx-2'
-            />
-            Other
-        </label>
-    </div>
-</div>
-
+                    <label className="form-label">Gender<span>*</span> </label>
+                    <div>
+                        <label>
+                            <input
+                                type="radio"
+                                name="gender"
+                                value="male"
+                                checked={formData.gender === "male"}
+                                onChange={handleChange}
+                                className='mx-2'
+                            />
+                            Male
+                        </label>
+                        <label>
+                            <input
+                                type="radio"
+                                name="gender"
+                                value="female"
+                                checked={formData.gender === "female"}
+                                onChange={handleChange}
+                                className='mx-2'
+                            />
+                            Female
+                        </label>
+                        <label>
+                            <input
+                                type="radio"
+                                name="gender"
+                                value="other"
+                                checked={formData.gender === "other"}
+                                onChange={handleChange}
+                                className='mx-2'
+                            />
+                            Other
+                        </label>
+                    </div>
+                </div>
                 <div className="col-12">
                     <label htmlFor="inputAddress" className="form-label">Address<span>*</span> </label>
                     <input type="text" className="form-control" id="inputAddress" name="address" value={formData.address} onChange={handleChange} />
                 </div>
                 <div className="col-12">
-                    <label htmlFor="inputAddress" className="form-label">Education<span>*</span> </label>
-                    <input type="text" className="form-control" id="inputAddress" name="education" value={formData.education} onChange={handleChange} />
+                    <label htmlFor="inputEducation" className="form-label">Education<span>*</span> </label>
+                    <input type="text" className="form-control" id="inputEducation" name="education" value={formData.education} onChange={handleChange} />
+                </div>
+                <div className="col-12">
+                    <label htmlFor="inputEducation" className="form-label">Skills<span>*</span> </label>
+                    <input type="text" className="form-control" id="inputSkill" name="skills" value={formData.skills} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
                     <label htmlFor="inputPhone" className="form-label">Phone<span>*</span> </label>
@@ -231,5 +245,5 @@ const ViewEditProfile = ({ employeeId }) => {
         </div>
     );
 };
-export default ViewEditProfile;
 
+export default ViewEditProfile;
