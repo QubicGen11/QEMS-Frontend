@@ -16,8 +16,9 @@ const Dashboard = () => {
   const [clockInTime, setClockInTime] = useState('');
   const [clockOutTime, setClockOutTime] = useState('');
   const email = Cookies.get('email')
+  const { useremail } = useUser();
   const [isFirstLogin, setIsFirstLogin] = useState(false);
-  const [employeeData, setEmployeeData] = useState([]);
+  const [employeeData, setEmployeeData] = useState(null);
   
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
@@ -42,6 +43,8 @@ const Dashboard = () => {
   const [timer, setTimer] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [message, setMessage] = useState('');
+  const [employeeinfo, setemployeeinfo] = useState(null);
+
  
 
   // This is for checking login 
@@ -58,6 +61,19 @@ const Dashboard = () => {
   // }, []);
 
 
+  useEffect(() => {
+    const fetchemployeeinfo = async () => {
+      try {
+        const response = await axios.get(`http://localhost:3000/qubinest/getemployees/${email}`);
+        setemployeeinfo(response.data);
+        console.log(employeeinfo)
+      } catch (error) {
+        console.error('Error fetching employee data:', error);
+      }
+    };
+
+    fetchemployeeinfo();
+  }, []);
 
 
   // This is for submittint the reports
@@ -109,20 +125,14 @@ const Dashboard = () => {
       setReportText(event.target.value);
     }
   };
+
   useEffect(() => {
     const fetchEmployeeData = async () => {
       try {
-        const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
-        console.log('API response:', response.data); // Log the response data
-        if (Array.isArray(response.data)) {
-          setEmployeeData(response.data);
-        } else {
-          toast.error('Unexpected response format');
-          console.error('Unexpected response format:', response.data);
-        }
+        const response = await axios.post('http://localhost:3000/qubinest/getemployees', { email:'' });
+        setEmployeeData(response.data);
       } catch (error) {
         console.error('Error fetching employee data:', error);
-        toast.error('Failed to fetch employee data');
       }
     };
 
