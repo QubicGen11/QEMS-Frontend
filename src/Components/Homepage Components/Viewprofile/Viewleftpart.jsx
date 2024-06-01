@@ -1,9 +1,47 @@
 import React from 'react'
-
+import axios from 'axios';
+import  { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import config from '../../config';
+import Cookies from 'js-cookie';
 const Viewleftpart = () => {
+    const email = Cookies.get('email');
+    const [employeeData, setEmployeeData] = useState([]);
+    useEffect(() => {
+      const fetchEmployeeData = async () => {
+        if (!email) {
+          toast.error('No email found in cookies');
+          return;
+        }
+  
+        try {
+          const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
+          console.log('API response:', response.data); // Log the response data
+          if (Array.isArray(response.data)) {
+            setEmployeeData(response.data);
+          } else {
+            toast.error('Unexpected response format');
+            console.error('Unexpected response format:', response.data);
+          }
+        } catch (error) {
+          console.error('Error fetching employee data:', error);
+          toast.error('Failed to fetch employee data');
+        }
+      };
+  
+      fetchEmployeeData();
+    }, [email]);
+  
+    if (!Array.isArray(employeeData)) {
+      return <div>Error: Employee data is not an array.</div>;
+    }
   return (
     <>
-     <div className="col-md-3" bis_skin_checked={1}>
+     {employeeData.map((emp)=>{
+        return(
+            <>
+                <div className="col-md-3" bis_skin_checked={1}>
                                 <div className="card card-primary card-outline" bis_skin_checked={1}>
                                     <div className="card-body box-profile" bis_skin_checked={1}>
                                         <div className="text-center" bis_skin_checked={1}>
@@ -13,8 +51,8 @@ const Viewleftpart = () => {
                                                 alt="User profile picture"
                                             />
                                         </div>
-                                        <h3 className="profile-username text-center">Sajid Hussain</h3>
-                                        <p className="text-muted text-center">Web Developer</p>
+                                        <h3 className="profile-username text-center">{emp.firstname}{emp.lastname}</h3>
+                                        <p className="text-muted text-center">{emp.position}</p>
                                         {/* <ul className="list-group list-group-unbordered mb-3">
                                             <li className="list-group-item">
                                                 <b>Followers</b> <a className="float-right">1,322</a>
@@ -50,7 +88,7 @@ const Viewleftpart = () => {
                                         <strong>
                                             <i className="fas fa-map-marker-alt mr-1" /> Location
                                         </strong>
-                                        <p className="text-muted p-2">Anantapur, AP</p>
+                                        <p className="text-muted p-2">{emp.location}</p>
                                         <hr />
                                         <strong>
                                             <i className="fas fa-pencil-alt mr-1" /> Skills
@@ -73,6 +111,9 @@ const Viewleftpart = () => {
                                     </div>
                                 </div>
                             </div>
+            </>
+        )
+     })}
     
     </>
   )

@@ -4,96 +4,56 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
-import Cookies from 'js-cookie';
-import config from "../config"; 
+import config from "../config";
 
 const Register = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-
   const navigate = useNavigate();
-  // Handle form submission
- // Frontend: Ensure form sends correct data
-const onSubmit = async (event) => {
-  event.preventDefault();
 
+  const onSubmit = async (event) => {
+    event.preventDefault();
 
-  if (!confirmPassword) {
-    toast.error('Please enter your confirm password.');
-    return;
-  }
+    if (!username || !email || !password || !confirmPassword || !role) {
+      toast.error('Please check all the details');
+      return;
+    }
 
-  // Check if email is empty
-  if (!email && !password && !role) {
-    toast.error('Please Fill all the details');
-    return;
-  }
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
 
-  if (password !== confirmPassword) {
-    toast.error('Passwords do not match.');
-    return;
-  }
-  
-  if (!email) {
-    toast.error('Please enter your email address.');
-    return;
-  }
-
-  // Check if password is empty
-  if (!password) {
-    toast.error('Please enter your password.');
-    return;
-  }
-
-
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       toast.error('Please enter a valid email address.');
       return;
     }
 
-    
-    // Validate email domain
     if (!email.endsWith('@qubicgen.com')) {
       toast.error('Please use an email address with @qubicgen.com domain.');
       return;
     }
 
-  if (!role) {
-    toast.error('Please select a role');
-    return;
-  }
-  try {
-    const response = await axios.post(`${config.apiUrl}/qubinest/register`, {
-      username,
-      email,
-      password,
-      role
-    });
-
-    if (response.status === 201) { // Check if the user was created successfully
-      toast.success('Registration successful');
+    try {
+      const response = await axios.post(`${config.apiUrl}/qubinest/register`, { username, email, password, role });
+      console.log(response);
       setUsername('');
       setEmail('');
       setPassword('');
-      setConfirmPassword('')
+      setConfirmPassword('');
       setRole('');
+      toast.success('Registration successful');
+        // Navigate to login or another page after successful registration
+    } catch (error) {
+      console.error('Registration failed:', error.response ? error.response.data : error.message);
+      toast.error('Registration failed');
     }
-  } catch (error) {
-    if (error.response && error.response.status === 400) {
-      toast.error(error.response.data.message); // Display the error message from the server
-    } else {
-      console.error('Registration error:', error);
-      toast.error('Registration failed. Please try again.');
-    }
-  }
-};
-
+  };
 
   return (
     <div className="Careersmain">
@@ -139,19 +99,35 @@ const onSubmit = async (event) => {
                   <option value="Admin">Admin</option>
                 </select>
               </div>
-           
               <div className="block relative">
                 <label
                   htmlFor="username"
                   className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2"
                 >
-                  Email  <span className="text-red-600 "> * </span> 
+                  Username <span className="text-red-600 "> * </span> 
+                </label>
+                <input
+                  type="text"
+                  id="username"
+                  name="username"
+                  placeholder="Enter your username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
+                />
+              </div>
+              <div className="block relative">
+                <label
+                  htmlFor="email"
+                  className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2"
+                >
+                  Email <span className="text-red-600 "> * </span> 
                 </label>
                 <input
                   type="email"
                   id="email"
                   name="email"
-                  placeholder="Enter your username"
+                  placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
@@ -162,45 +138,40 @@ const onSubmit = async (event) => {
                   htmlFor="password"
                   className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2"
                 >
-                  Password  <span className="text-red-600 "> * </span> 
+                  Password <span className="text-red-600 "> * </span> 
                 </label>
                 <input
-                    type={showPassword ? "text" : "password"}
-                    id="password"
+                  type={showPassword ? "text" : "password"}
+                  id="password"
                   name="password"
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
                 />
-                  <span
-                    className="absolute right-3 top-1/2 transform -translate-y-2/2 cursor-pointer"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? "🙈" : "👁️"}
-                  </span>
+                <span
+                  className="absolute right-3 top-1/2 transform -translate-y-2/2 cursor-pointer"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? "🙈" : "👁️"}
+                </span>
               </div>
               <div className="block relative">
                 <label
-                  htmlFor="password"
+                  htmlFor="confirmPassword"
                   className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2"
                 >
-                  Confirm Password  <span className="text-red-600 " > * </span> 
+                  Confirm Password <span className="text-red-600 ">*</span> 
                 </label>
                 <input
-                    type="password"
-                    id="confrimpassword"
-                  name="confrimpassword"
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
                   placeholder="Confirm your password"
                   value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
                 />
-                  <span
-                    className="absolute right-3 top-1/2 transform -translate-y-2/2 cursor-pointer"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                  </span>
               </div>
               <button
                 type="submit"

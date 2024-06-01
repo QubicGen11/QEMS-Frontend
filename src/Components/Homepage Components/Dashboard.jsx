@@ -17,7 +17,7 @@ const Dashboard = () => {
   const [clockOutTime, setClockOutTime] = useState('');
   const email = Cookies.get('email')
   const [isFirstLogin, setIsFirstLogin] = useState(false);
-  const [employeeData, setEmployeeData] = useState(null);
+  const [employeeData, setEmployeeData] = useState([]);
   
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
@@ -109,14 +109,20 @@ const Dashboard = () => {
       setReportText(event.target.value);
     }
   };
-
   useEffect(() => {
     const fetchEmployeeData = async () => {
       try {
-        const response = await axios.post('http://localhost:3000/qubinest/getemployees', { email:'' });
-        setEmployeeData(response.data);
+        const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
+        console.log('API response:', response.data); // Log the response data
+        if (Array.isArray(response.data)) {
+          setEmployeeData(response.data);
+        } else {
+          toast.error('Unexpected response format');
+          console.error('Unexpected response format:', response.data);
+        }
       } catch (error) {
         console.error('Error fetching employee data:', error);
+        toast.error('Failed to fetch employee data');
       }
     };
 
@@ -414,10 +420,16 @@ const Dashboard = () => {
                   <div className="card card-widget widget-user shadow-lg">
 
                     <div className="widget-user-header text-white" style={{ background: 'url("https://res.cloudinary.com/defsu5bfc/image/upload/v1717134578/qubinest_banner_xm9lwr.jpg") ' , backgroundPositionX:'8vh' }}>
+                      {employeeData.map((emp)=>{
+                        return(
+                          <>
+                              <h3 className="widget-user-username text-left ml-auto text-base shadow-xl-black " style={{ fontWeight: 'bolder', textShadow: '5px 5px black' }}>{`${greetingMessage} ${emp.firstname}${emp.lastname}`}</h3>
 
-                      <h3 className="widget-user-username text-left ml-auto text-base shadow-xl-black " style={{ fontWeight: 'bolder', textShadow: '5px 5px black' }}>{`${greetingMessage}, ${email}`}</h3>
+<h5 className="widget-user-desc text-left ml-auto">{emp.position}</h5>
 
-                      <h5 className="widget-user-desc text-left ml-auto">Web Developer</h5>
+                          </>
+                        )
+                      })}
 
                     </div>
 
@@ -520,15 +532,18 @@ const Dashboard = () => {
                   </div>
 
 
-                  <div className="card-body pt-0" bis_skin_checked={1}>
+                  {employeeData.map((employee)=>{
+                    return(
+                      <>
+                        <div className="card-body pt-0" bis_skin_checked={1}>
                     <div className="row" bis_skin_checked={1}>
                       <div className="col-7" bis_skin_checked={1}>
-                        <h2 className="lead"><b>Sajid Hussain</b></h2>
-                        <p className="text-muted text-sm"><b>Role: </b> Web Developer </p>
+                        <h2 className="lead"><b>{employee.firstname}{employee.lastname}</b></h2>
+                        <p className="text-muted text-sm"><b>Role: </b> {employee.position} </p>
                         <ul className="ml-4 mb-0 fa-ul text-muted ">
-                          <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-id-card" /></span> <span className='font-bold'> Emp Id :</span>   2668</li>
-                          <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-envelope" /></span> <span className='font-bold'> Email :</span>  sajidhussain@qubicgen.com</li>
-                          <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-briefcase" /></span> <span className='font-bold'> Business Unit : </span> Front End Developer</li>
+                          <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-id-card" /></span> <span className='font-bold'> Emp Id :</span>{employee.employee_id}</li>
+                          <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-envelope" /></span> <span className='font-bold'> Email :</span>{employee.email}</li>
+                          <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-briefcase" /></span> <span className='font-bold'> Business Unit:</span> Front End Developer</li>
                         </ul>
                       </div>
                       <div className="col-5 text-center pt-3" bis_skin_checked={1}>
@@ -544,6 +559,9 @@ const Dashboard = () => {
 
                     </div>
                   </div>
+                      </>
+                    )
+                  })}
                 </div>
               </div>
 

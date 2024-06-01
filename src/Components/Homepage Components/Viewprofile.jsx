@@ -8,8 +8,43 @@ import Viewprojectdetails from './Viewprofile/Viewprojectdetails'
 import Viewpassword from './Viewprofile/Viewpassword'
 import Vieweditprofile from './Viewprofile/Vieweditprofile'
 import ViewEditProfile from './Viewprofile/Vieweditprofile'
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Cookies from 'js-cookie';
+import config from '../config'
+import axios from 'axios';
+import  { useEffect, useState } from 'react';
 const Viewprofile = () => {
+      const email = Cookies.get('email');
+  const [employeeData, setEmployeeData] = useState([]);
+  useEffect(() => {
+    const fetchEmployeeData = async () => {
+      if (!email) {
+        toast.error('No email found in cookies');
+        return;
+      }
+
+      try {
+        const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
+        console.log('API response:', response.data); // Log the response data
+        if (Array.isArray(response.data)) {
+          setEmployeeData(response.data);
+        } else {
+          toast.error('Unexpected response format');
+          console.error('Unexpected response format:', response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching employee data:', error);
+        toast.error('Failed to fetch employee data');
+      }
+    };
+
+    fetchEmployeeData();
+  }, [email]);
+
+  if (!Array.isArray(employeeData)) {
+    return <div>Error: Employee data is not an array.</div>;
+  }
     return (
         <>
             <Sidemenu />
@@ -27,9 +62,6 @@ const Viewprofile = () => {
                 <ViewBreadcrums/>
 
                 {/* Breadcrusm ends */}
-
-
-
 
                 <section className="content">
                     <div className="container-fluid" bis_skin_checked={1}>
@@ -123,19 +155,19 @@ const Viewprofile = () => {
 
                                                
 
-
+                                            {employeeData.map((emp)=>{
+                                                return(
+                                                    <>
+                                                        
                                                 <p className="lead mb-3 font-sans text-md">
-                                                    Sajid Hussain is a seasoned and results-driven Project Manager who
-                                                    brings experience and expertise to project management. With a proven
-                                                    track record of successfully delivering complex projects on time and
-                                                    within budget, Ethan Leo is the go-to professional for organizations
-                                                    seeking efficient and effective project leadership.
+                                                    {emp.about}
                                                 </p>
 
+                                                    </>
+                                                )
+                                            })}
 
                                                 {/* This is for profile  */}
-
-
                                               <Viewpersonaldetails/>
                                             </div>
 
