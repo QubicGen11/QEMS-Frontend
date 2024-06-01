@@ -96,6 +96,16 @@ const Viewpersonaldetails = () => {
             </div>
             <div className="col-5 col-md-3 bg-light border-bottom border-white border-3" bis_skin_checked={1}>
               <div className="p-2" bis_skin_checked={1}>
+                Education
+              </div>
+            </div>
+            <div className="col-7 col-md-9 bg-light border-start border-bottom border-white border-3" bis_skin_checked={1}>
+              <div className="p-2" bis_skin_checked={1}>
+                {emp.education}
+              </div>
+            </div>
+            <div className="col-5 col-md-3 bg-light border-bottom border-white border-3" bis_skin_checked={1}>
+              <div className="p-2" bis_skin_checked={1}>
                 Address
               </div>
             </div>

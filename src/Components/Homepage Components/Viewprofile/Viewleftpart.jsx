@@ -82,7 +82,7 @@ const Viewleftpart = () => {
                                             <i className="fas fa-book mr-1" /> Education
                                         </strong>
                                         <p className="text-muted">
-                                            B.Tech in Electrical and Electronics from the  Srinivasa Ramaujan Institue of Technology
+                                        {emp.education}
                                         </p>
                                         <hr />
                                         <strong>
@@ -101,13 +101,13 @@ const Viewleftpart = () => {
                                             <li className="tag tag-primary">Node.js</li>
                                         </p>
                                         <hr />
-                                        <strong>
+                                        {/* <strong>
                                             <i className="far fa-file-alt mr-1" /> Notes
                                         </strong>
                                         <p className="text-muted">
                                             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam
                                             fermentum enim neque.
-                                        </p>
+                                        </p> */}
                                     </div>
                                 </div>
                             </div>

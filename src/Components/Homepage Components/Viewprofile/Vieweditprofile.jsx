@@ -13,6 +13,7 @@ const ViewEditProfile = ({ employeeId }) => {
         dob: '',
         gender: '',
         address: '',
+        education:'',
         phone: '',
         position: '',
         email: '',
@@ -95,6 +96,7 @@ const ViewEditProfile = ({ employeeId }) => {
                 position: '',
                 email: '',
                 linkedin: '',
+                education:'',
                 about: '',
                 companyEmail:''
             });
@@ -200,7 +202,7 @@ const ViewEditProfile = ({ employeeId }) => {
                 </div>
                 <div className="col-12">
                     <label htmlFor="inputAddress" className="form-label">Education<span>*</span> </label>
-                    <input type="text" className="form-control" id="inputAddress" name="educato" value={formData.education} onChange={handleChange} />
+                    <input type="text" className="form-control" id="inputAddress" name="education" value={formData.education} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
                     <label htmlFor="inputPhone" className="form-label">Phone<span>*</span> </label>
