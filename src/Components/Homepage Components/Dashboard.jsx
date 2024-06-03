@@ -6,7 +6,6 @@ import config from "../config";
 import { Link } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { useUser } from '../context/UserContext';
-
 const Dashboard = () => {
   const [attendance, setAttendance] = useState([]);
   const [userAttendance,setUserAttendance]=useState([])
@@ -56,7 +55,6 @@ const Dashboard = () => {
 
     fetchEmployeeInfo();
   }, [email]);
-
   useEffect(() => {
     const fetchAttendance = async () => {
       try {
@@ -70,7 +68,6 @@ const Dashboard = () => {
     };
 
     fetchAttendance();
-
     const intervalId = setInterval(fetchAttendance, 100); // Polling every 5 seconds
 
     return () => clearInterval(intervalId); // Cleanup interval on component unmount
@@ -456,7 +453,7 @@ const Dashboard = () => {
                             </ul>
                           </div>
                           <div className="col-5 text-center pt-3" bis_skin_checked={1}>
-                            <img src="https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp" alt="user-avatar" className="img-circle img-fluid w-28 h-28" />
+                            <img src={`http://localhost:3000/${employee.employeeImg}`} alt="user-avatar" className="img-circle img-fluid w-28 h-28" />
                           </div>
                         </div>
                       </div>

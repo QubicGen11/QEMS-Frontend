@@ -40,11 +40,11 @@ const ViewEditProfile = ({ employeeId }) => {
 
     const handleClickImage = async () => {
         const form = new FormData();
-        form.append('employeeImg', formData.employeeImg);
-        form.append('companyEmail', formData.companyEmail);
+        form.append('file', formData.employeeImg); // Ensure this matches the backend field
+        form.append('email', formData.companyEmail); // Ensure this matches the backend field
 
         try {
-            const response = await axios.post('http://localhost:3000/qubinest/employee/upload', form, {
+            const response = await axios.post('http://localhost:3000/qubinest/upload', form, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
@@ -149,12 +149,14 @@ const ViewEditProfile = ({ employeeId }) => {
                         <input
                             type="file"
                             id="imageUpload"
+                            name="file"
                             accept="image/*"
                             onChange={handleImageChange}
                             ref={fileInputRef}
                             style={{ display: 'none' }}
                         />
                     </div>
+                    <button type="button" onClick={handleClickImage} className='p-2 m-1'>Upload</button>
                 </div>
                 <div className="col-12 col-md-6">
                     <label htmlFor="inputFirstName" className="form-label">First Name <span>*</span> </label>
@@ -215,7 +217,7 @@ const ViewEditProfile = ({ employeeId }) => {
                     <input type="text" className="form-control" id="inputEducation" name="education" value={formData.education} onChange={handleChange} />
                 </div>
                 <div className="col-12">
-                    <label htmlFor="inputEducation" className="form-label">Skills<span>*</span> </label>
+                    <label htmlFor="inputSkill" className="form-label">Skills<span>*</span> </label>
                     <input type="text" className="form-control" id="inputSkill" name="skills" value={formData.skills} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
