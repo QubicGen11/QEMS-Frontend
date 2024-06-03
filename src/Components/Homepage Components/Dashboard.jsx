@@ -9,6 +9,7 @@ import { useUser } from '../context/UserContext';
 
 const Dashboard = () => {
   const [attendance, setAttendance] = useState([]);
+  const [userAttendance,setUserAttendance]=useState([])
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [clockInTime, setClockInTime] = useState('');
@@ -55,6 +56,28 @@ const Dashboard = () => {
 
     fetchEmployeeInfo();
   }, [email]);
+
+  useEffect(() => {
+    const fetchAttendance = async () => {
+      try {
+        const response = await axios.get(`http://localhost:3000/qubinest/attendance/${email}`);
+        setUserAttendance(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching attendance data:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchAttendance();
+
+    const intervalId = setInterval(fetchAttendance, 100); // Polling every 5 seconds
+
+    return () => clearInterval(intervalId); // Cleanup interval on component unmount
+  }, [email]);
+  
+
+ 
 
   useEffect(() => {
     const userClockInKey = `lastClockIn_${email}`;
@@ -118,17 +141,29 @@ const Dashboard = () => {
     fetchEmployeeData();
   }, [email]);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     if (reportText.length < MIN_CHAR_LIMIT || reportText.length > MAX_CHAR_LIMIT) {
       toast.error(`Report must be between ${MIN_CHAR_LIMIT} and ${MAX_CHAR_LIMIT} characters.`);
       return;
     }
-    setIsReportSubmitted(true);
-    toast.success('Daily report submitted successfully!');
-    setReportText("");
-    console.log(reportText);
+  
+    try {
+      const response = await axios.post('http://localhost:3000/qubinest/report', {
+        email,
+        reportText
+      });
+      setIsReportSubmitted(true);
+      toast.success('Daily report submitted successfully!');
+      setReportText("");
+      console.log(response.data);
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      toast.error('Failed to submit report. Please try again.');
+    }
   };
+  
+  
 
   const clockIn = async () => {
     const today = new Date().toLocaleDateString();
@@ -453,26 +488,32 @@ const Dashboard = () => {
                               <p className="text-xs text-right mb-2">{reportText.length}/{MAX_CHAR_LIMIT}</p>
                             </div>
                             <div className="card-footer bg-w p-0">
-                              <div className="reports bg-white">
-                                <form onSubmit={handleSubmit}>
-                                  <textarea
-                                    value={reportText}
-                                    onChange={onChangesubmit}
-                                    style={{ border: 'solid 1px black' }}
-                                    placeholder='Submit Your Daily Update...!'
-                                    className='text-[12px] px-1 flex mb-2 w-52 h-14 md:w-96 lg:w-96 xl:w-96'
-                                  />
-                                  <div className="flex justify-center">
-                                    <button
-                                      type="submit"
-                                      className="inline-flex cursor-pointer h-5 w-16 items-center gap-1 rounded bg-yellow-300 border text-sm px-2 font-bold ml-1 lg:ml-24 transform hover:scale-110 transition duration-400 ease-in-out hover:bg-yellow-500"
-                                    >
-                                      Submit
-                                    </button>
-                                  </div>
-                                </form>
-                              </div>
-                            </div>
+  <div className="reports bg-white">
+  <div className="card-footer bg-w p-0">
+  <div className="reports bg-white">
+    <form onSubmit={handleSubmit}>
+      <textarea
+        value={reportText}
+        onChange={(e) => setReportText(e.target.value)}
+        style={{ border: 'solid 1px black' }}
+        placeholder='Submit Your Daily Update...!'
+        className='text-[12px] px-1 flex mb-2 w-52 h-14 md:w-96 lg:w-96 xl:w-96'
+      />
+      <div className="flex justify-center">
+        <button
+          type="submit"
+          className="inline-flex cursor-pointer h-5 w-16 items-center gap-1 rounded bg-yellow-300 border text-sm px-2 font-bold ml-1 lg:ml-24 transform hover:scale-110 transition duration-400 ease-in-out hover:bg-yellow-500"
+        >
+          Submit
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+  </div>
+</div>
+
                           </div>
                         </li>
                       </ul>
@@ -525,34 +566,36 @@ const Dashboard = () => {
 
                   <div className="card-body table-responsive p-0" bis_skin_checked={1}>
 
-                    <table className="table table-hover text-nowrap">
-                      <thead>
-                        <tr>
-                          <th>Date</th>
-                          <th>Check In</th>
-                          <th>Check Out</th>
-                          <th>Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {attendance.length > 0 ? (
-                          attendance.map((a, index) => (
-                            <tr key={index}>
-                              <td>{new Date(a.date).toLocaleDateString()}</td>
-                              <td>{new Date(a.check_in_time).toLocaleTimeString()}</td>
-                              <td>{new Date(a.check_out_time).toLocaleTimeString()}</td>
-                              <td>{a.status}</td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan="4">No attendance records found</td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-
-
+                  <table className="table table-hover text-nowrap">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Check In</th>
+          <th>Check Out</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {loading ? (
+          <tr>
+            <td colSpan="4">Loading...</td>
+          </tr>
+        ) : userAttendance.length === 0 ? (
+          <tr>
+            <td colSpan="4">No attendance records found</td>
+          </tr>
+        ) : (
+          userAttendance.map((a, index) => (
+            <tr key={index}>
+              <td>{new Date(a.date).toLocaleDateString()}</td>
+              <td>{a.checkin_Time ? new Date(a.checkin_Time).toLocaleTimeString() : 'N/A'}</td>
+              <td>{a.checkout_Time ? new Date(a.checkout_Time).toLocaleTimeString() : 'N/A'}</td>
+              <td>{a.status}</td>
+            </tr>
+          ))
+        )}
+      </tbody>
+    </table>
 
 
                   </div>
