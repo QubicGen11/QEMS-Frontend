@@ -641,7 +641,7 @@ const Dashboard = () => {
 
                       <div>
 
-                        <a href="#" className="btn btn-primary text-black bg-white font-sans mt-3 rounded-xl">View all</a>
+                        <Link to="/booktimeoff" className="btn btn-primary text-black bg-white font-sans mt-3 rounded-xl">View all</Link>
 
                       </div>
 

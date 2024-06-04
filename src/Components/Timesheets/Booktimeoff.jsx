@@ -16,10 +16,7 @@ import "./Booktimeoff.css"
 const Holidaylist = [
   {"date": "2024-01-14", "name": "Makar Sankranti"},
   {"date": "2024-01-26", "name": "Republic Day"},
-  {"date": "2024-03-11", "name": "Maha Shivaratri"},
-  {"date": "2024-03-29", "name": "Holi"},
   {"date": "2024-04-10", "name": "Ugadi"},
-  {"date": "2024-04-14", "name": "Dr. Ambedkar Jayanti"},
   {"date": "2024-05-01", "name": "Labour Day"},
   {"date": "2024-05-10", "name": "Ramzan (Eid-ul-Fitr)"},
   {"date": "2024-08-15", "name": "Independence Day"},

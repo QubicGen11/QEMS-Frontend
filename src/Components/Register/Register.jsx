@@ -19,7 +19,7 @@ const Register = () => {
     event.preventDefault();
 
     if (!username || !email || !password || !confirmPassword || !role) {
-      toast.error('Please check all the details');
+      toast.error('Please Fill all the details');
       return;
     }
 
@@ -51,7 +51,7 @@ const Register = () => {
         // Navigate to login or another page after successful registration
     } catch (error) {
       console.error('Registration failed:', error.response ? error.response.data : error.message);
-      toast.error('Registration failed');
+      toast.error('User already exists. Please login.');
     }
   };
 

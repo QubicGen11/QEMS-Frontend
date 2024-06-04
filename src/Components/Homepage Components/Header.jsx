@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -7,14 +7,26 @@ import config from "../config"; // Import the config file
 import { useUser } from '../context/UserContext';
 import Cookies from 'js-cookie';
 
-
-
 const Header = () => {
   const { email } = useUser();
-
   const userEmail = email || Cookies.get('email');
-
   const navigate = useNavigate();
+  const [employeeInfo, setEmployeeInfo] = useState([]);
+
+  useEffect(() => {
+    const fetchEmployeeInfo = async () => {
+      try {
+        const response = await axios.get(`http://localhost:3000/qubinest/getemployees/${userEmail}`);
+        setEmployeeInfo(response.data);
+      } catch (error) {
+        console.error('Error fetching employee data:', error);
+      }
+    };
+
+    if (userEmail) {
+      fetchEmployeeInfo();
+    }
+  }, [userEmail]);
 
   const handleLogout = async () => {
     try {
@@ -29,15 +41,15 @@ const Header = () => {
 
   return (
     <>
-      <nav className="main-header navbar navbar-expand navbar-dark navbar-dark" >
-        <ul className="navbar-nav w-auto" >
+      <nav className="main-header navbar navbar-expand navbar-dark navbar-dark">
+        <ul className="navbar-nav w-auto">
           <li className="nav-item">
             <a className="nav-link" data-widget="pushmenu" href="#" role="button">
               <i className="fas fa-bars" />
             </a>
           </li>
         </ul>
-        <ul className="navbar-nav ml-auto mr-4 " >
+        <ul className="navbar-nav ml-auto mr-4">
           <li className="nav-item dropdown">
             <a className="nav-link" data-toggle="dropdown" href="#">
               <li className="nav-item">
@@ -46,11 +58,11 @@ const Header = () => {
                     <a href="#" className="flex items-center px-4 -mx-2">
                       <img
                         className="object-cover mx-2 rounded-full h-9 w-9"
-                        src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=634&q=80"
+                        src={employeeInfo.length > 0 ? `http://localhost:3000/${employeeInfo[0].employeeImg}` : "default-avatar-url"}
                         alt="avatar"
                       />
                       <button className="w-auto z-10 flex flex-wrap items-center p-2 text-sm ml-auto text-gray-600 bg-white border border-transparent rounded-md focus:border-blue-500 focus:ring-opacity-40 dark:focus:ring-opacity-40 focus:ring-blue-300 dark:focus:ring-blue-400 focus:ring dark:text-white dark:bg-gray-800 focus:outline-none">
-                        <span className="mx-1 hover:text-yellow-500 dark:hover:text-yellow-400 text-xs">{name}</span>
+                        <span className="mx-1 hover:text-yellow-500 dark:hover:text-yellow-400 text-xs">{employeeInfo.length > 0 ? `${employeeInfo[0].firstname} ${employeeInfo[0].lastname}` : 'Loading...'}</span>
                         <svg
                           className="w-5 h-5 mx-1"
                           viewBox="0 0 24 24"
@@ -70,20 +82,23 @@ const Header = () => {
             </a>
             <div className="dropdown-menu dropdown-menu-lg dropdown-menu-right mt-2 relative right-30 bg-gray-600 transition-all duration-300 ease-in-out w-[30vw]">
               <div className="bg-gray-800 rounded-md shadow-xl dark:bg-gray-800">
-                <a
-                  href="#"
-                  className="flex items-center p-3 -mt-2 text-sm text-gray-600 transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  <img
-                    className="flex-shrink-0 object-cover mx-1 rounded-full w-9 h-9"
-                    src="https://images.unsplash.com/photo-1523779917675-b6ed3a42a561?ixid=MnwxMjA3fDB8MHxzZWFyY2h8N3x8d29tYW4lMjBibHVlfHx8fGVufDB8fDB8fA%3D%3D&ixlib=rb-1.2.1&auto=format&fit=face&w=500&q=200"
-                    alt="jane avatar"
-                  />
-                  <div className="mx-1">
-                    <h1 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{name}</h1>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{userEmail}</p>
-                  </div>
-                </a>
+                {employeeInfo.map((employee) => (
+                  <a
+                    key={employee.employee_id}
+                    href="#"
+                    className="flex items-center p-3 -mt-2 text-sm text-gray-600 transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
+                  >
+                    <img
+                      className="flex-shrink-0 object-cover mx-1 rounded-full w-9 h-9"
+                      src={`http://localhost:3000/${employee.employeeImg}`}
+                      alt={`${employee.firstname} avatar`}
+                    />
+                    <div className="mx-1">
+                      <h1 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{`${employee.firstname} ${employee.lastname}`}</h1>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{userEmail}</p>
+                    </div>
+                  </a>
+                ))}
                 <hr className="border-gray-200 dark:border-gray-700" />
                 <a
                   href="#"
@@ -98,16 +113,11 @@ const Header = () => {
                   Settings
                 </a>
                 <hr className="border-gray-200 dark:border-gray-700" />
-                {/* <button
-                  onClick={handleLogout}
-                  className="block px-4 py-3 text-sm text-gray-600 capitalize transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  Sign Out
-                </button> */}
-                 <a
+                <a
                   href="#"
                   className="block px-4 py-3 text-sm text-gray-600 capitalize transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
-                  onClick={handleLogout}>
+                  onClick={handleLogout}
+                >
                   Logout
                 </a>
               </div>
