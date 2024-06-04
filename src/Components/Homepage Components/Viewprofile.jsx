@@ -17,13 +17,13 @@ import  { useEffect, useState } from 'react';
 const Viewprofile = () => {
       const email = Cookies.get('email');
   const [employeeData, setEmployeeData] = useState([]);
+
   useEffect(() => {
     const fetchEmployeeData = async () => {
       if (!email) {
         toast.error('No email found in cookies');
         return;
       }
-
       try {
         const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
         console.log('API response:', response.data); // Log the response data
@@ -35,12 +35,14 @@ const Viewprofile = () => {
         }
       } catch (error) {
         console.error('Error fetching employee data:', error);
-        toast.error('Failed to fetch employee data');
+        // toast.error('Submit Your details to get your data');
       }
     };
 
     fetchEmployeeData();
   }, [email]);
+
+
 
   if (!Array.isArray(employeeData)) {
     return <div>Error: Employee data is not an array.</div>;

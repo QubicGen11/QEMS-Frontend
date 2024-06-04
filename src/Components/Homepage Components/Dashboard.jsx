@@ -6,6 +6,7 @@ import config from "../config";
 import { Link } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { useUser } from '../context/UserContext';
+import UserDetailModal from './UserDetailModal';
 const Dashboard = () => {
   const [attendance, setAttendance] = useState([]);
   const [userAttendance,setUserAttendance]=useState([])
@@ -41,6 +42,7 @@ const Dashboard = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [message, setMessage] = useState('');
   const [employeeinfo, setEmployeeInfo] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchEmployeeInfo = async () => {
@@ -48,13 +50,33 @@ const Dashboard = () => {
         const response = await axios.get(`http://localhost:3000/qubinest/getemployees/${email}`);
         setEmployeeInfo(response.data);
         console.log(response.data);
+
+        if (!response.data || Object.keys(response.data).length === 0) {
+          toast.error("Please fill up the details");
+          setIsModalOpen(true);
+        }
       } catch (error) {
         console.error('Error fetching employee data:', error);
+        // toast.error("Please fill up the details");
+        setIsModalOpen(true); // Show modal even if there's an error fetching data
       }
     };
 
     fetchEmployeeInfo();
   }, [email]);
+
+  const handleCompleteDetails = () => {
+    // Logic to handle completing details (e.g., redirecting to a profile completion page)
+    setIsModalOpen(false);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+
+
+
   useEffect(() => {
     const fetchAttendance = async () => {
       try {
@@ -131,7 +153,7 @@ const Dashboard = () => {
         const response = await axios.post('http://localhost:3000/qubinest/getemployees', { email });
         setEmployeeData(response.data);
       } catch (error) {
-        console.error('Error fetching employee data:', error);
+        // console.error('Error fetching employee data:', error);
       }
     };
 
@@ -184,7 +206,8 @@ const Dashboard = () => {
       return response.data;
     } catch (error) {
       if (error.response.status === 500) {
-        toast.error('Please register as an employee before clocking in');
+        // toast.error('Please register as an employee before clocking in');
+        setIsModalOpen(true);
       }
       const errorMessage = error.response ? error.response.data.message : error.message;
       toast.error(errorMessage);
@@ -358,6 +381,11 @@ const Dashboard = () => {
   return (
     <>
       <div className="content-wrapper">
+      <UserDetailModal
+        isOpen={isModalOpen}
+        onRequestClose={handleCloseModal}
+        onCompleteDetails={handleCompleteDetails}
+      />
         <div className="content-header">
           <div className="container-fluid">
             <div className="row mb-2">
@@ -369,6 +397,8 @@ const Dashboard = () => {
                   <li className="breadcrumb-item"><a href="#">Home</a></li>
                   <li className="breadcrumb-item active">Console</li>
                 </ol> */}
+
+                
               </div>
             </div>
           </div>
@@ -381,6 +411,7 @@ const Dashboard = () => {
                 <div className="card card-widget widget-user-2" bis_skin_checked={1}>
                   <div className="card card-widget widget-user shadow-lg">
                     <div className="widget-user-header text-white" style={{ background: 'url("https://res.cloudinary.com/defsu5bfc/image/upload/v1717239193/Black_and_Brown_Futuristic_LinkedIn_Banner_1_okjs2i.png")', backgroundSize: 'cover', backgroundRepeat: 'no-repeat', height:"25vh", backgroundPositionY:'50%'  }}>
+                      
                       
                       {employeeinfo && employeeinfo.map((emp) => (
                         <>
