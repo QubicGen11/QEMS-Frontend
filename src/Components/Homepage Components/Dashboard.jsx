@@ -27,7 +27,7 @@ const Dashboard = () => {
   const [greetingMessage, setGreetingMessage] = useState('');
   const MIN_CHAR_LIMIT = 10;
   const MAX_CHAR_LIMIT = 500;
-  const EXPIRATION_HOURS = 24;
+  const EXPIRATION_HOURS = 12;
   const games = [
     "https://shaiksajidhussain.github.io/menja_game/",
     "https://shaiksajidhussain.github.io/snake_game/",
