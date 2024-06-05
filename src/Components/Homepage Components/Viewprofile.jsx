@@ -6,8 +6,8 @@ import Viewleftpart from './Viewprofile/Viewleftpart'
 import Viewpersonaldetails from './Viewprofile/Viewpersonaldetails'
 import Viewprojectdetails from './Viewprofile/Viewprojectdetails'
 import Viewpassword from './Viewprofile/Viewpassword'
-import Vieweditprofile from './Viewprofile/Vieweditprofile'
-import ViewEditProfile from './Viewprofile/Vieweditprofile'
+import Vieweditprofile from './Viewprofile/ViewEditprofile'
+import ViewEditProfile from './Viewprofile/ViewEditprofile'
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Cookies from 'js-cookie';
@@ -176,8 +176,7 @@ const Viewprofile = () => {
 
                                             {/* This is for edit Profile */}
 
-                                          <ViewEditProfile/>
-
+<Vieweditprofile/>
 
                                             {/* This is for Project Details */}
                                             <Viewprojectdetails/>

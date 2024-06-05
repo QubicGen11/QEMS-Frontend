@@ -9,7 +9,7 @@ import { useUser } from '../context/UserContext';
 import UserDetailModal from './UserDetailModal';
 const Dashboard = () => {
   const [attendance, setAttendance] = useState([]);
-  const [userAttendance,setUserAttendance]=useState([])
+  const [userAttendance, setUserAttendance] = useState([])
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [clockInTime, setClockInTime] = useState('');
@@ -94,9 +94,9 @@ const Dashboard = () => {
 
     return () => clearInterval(intervalId); // Cleanup interval on component unmount
   }, [email]);
-  
 
- 
+
+
 
   useEffect(() => {
     const userClockInKey = `lastClockIn_${email}`;
@@ -166,7 +166,7 @@ const Dashboard = () => {
       toast.error(`Report must be between ${MIN_CHAR_LIMIT} and ${MAX_CHAR_LIMIT} characters.`);
       return;
     }
-  
+
     try {
       const response = await axios.post('http://localhost:3000/qubinest/report', {
         email,
@@ -181,8 +181,8 @@ const Dashboard = () => {
       toast.error('Failed to submit report. Please try again.');
     }
   };
-  
-  
+
+
 
   const clockIn = async () => {
     const today = new Date().toLocaleDateString();
@@ -381,11 +381,11 @@ const Dashboard = () => {
   return (
     <>
       <div className="content-wrapper">
-      <UserDetailModal
-        isOpen={isModalOpen}
-        onRequestClose={handleCloseModal}
-        onCompleteDetails={handleCompleteDetails}
-      />
+        <UserDetailModal
+          isOpen={isModalOpen}
+          onRequestClose={handleCloseModal}
+          onCompleteDetails={handleCompleteDetails}
+        />
         <div className="content-header">
           <div className="container-fluid">
             <div className="row mb-2">
@@ -398,7 +398,7 @@ const Dashboard = () => {
                   <li className="breadcrumb-item active">Console</li>
                 </ol> */}
 
-                
+
               </div>
             </div>
           </div>
@@ -410,9 +410,9 @@ const Dashboard = () => {
               <div className="col-lg-12 col-12 col-sm-12">
                 <div className="card card-widget widget-user-2" bis_skin_checked={1}>
                   <div className="card card-widget widget-user shadow-lg">
-                    <div className="widget-user-header text-white" style={{ background: 'url("https://res.cloudinary.com/defsu5bfc/image/upload/v1717239193/Black_and_Brown_Futuristic_LinkedIn_Banner_1_okjs2i.png")', backgroundSize: 'cover', backgroundRepeat: 'no-repeat', height:"25vh", backgroundPositionY:'50%'  }}>
-                      
-                      
+                    <div className="widget-user-header text-white" style={{ background: 'url("https://res.cloudinary.com/defsu5bfc/image/upload/v1717239193/Black_and_Brown_Futuristic_LinkedIn_Banner_1_okjs2i.png")', backgroundSize: 'cover', backgroundRepeat: 'no-repeat', height: "25vh", backgroundPositionY: '50%' }}>
+
+
                       {employeeinfo && employeeinfo.map((emp) => (
                         <>
                           <h3 className="widget-user-username text-left ml-auto text-base shadow-xl-black" style={{ fontWeight: 'bolder', textShadow: '5px 5px black' }}>{`${greetingMessage} , ${emp.firstname} ${emp.lastname}`}</h3>
@@ -421,9 +421,9 @@ const Dashboard = () => {
                       ))}
                     </div>
 
-                    
+
                     <div className="widget-user-image">
-                      <img className="" src="https://res.cloudinary.com/defsu5bfc/image/upload/v1714828410/logo_3_jizb6b.png" alt="User Avatar" style={{border:"none"}} />
+                      <img className="" src="https://res.cloudinary.com/defsu5bfc/image/upload/v1714828410/logo_3_jizb6b.png" alt="User Avatar" style={{ border: "none" }} />
                     </div>
                   </div>
                   <div className="row h-20">
@@ -516,31 +516,31 @@ const Dashboard = () => {
                               <p className="text-xs text-right mb-2">{reportText.length}/{MAX_CHAR_LIMIT}</p>
                             </div>
                             <div className="card-footer bg-w p-0">
-  <div className="reports bg-white">
-  <div className="card-footer bg-w p-0">
-  <div className="reports bg-white">
-    <form onSubmit={handleSubmit}>
-      <textarea
-        value={reportText}
-        onChange={(e) => setReportText(e.target.value)}
-        style={{ border: 'solid 1px black' }}
-        placeholder='Submit Your Daily Update...!'
-        className='text-[12px] px-1 flex mb-2 w-52 h-14 md:w-96 lg:w-96 xl:w-96'
-      />
-      <div className="flex justify-center">
-        <button
-          type="submit"
-          className="inline-flex cursor-pointer h-5 w-16 items-center gap-1 rounded bg-yellow-300 border text-sm px-2 font-bold ml-1 lg:ml-24 transform hover:scale-110 transition duration-400 ease-in-out hover:bg-yellow-500"
-        >
-          Submit
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
+                              <div className="reports bg-white">
+                                <div className="card-footer bg-w p-0">
+                                  <div className="reports bg-white">
+                                    <form onSubmit={handleSubmit}>
+                                      <textarea
+                                        value={reportText}
+                                        onChange={(e) => setReportText(e.target.value)}
+                                        style={{ border: 'solid 1px black' }}
+                                        placeholder='Submit Your Daily Update...!'
+                                        className='text-[12px] px-1 flex mb-2 w-52 h-14 md:w-96 lg:w-96 xl:w-96'
+                                      />
+                                      <div className="flex justify-center">
+                                        <button
+                                          type="submit"
+                                          className="inline-flex cursor-pointer h-5 w-16 items-center gap-1 rounded bg-yellow-300 border text-sm px-2 font-bold ml-1 lg:ml-24 transform hover:scale-110 transition duration-400 ease-in-out hover:bg-yellow-500"
+                                        >
+                                          Submit
+                                        </button>
+                                      </div>
+                                    </form>
+                                  </div>
+                                </div>
 
-  </div>
-</div>
+                              </div>
+                            </div>
 
                           </div>
                         </li>
@@ -552,147 +552,147 @@ const Dashboard = () => {
 
               <div className="row mt-3" bis_skin_checked={1}>
 
-              <div className="col-12 col-lg-6" bis_skin_checked={1}>
+                <div className="col-12 col-lg-6" bis_skin_checked={1}>
 
-                <div className="card" bis_skin_checked={1}>
+                  <div className="card" bis_skin_checked={1}>
 
-                  <div className="card-header" bis_skin_checked={1}>
+                    <div className="card-header" bis_skin_checked={1}>
 
-                    <h3 className="card-title">Time Sheets</h3>
+                      <h3 className="card-title">Time Sheets</h3>
 
-                    <div className="card-tools" bis_skin_checked={1}>
+                      <div className="card-tools" bis_skin_checked={1}>
 
-                      <Link to="/viewtimesheets">
+                        <Link to="/viewtimesheets">
 
-                        <button
-                          class="cursor-pointer flex justify-between bg-gray-800 px-3 py-2 rounded-full text-xs text-white tracking-wider shadow-xl hover:bg-gray-900 hover:scale-105 duration-500 hover:ring-1 font-mono w-[120px]"
-                        >
-
-                          View More
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke-width="2"
-                            stroke="currentColor"
-                            class="w-5 h-5 animate-bounce"
+                          <button
+                            class="cursor-pointer flex justify-between bg-gray-800 px-3 py-2 rounded-full text-xs text-white tracking-wider shadow-xl hover:bg-gray-900 hover:scale-105 duration-500 hover:ring-1 font-mono w-[120px]"
                           >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"
-                            ></path>
-                          </svg>
-                        </button>
-                      </Link>
 
+                            View More
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke-width="2"
+                              stroke="currentColor"
+                              class="w-5 h-5 animate-bounce"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"
+                              ></path>
+                            </svg>
+                          </button>
+                        </Link>
+
+
+
+                      </div>
+
+                    </div>
+
+                    <div className="card-body table-responsive p-0" bis_skin_checked={1}>
+
+                      <table className="table table-hover text-nowrap">
+                        <thead>
+                          <tr>
+                            <th>Date</th>
+                            <th>Check In</th>
+                            <th>Check Out</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {loading ? (
+                            <tr>
+                              <td colSpan="4">Loading...</td>
+                            </tr>
+                          ) : userAttendance.length === 0 ? (
+                            <tr>
+                              <td colSpan="4">No attendance records found</td>
+                            </tr>
+                          ) : (
+                            userAttendance.map((a, index) => (
+                              <tr key={index}>
+                                <td>{new Date(a.date).toLocaleDateString()}</td>
+                                <td>{a.checkin_Time ? new Date(a.checkin_Time).toLocaleTimeString() : 'N/A'}</td>
+                                <td>{a.checkout_Time ? new Date(a.checkout_Time).toLocaleTimeString() : 'N/A'}</td>
+                                <td>{a.status}</td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
 
 
                     </div>
 
-                  </div>
 
-                  <div className="card-body table-responsive p-0" bis_skin_checked={1}>
 
-                  <table className="table table-hover text-nowrap">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Check In</th>
-          <th>Check Out</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        {loading ? (
-          <tr>
-            <td colSpan="4">Loading...</td>
-          </tr>
-        ) : userAttendance.length === 0 ? (
-          <tr>
-            <td colSpan="4">No attendance records found</td>
-          </tr>
-        ) : (
-          userAttendance.map((a, index) => (
-            <tr key={index}>
-              <td>{new Date(a.date).toLocaleDateString()}</td>
-              <td>{a.checkin_Time ? new Date(a.checkin_Time).toLocaleTimeString() : 'N/A'}</td>
-              <td>{a.checkout_Time ? new Date(a.checkout_Time).toLocaleTimeString() : 'N/A'}</td>
-              <td>{a.status}</td>
-            </tr>
-          ))
-        )}
-      </tbody>
-    </table>
 
 
                   </div>
-
-
-
-
 
                 </div>
 
-              </div>
 
 
+                <div className="col-12 col-lg-6 mt-1">
 
-              <div className="col-12 col-lg-6 mt-1">
+                  <div class="card" style={{ background: "url('https://res.cloudinary.com/defsu5bfc/image/upload/v1716373294/waves_hxaazs.png')", backgroundRepeat: 'no-repeat', backgroundSize: "cover", backgroundColor: '#009efb', borderRadius: '10px' }}>
 
-                <div class="card" style={{ background: "url('https://res.cloudinary.com/defsu5bfc/image/upload/v1716373294/waves_hxaazs.png')", backgroundRepeat: 'no-repeat', backgroundSize: "cover", backgroundColor: '#009efb', borderRadius: '10px' }}>
+                    <div className="card-body">
 
-                  <div className="card-body">
+                      <h5 className="text-white font-semibold relative bottom-2" style={{ fontFamily: 'sans-serif' }}>Upcoming Holidays</h5>
 
-                    <h5 className="text-white font-semibold relative bottom-2" style={{ fontFamily: 'sans-serif' }}>Upcoming Holidays</h5>
+                      <div className="flex justify-between items-center">
 
-                    <div className="flex justify-between items-center">
+                        <div className="flex items-center">
 
-                      <div className="flex items-center">
+                          <img
 
-                        <img
+                            src="https://smarthr.dreamstechnologies.com/react/template/static/media/holiday-calendar.d66643357778e940f4b7d889afd5f589.svg"
 
-                          src="https://smarthr.dreamstechnologies.com/react/template/static/media/holiday-calendar.d66643357778e940f4b7d889afd5f589.svg"
+                            style={{ width: '30px' }}
 
-                          style={{ width: '30px' }}
+                            alt=""
 
-                          alt=""
+                          />
 
-                        />
+                          <div className="ml-2">
 
-                        <div className="ml-2">
+                            <p className="font-sans text-white text-base lg:text-xl">Independence Day</p>
 
-                          <p className="font-sans text-white text-base lg:text-xl">Independence Day</p>
+                            <p className="font-sans text-white text-sm lg:text-base">Mon 20 May 2024</p>
 
-                          <p className="font-sans text-white text-sm lg:text-base">Mon 20 May 2024</p>
+                          </div>
+
+                        </div>
+
+                        <div>
+
+                          <Link to="/booktimeoff" className="btn btn-primary text-black bg-white font-sans mt-3 rounded-xl">View all</Link>
 
                         </div>
 
                       </div>
 
-                      <div>
-
-                        <Link to="/booktimeoff" className="btn btn-primary text-black bg-white font-sans mt-3 rounded-xl">View all</Link>
-
-                      </div>
-
                     </div>
 
                   </div>
 
+                  <iframe src="https://qubic-gen.blogspot.com/" frameborder="0" className="relative bottom-3 h-48 rounded-lg w-full"></iframe>
+
                 </div>
 
-                <iframe src="https://qubic-gen.blogspot.com/" frameborder="0" className="relative bottom-3 h-48 rounded-lg w-full"></iframe>
+
+
+
+
+
 
               </div>
-
-
-
-
-
-
-
-            </div>  
 
               <div className="col-12 col-lg-12 mt-2 bg-white">
                 <h1 className='text-2xl'>Games</h1>
