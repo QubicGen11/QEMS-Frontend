@@ -3,6 +3,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import config from "../config";
+import imgConfig from '../imgConfig';
 import { Link } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { useUser } from '../context/UserContext';
@@ -47,7 +48,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchEmployeeInfo = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/qubinest/getemployees/${email}`);
+        const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
         setEmployeeInfo(response.data);
         console.log(response.data);
 
@@ -80,7 +81,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchAttendance = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/qubinest/attendance/${email}`);
+        const response = await axios.get(`${config.apiUrl}/qubinest/attendance/${email}`);
         setUserAttendance(response.data);
         setLoading(false);
       } catch (error) {
@@ -150,7 +151,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchEmployeeData = async () => {
       try {
-        const response = await axios.post('http://localhost:3000/qubinest/getemployees', { email });
+        const response = await axios.post(`${config.apiUrl}/qubinest/getemployees`, { email });
         setEmployeeData(response.data);
       } catch (error) {
         // console.error('Error fetching employee data:', error);
@@ -168,7 +169,7 @@ const Dashboard = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:3000/qubinest/report', {
+      const response = await axios.post(`${imgConfig.apiUrl}/qubinest/report`, {
         email,
         reportText
       });
@@ -484,7 +485,7 @@ const Dashboard = () => {
                             </ul>
                           </div>
                           <div className="col-5 text-center pt-3" bis_skin_checked={1}>
-                            <img src={`http://localhost:3000/${employee.employeeImg}`} alt="user-avatar" className="img-circle img-fluid w-28 h-28" />
+                            <img src={`${imgConfig.apiUrl}/${employee.employeeImg}`} alt="user-avatar" className="img-circle img-fluid w-28 h-28" />
                           </div>
                         </div>
                       </div>

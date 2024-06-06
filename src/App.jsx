@@ -11,7 +11,6 @@ import Viewprofile from "./Components/Homepage Components/Viewprofile";
 import Holiday from "./Components/Homepage Components/Holiday Components/Holiday";
 import { UserProvider } from "./Components/context/UserContext";
 import Booktimeoff from "./Components/Timesheets/Booktimeoff";
-import ViewEditProfile from "./Components/Homepage Components/Viewprofile/ViewEditprofile";
 
 const App = () => {
   return (

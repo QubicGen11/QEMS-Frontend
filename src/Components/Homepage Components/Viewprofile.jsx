@@ -6,13 +6,12 @@ import Viewleftpart from './Viewprofile/Viewleftpart'
 import Viewpersonaldetails from './Viewprofile/Viewpersonaldetails'
 import Viewprojectdetails from './Viewprofile/Viewprojectdetails'
 import Viewpassword from './Viewprofile/Viewpassword'
-import Vieweditprofile from './Viewprofile/ViewEditprofile'
-import ViewEditProfile from './Viewprofile/ViewEditprofile'
-import { toast } from 'react-toastify';
+ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Cookies from 'js-cookie';
 import config from '../config'
 import axios from 'axios';
+import Vieweditprofile from '../Homepage Components/Viewprofile/Vieweditprofile'
 import  { useEffect, useState } from 'react';
 const Viewprofile = () => {
       const email = Cookies.get('email');

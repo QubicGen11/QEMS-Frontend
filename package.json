@@ -12,6 +12,7 @@
   "dependencies": {
     "admin-lte": "^3.2.0",
     "aos": "^2.3.4",
+    "apache-ignite-client": "^1.0.0",
     "axios": "^1.6.8",
     "bootstrap": "^5.3.3",
     "date-fns": "^3.6.0",

@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import config from '../../config';
 import Cookies from 'js-cookie';
+import imgConfig from '../../imgConfig';
 const Viewleftpart = () => {
     const email = Cookies.get('email');
     const [employeeData, setEmployeeData] = useState([]);
@@ -44,8 +45,8 @@ const Viewleftpart = () => {
                                         <div className="text-center" bis_skin_checked={1}>
                                             <img
                                                 className="profile-user-img img-fluid img-circle h-24"
-                                                src="https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp"
-                                                alt="User profile picture"
+                                                src={`${imgConfig.apiUrl}/${emp.employeeImg}`}
+                                                alt={`${emp.firstname} avatar`}
                                             />
                                         </div>
                                         <h3 className="profile-username text-center">{emp.firstname}{emp.lastname}</h3>

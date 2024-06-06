@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import Header from '../Homepage Components/Header';
@@ -7,6 +7,7 @@ import Footer from '../Homepage Components/Footer';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import config from '../config';
 
 const ViewTimesheets = () => {
   const [userAttendance, setUserAttendance] = useState([]);
@@ -36,24 +37,24 @@ const ViewTimesheets = () => {
     });
   };
 
+  const fetchAttendance = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${config.apiUrl}/qubinest/attendance/${email}`);
+      setUserAttendance(response.data);
+    } catch (error) {
+      console.error('Error fetching attendance data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [email]);
+
   useEffect(() => {
-    const fetchAttendance = async () => {
-      try {
-        const response = await axios.get(`http://localhost:3000/qubinest/attendance/${email}`);
-        setUserAttendance(response.data);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching attendance data:', error);
-        setLoading(false);
-      }
-    };
-
     fetchAttendance();
-
-    const intervalId = setInterval(fetchAttendance, 100); // Polling every 5 seconds
+    const intervalId = setInterval(fetchAttendance, 5000); // Polling every 5 seconds
 
     return () => clearInterval(intervalId); // Cleanup interval on component unmount
-  }, [email]);
+  }, [fetchAttendance]);
 
   return (
     <>
@@ -131,15 +132,6 @@ const ViewTimesheets = () => {
                       ))
                     )}
                   </tbody>
-                  {/* <tfoot>
-                    <tr>
-                      <th>Date</th>
-                      <th>Check in time</th>
-                      <th>Check out</th>
-                      <th>Reports</th>
-                      <th>Status</th>
-                    </tr>
-                  </tfoot> */}
                 </table>
               </div>
             </div>

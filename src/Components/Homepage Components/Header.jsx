@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import config from "../config"; // Import the config file
 import { useUser } from '../context/UserContext';
 import Cookies from 'js-cookie';
+import imgConfig from '../imgConfig';
 
 const Header = () => {
   const { email } = useUser();
@@ -16,7 +17,7 @@ const Header = () => {
   useEffect(() => {
     const fetchEmployeeInfo = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/qubinest/getemployees/${userEmail}`);
+        const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${userEmail}`);
         setEmployeeInfo(response.data);
       } catch (error) {
         console.error('Error fetching employee data:', error);
@@ -58,7 +59,7 @@ const Header = () => {
                     <a href="#" className="flex items-center px-4 -mx-2">
                       <img
                         className="object-cover mx-2 rounded-full h-9 w-9"
-                        src={employeeInfo.length > 0 ? `http://localhost:3000/${employeeInfo[0].employeeImg}` : "default-avatar-url"}
+                        src={employeeInfo.length > 0 ? `${imgConfig.apiUrl}/${employeeInfo[0].employeeImg}` : "default-avatar-url"}
                         alt="avatar"
                       />
                       <button className="w-auto z-10 flex flex-wrap items-center p-2 text-sm ml-auto text-gray-600 bg-white border border-transparent rounded-md focus:border-blue-500 focus:ring-opacity-40 dark:focus:ring-opacity-40 focus:ring-blue-300 dark:focus:ring-blue-400 focus:ring dark:text-white dark:bg-gray-800 focus:outline-none">
@@ -90,7 +91,7 @@ const Header = () => {
                   >
                     <img
                       className="flex-shrink-0 object-cover mx-1 rounded-full w-9 h-9"
-                      src={`http://localhost:3000/${employee.employeeImg}`}
+                      src={`${imgConfig.apiUrl}/${employee.employeeImg}`}
                       alt={`${employee.firstname} avatar`}
                     />
                     <div className="mx-1">
