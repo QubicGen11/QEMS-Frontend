@@ -6,13 +6,14 @@ import Viewleftpart from './Viewprofile/Viewleftpart'
 import Viewpersonaldetails from './Viewprofile/Viewpersonaldetails'
 import Viewprojectdetails from './Viewprofile/Viewprojectdetails'
 import Viewpassword from './Viewprofile/Viewpassword'
-import ViewEditprofile from '../Homepage Components/Viewprofile/Vieweditprofile'
  import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Cookies from 'js-cookie';
 import config from '../config'
 import axios from 'axios';
 import  { useEffect, useState } from 'react';
+import "./Viewprofile/ViewEditprofile"
+import ViewEditProfile from './Viewprofile/ViewEditprofile'
 
 
 const Viewprofile = () => {
@@ -177,7 +178,7 @@ const Viewprofile = () => {
 
                                             {/* This is for edit Profile */}
 
-<ViewEditprofile/>
+<ViewEditProfile/>
                                             {/* This is for Project Details */}
                                             <Viewprojectdetails/>
 
