@@ -12,9 +12,8 @@ import Cookies from 'js-cookie';
 import config from '../config'
 import axios from 'axios';
 import  { useEffect, useState } from 'react';
-import "./Viewprofile/ViewEditprofile"
-import ViewEditProfile from './Viewprofile/ViewEditprofile'
-
+import "./Viewprofile/Vieweditprofile"
+import VieweditProfile from './Viewprofile/Vieweditprofile';
 
 const Viewprofile = () => {
       const email = Cookies.get('email');
@@ -178,7 +177,7 @@ const Viewprofile = () => {
 
                                             {/* This is for edit Profile */}
 
-<ViewEditProfile/>
+<VieweditProfile/>
                                             {/* This is for Project Details */}
                                             <Viewprojectdetails/>
 
