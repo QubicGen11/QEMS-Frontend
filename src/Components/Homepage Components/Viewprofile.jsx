@@ -11,8 +11,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import Cookies from 'js-cookie';
 import config from '../config'
 import axios from 'axios';
-import Vieweditprofile from '../Homepage Components/Viewprofile/Vieweditprofile'
 import  { useEffect, useState } from 'react';
+import ViewEditProfile from '../Homepage Components/Viewprofile/ViewEditprofile'
+
 const Viewprofile = () => {
       const email = Cookies.get('email');
   const [employeeData, setEmployeeData] = useState([]);
@@ -175,8 +176,7 @@ const Viewprofile = () => {
 
                                             {/* This is for edit Profile */}
 
-<Vieweditprofile/>
-
+<ViewEditProfile/>
                                             {/* This is for Project Details */}
                                             <Viewprojectdetails/>
 

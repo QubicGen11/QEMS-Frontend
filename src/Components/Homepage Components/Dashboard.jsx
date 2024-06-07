@@ -3,11 +3,11 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import config from "../config";
-import imgConfig from '../imgConfig';
 import { Link } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { useUser } from '../context/UserContext';
 import UserDetailModal from './UserDetailModal';
+import { fetchAttendanceData } from '../Homepage Components/api'; // Import the shared function
 const Dashboard = () => {
   const [attendance, setAttendance] = useState([]);
   const [userAttendance, setUserAttendance] = useState([])
@@ -48,7 +48,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchEmployeeInfo = async () => {
       try {
-        const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
+        const response = await axios.get(`http://localhost:3000/qubinest/getemployees/${email}`);
         setEmployeeInfo(response.data);
         console.log(response.data);
 
@@ -81,17 +81,16 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchAttendance = async () => {
       try {
-        const response = await axios.get(`${config.apiUrl}/qubinest/attendance/${email}`);
-        setUserAttendance(response.data);
+        const data = await fetchAttendanceData(email); // Use the shared function
+        setUserAttendance(data);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching attendance data:', error);
         setLoading(false);
       }
     };
 
     fetchAttendance();
-    const intervalId = setInterval(fetchAttendance, 100); // Polling every 5 seconds
+    const intervalId = setInterval(fetchAttendance, 10000); // Polling every 10 seconds
 
     return () => clearInterval(intervalId); // Cleanup interval on component unmount
   }, [email]);
@@ -151,7 +150,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchEmployeeData = async () => {
       try {
-        const response = await axios.post(`${config.apiUrl}/qubinest/getemployees`, { email });
+        const response = await axios.post('http://localhost:3000/qubinest/getemployees', { email });
         setEmployeeData(response.data);
       } catch (error) {
         // console.error('Error fetching employee data:', error);
@@ -169,7 +168,7 @@ const Dashboard = () => {
     }
 
     try {
-      const response = await axios.post(`${imgConfig.apiUrl}/qubinest/report`, {
+      const response = await axios.post('http://localhost:3000/qubinest/report', {
         email,
         reportText
       });
@@ -180,7 +179,7 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Error submitting report:', error);
       toast.error('Failed to submit report. Please try again.');
-    }
+    }y
   };
 
 
@@ -485,7 +484,7 @@ const Dashboard = () => {
                             </ul>
                           </div>
                           <div className="col-5 text-center pt-3" bis_skin_checked={1}>
-                            <img src={`${imgConfig.apiUrl}/${employee.employeeImg}`} alt="user-avatar" className="img-circle img-fluid w-28 h-28" />
+                            <img src={`http://localhost:3000/${employee.employeeImg}`} alt="user-avatar" className="img-circle img-fluid w-28 h-28" />
                           </div>
                         </div>
                       </div>
@@ -605,25 +604,26 @@ const Dashboard = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {loading ? (
-                            <tr>
-                              <td colSpan="4">Loading...</td>
-                            </tr>
-                          ) : userAttendance.length === 0 ? (
-                            <tr>
-                              <td colSpan="4">No attendance records found</td>
-                            </tr>
-                          ) : (
-                            userAttendance.map((a, index) => (
-                              <tr key={index}>
-                                <td>{new Date(a.date).toLocaleDateString()}</td>
-                                <td>{a.checkin_Time ? new Date(a.checkin_Time).toLocaleTimeString() : 'N/A'}</td>
-                                <td>{a.checkout_Time ? new Date(a.checkout_Time).toLocaleTimeString() : 'N/A'}</td>
-                                <td>{a.status}</td>
-                              </tr>
-                            ))
-                          )}
-                        </tbody>
+  {loading ? (
+    <tr>
+      <td colSpan="4">Loading...</td>
+    </tr>
+  ) : userAttendance.length === 0 ? (
+    <tr>
+      <td colSpan="4">No attendance records found</td>
+    </tr>
+  ) : (
+    userAttendance.map((attendance, index) => (
+      <tr key={attendance.id || index}>  {/* Ensure a unique key for each row */}
+        <td>{new Date(attendance.date).toLocaleDateString()}</td>
+        <td>{attendance.checkin_Time ? new Date(attendance.checkin_Time).toLocaleTimeString() : 'N/A'}</td>
+        <td>{attendance.checkout_Time ? new Date(attendance.checkout_Time).toLocaleTimeString() : 'N/A'}</td>
+        <td>{attendance.status}</td>
+      </tr>
+    ))
+  )}
+</tbody>
+
                       </table>
 
 
