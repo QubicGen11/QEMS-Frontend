@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Cookies from 'js-cookie';
 import "./Vieweditprofile.css";
+import config from '../../config';
 
 const ViewEditProfile = () => {
     const email = Cookies.get('email');
@@ -35,7 +36,7 @@ const ViewEditProfile = () => {
                 return;
             }
             try {
-                const response = await axios.get(`http://localhost:3000/qubinest/getemployees/${email}`);
+                const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
                 console.log('API response:', response.data);
                 if (Array.isArray(response.data) && response.data.length > 0) {
                     const employee = response.data[0];
@@ -75,7 +76,8 @@ const ViewEditProfile = () => {
         form.append('email', formData.companyEmail);
 
         try {
-            const response = await axios.post('http://localhost:3000/qubinest/upload', form, {
+
+            const response = await axios.post(`${config.apiUrl}/qubinest/upload`, form, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
@@ -106,10 +108,11 @@ const ViewEditProfile = () => {
 
         try {
             if (employeeId) {
-                await axios.put(`http://localhost:3000/qubinest/employees/${employeeId}`, formData);
+                await axios.put(`${config.apiUrl}/qubinest/employees/${employeeId}`, formData);
+                
                 toast.success('Employee updated successfully');
             } else {
-                const response = await axios.post('http://localhost:3000/qubinest/employees', formData);
+                const response = await axios.post(`${config.apiUrl}/qubinest/employees`, formData);
                 setEmployeeId(response.data.employee_id);
                 toast.success('Employee created successfully');
             }
