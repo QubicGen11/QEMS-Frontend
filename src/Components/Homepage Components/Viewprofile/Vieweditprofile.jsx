@@ -132,7 +132,7 @@ const ViewEditProfile = () => {
                         style={{ position: 'relative', display: 'inline-block' }}>
                         <img
                             className="profile-user-img img-fluid img-circle"
-                            src="https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp"
+                            src={imagePreview}
                             alt="User profile picture"
                             onClick={() => fileInputRef.current.click()}
                             style={{ cursor: 'pointer', width: '120px', height: '120px' }}
