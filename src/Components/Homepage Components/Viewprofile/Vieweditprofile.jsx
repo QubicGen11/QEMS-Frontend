@@ -2,11 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import "./Vieweditprofile.css";
 import Cookies from 'js-cookie';
+import "./Vieweditprofile.css";
 
-const ViewEditProfile = ({ employeeId }) => {
-    const userEmail = Cookies.get('email');
+const ViewEditProfile = () => {
+    const email = Cookies.get('email');
     const [formData, setFormData] = useState({
         firstname: '',
         lastname: '',
@@ -14,17 +14,48 @@ const ViewEditProfile = ({ employeeId }) => {
         gender: '',
         address: '',
         education: '',
-        skills:'',
+        skills: '',
         phone: '',
         position: '',
         email: '',
         linkedin: '',
         about: '',
-        companyEmail: userEmail
+        companyEmail: email,
+        employeeImg: null
     });
+    const [employeeId, setEmployeeId] = useState(null);
     const [imagePreview, setImagePreview] = useState("https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp");
     const [hover, setHover] = useState(false);
     const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        const fetchEmployeeData = async () => {
+            if (!email) {
+                toast.error('No email found in cookies');
+                return;
+            }
+            try {
+                const response = await axios.get(`http://localhost:3000/qubinest/getemployees/${email}`);
+                console.log('API response:', response.data);
+                if (Array.isArray(response.data) && response.data.length > 0) {
+                    const employee = response.data[0];
+                    setFormData({
+                        ...employee,
+                        dob: employee.dob.split('T')[0], // Format date for input type date
+                        companyEmail: email
+                    });
+                    setEmployeeId(employee.employee_id);
+                    setImagePreview(employee.employeeImg || "https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp");
+                } else {
+                    toast.error('No employee data found');
+                }
+            } catch (error) {
+                console.error('Error fetching employee data:', error);
+            }
+        };
+
+        fetchEmployeeData();
+    }, [email]);
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -40,8 +71,8 @@ const ViewEditProfile = ({ employeeId }) => {
 
     const handleClickImage = async () => {
         const form = new FormData();
-        form.append('file', formData.employeeImg); // Ensure this matches the backend field
-        form.append('email', formData.companyEmail); // Ensure this matches the backend field
+        form.append('file', formData.employeeImg);
+        form.append('email', formData.companyEmail);
 
         try {
             const response = await axios.post('http://localhost:3000/qubinest/upload', form, {
@@ -56,22 +87,6 @@ const ViewEditProfile = ({ employeeId }) => {
         }
     };
 
-    useEffect(() => {
-        const fetchEmployee = async () => {
-            if (employeeId) {
-                try {
-                    const response = await axios.get(`http://localhost:3000/qubinest/employees/${employeeId}`);
-                    setFormData(response.data);
-                } catch (error) {
-                    console.error('Error fetching employee:', error);
-                    toast.error('Error fetching employee details');
-                }
-            }
-        };
-
-        fetchEmployee();
-    }, [employeeId]);
-
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({
@@ -83,7 +98,7 @@ const ViewEditProfile = ({ employeeId }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         for (const key in formData) {
-            if (formData[key] === '') {
+            if (formData[key] === '' && key !== 'employeeImg') {
                 toast.error(`${key} is required`);
                 return;
             }
@@ -91,27 +106,13 @@ const ViewEditProfile = ({ employeeId }) => {
 
         try {
             if (employeeId) {
-                const response = await axios.put(`http://localhost:3000/qubinest/employees/${employeeId}`, formData);
+                await axios.put(`http://localhost:3000/qubinest/employees/${employeeId}`, formData);
                 toast.success('Employee updated successfully');
             } else {
                 const response = await axios.post('http://localhost:3000/qubinest/employees', formData);
+                setEmployeeId(response.data.employee_id);
                 toast.success('Employee created successfully');
             }
-            setFormData({
-                firstname: '',
-                lastname: '',
-                dob: '',
-                gender: '',
-                address: '',
-                phone: '',
-                position: '',
-                email: '',
-                skills:'',
-                linkedin: '',
-                education: '',
-                about: '',
-                companyEmail: userEmail
-            });
         } catch (error) {
             console.error('Error submitting form:', error);
             toast.error('Error submitting form');
@@ -128,7 +129,7 @@ const ViewEditProfile = ({ employeeId }) => {
                         style={{ position: 'relative', display: 'inline-block' }}>
                         <img
                             className="profile-user-img img-fluid img-circle"
-                            src={imagePreview}
+                            src="https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp"
                             alt="User profile picture"
                             onClick={() => fileInputRef.current.click()}
                             style={{ cursor: 'pointer', width: '120px', height: '120px' }}
@@ -159,19 +160,19 @@ const ViewEditProfile = ({ employeeId }) => {
                     <button type="button" onClick={handleClickImage} className='p-2 m-1'>Upload</button>
                 </div>
                 <div className="col-12 col-md-6">
-                    <label htmlFor="inputFirstName" className="form-label">First Name <span>*</span> </label>
+                    <label htmlFor="inputFirstName" className="form-label">First Name <span>*</span></label>
                     <input type="text" className="form-control" id="inputFirstName" name="firstname" value={formData.firstname} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
-                    <label htmlFor="inputLastName" className="form-label">Last Name<span>*</span> </label>
+                    <label htmlFor="inputLastName" className="form-label">Last Name<span>*</span></label>
                     <input type="text" className="form-control" id="inputLastName" name="lastname" value={formData.lastname} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
-                    <label htmlFor="inputDob" className="form-label">Date of Birth<span>*</span> </label>
+                    <label htmlFor="inputDob" className="form-label">Date of Birth<span>*</span></label>
                     <input type="date" className="form-control" id="inputDob" name="dob" value={formData.dob} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
-                    <label className="form-label">Gender<span>*</span> </label>
+                    <label className="form-label">Gender<span>*</span></label>
                     <div>
                         <label>
                             <input
@@ -209,35 +210,35 @@ const ViewEditProfile = ({ employeeId }) => {
                     </div>
                 </div>
                 <div className="col-12">
-                    <label htmlFor="inputAddress" className="form-label">Address<span>*</span> </label>
+                    <label htmlFor="inputAddress" className="form-label">Address<span>*</span></label>
                     <input type="text" className="form-control" id="inputAddress" name="address" value={formData.address} onChange={handleChange} />
                 </div>
                 <div className="col-12">
-                    <label htmlFor="inputEducation" className="form-label">Education<span>*</span> </label>
+                    <label htmlFor="inputEducation" className="form-label">Education<span>*</span></label>
                     <input type="text" className="form-control" id="inputEducation" name="education" value={formData.education} onChange={handleChange} />
                 </div>
                 <div className="col-12">
-                    <label htmlFor="inputSkill" className="form-label">Skills<span>*</span> </label>
+                    <label htmlFor="inputSkill" className="form-label">Skills<span>*</span></label>
                     <input type="text" className="form-control" id="inputSkill" name="skills" value={formData.skills} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
-                    <label htmlFor="inputPhone" className="form-label">Phone<span>*</span> </label>
+                    <label htmlFor="inputPhone" className="form-label">Phone<span>*</span></label>
                     <input type="text" className="form-control" id="inputPhone" name="phone" value={formData.phone} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
-                    <label htmlFor="inputPosition" className="form-label">Position<span>*</span> </label>
+                    <label htmlFor="inputPosition" className="form-label">Position<span>*</span></label>
                     <input type="text" className="form-control" id="inputPosition" name="position" value={formData.position} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
-                    <label htmlFor="inputEmail" className="form-label">Email<span>*</span> </label>
+                    <label htmlFor="inputEmail" className="form-label">Email<span>*</span></label>
                     <input type="email" className="form-control" id="inputEmail" name="email" value={formData.email} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
-                    <label htmlFor="inputLinkedin" className="form-label">LinkedIn<span>*</span> </label>
+                    <label htmlFor="inputLinkedin" className="form-label">LinkedIn<span>*</span></label>
                     <input type="text" className="form-control" id="inputLinkedin" name="linkedin" value={formData.linkedin} onChange={handleChange} />
                 </div>
                 <div className="col-12">
-                    <label htmlFor="inputAbout" className="form-label">About<span>*</span> </label>
+                    <label htmlFor="inputAbout" className="form-label">About<span>*</span></label>
                     <textarea className="form-control" id="inputAbout" name="about" value={formData.about} onChange={handleChange}></textarea>
                 </div>
                 <div className="col-12">
