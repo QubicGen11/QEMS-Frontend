@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import config from "../config"; // Import the config file
@@ -32,6 +32,8 @@ const Header = () => {
   const handleLogout = async () => {
     try {
       await axios.post(`${config.apiUrl}/qubinest/logout`);
+      Cookies.remove('employee_id');
+      Cookies.remove('email');
       toast.success('Logout successful');
       navigate('/');
     } catch (error) {

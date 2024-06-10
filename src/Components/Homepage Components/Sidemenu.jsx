@@ -111,10 +111,10 @@ const Sidemenu = () => {
                     </a>
                   </li>
                   <li className="nav-item">
-                    <a href="pages/charts/inline.html" className="nav-link">
+                    <Link to="/documents" className="nav-link">
                       <i className="far fa-circle nav-icon" />
                       <p>Documents</p>
-                    </a>
+                    </Link>
                   </li>
                   <li className="nav-item">
                     <a href="pages/charts/uplot.html" className="nav-link">

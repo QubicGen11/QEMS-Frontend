@@ -9,6 +9,7 @@ import { useUser } from '../context/UserContext';
 import UserDetailModal from './UserDetailModal';
 import { fetchAttendanceData } from '../Homepage Components/api'; // Import the shared function
 const Dashboard = () => {
+  
   const [attendance, setAttendance] = useState([]);
   const [userAttendance, setUserAttendance] = useState([])
   const [loading, setLoading] = useState(true);
@@ -52,13 +53,18 @@ const Dashboard = () => {
         setEmployeeInfo(response.data);
         console.log(response.data);
 
-        if (!response.data || Object.keys(response.data).length === 0) {
+        // Added this block to set the employee_id cookie
+        if (response.data && response.data.length > 0) {
+          const employeeId = response.data[0].employee_id;
+          Cookies.set('employee_id', employeeId, { secure: true, sameSite: 'Strict' });
+        }
+
+        if (!response.data || response.data.length === 0) {
           toast.error("Please fill up the details");
           setIsModalOpen(true);
         }
       } catch (error) {
         console.error('Error fetching employee data:', error);
-        // toast.error("Please fill up the details");
         setIsModalOpen(true); // Show modal even if there's an error fetching data
       }
     };

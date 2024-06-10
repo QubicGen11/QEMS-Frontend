@@ -11,24 +11,27 @@ import Viewprofile from "./Components/Homepage Components/Viewprofile";
 import Holiday from "./Components/Homepage Components/Holiday Components/Holiday";
 import { UserProvider } from "./Components/context/UserContext";
 import Booktimeoff from "./Components/Timesheets/Booktimeoff";
+import { Documents } from "./Components/Earnings Components/Documents Components/Documents";
 
 const App = () => {
   return (
     <>
       <ToastContainer autoClose={1000} />
-      <UserProvider><BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={<Dashboardmain />} />
-          <Route path="/viewtimesheets" element={<ViewTimesheets />} />
-          <Route path="*" element={<Nopage />} />
-          <Route path="/viewprofile" element={<Viewprofile />} />
-          <Route path="/holiday" element={<Holiday />} />
-          <Route path="/booktimeoff" element={<Booktimeoff/>} />
-        </Routes>
-      </BrowserRouter></UserProvider>
-      
+      <UserProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/dashboard" element={<Dashboardmain />} />
+            <Route path="/viewtimesheets" element={<ViewTimesheets />} />
+            <Route path="*" element={<Nopage />} />
+            <Route path="/viewprofile" element={<Viewprofile />} />
+            <Route path="/holiday" element={<Holiday />} />
+            <Route path="/booktimeoff" element={<Booktimeoff />} />
+            <Route path="/documents" element={<Documents />} />
+          </Routes>
+        </BrowserRouter>
+      </UserProvider>
     </>
   );
 };

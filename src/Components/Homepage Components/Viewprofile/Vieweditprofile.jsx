@@ -105,15 +105,17 @@ const ViewEditProfile = () => {
                 return;
             }
         }
-
+    
         try {
             if (employeeId) {
                 await axios.put(`${config.apiUrl}/qubinest/employees/${employeeId}`, formData);
-                
+                Cookies.set('employee_id', employeeId); // Set employee ID as a cookie after update
                 toast.success('Employee updated successfully');
             } else {
                 const response = await axios.post(`${config.apiUrl}/qubinest/employees`, formData);
-                setEmployeeId(response.data.employee_id);
+                const newEmployeeId = response.data.employee_id;
+                setEmployeeId(newEmployeeId);
+                Cookies.set('employee_id', newEmployeeId); // Set employee ID as a cookie after creation
                 toast.success('Employee created successfully');
             }
         } catch (error) {
@@ -121,6 +123,7 @@ const ViewEditProfile = () => {
             toast.error('Error submitting form');
         }
     };
+    
 
     return (
         <div className="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabIndex={0}>
