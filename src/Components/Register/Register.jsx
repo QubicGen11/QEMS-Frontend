@@ -13,13 +13,16 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState('');
+  const [salary, setSalary] = useState('');
+  const [mainPosition, setMainPosition] = useState('');
+  const [joiningDate, setJoiningDate] = useState('');
   const navigate = useNavigate();
 
   const onSubmit = async (event) => {
     event.preventDefault();
 
-    if (!username || !email || !password || !confirmPassword || !role) {
-      toast.error('Please Fill all the details');
+    if (!username || !email || !password || !confirmPassword || !role || !salary || !mainPosition || !joiningDate) {
+      toast.error('Please fill all the details');
       return;
     }
 
@@ -40,15 +43,27 @@ const Register = () => {
     }
 
     try {
-      const response = await axios.post(`${config.apiUrl}/qubinest/register`, { username, email, password, role });
+      const response = await axios.post(`${config.apiUrl}/qubinest/register`, {
+        username,
+        email,
+        password,
+        role,
+        salary: parseFloat(salary),
+        mainPosition,
+        joiningDate
+      });
       console.log(response);
       setUsername('');
       setEmail('');
       setPassword('');
       setConfirmPassword('');
       setRole('');
+      setSalary('');
+      setMainPosition('');
+      setJoiningDate('');
       toast.success('Registration successful');
-        // Navigate to login or another page after successful registration
+      // Navigate to login or another page after successful registration
+      navigate('/login');
     } catch (error) {
       console.error('Registration failed:', error.response ? error.response.data : error.message);
       toast.error('User already exists. Please login.');
@@ -71,14 +86,14 @@ const Register = () => {
           </h1>
         </div>
         <div className='loginform z-40 flex justify-center items-center' data-aos="flip-left">
-          <div className="max-w-md relative flex flex-col rounded-lg text-black bg-[#EEF7FF] p-10">
-            <div className="text-2xl font-bold mb-2 text-[#1e0e4b] text-center px-9">
+          <div className="max-w-md relative flex flex-col rounded-lg text-black bg-[#EEF7FF] p-10" >
+            <div className="text-2xl font-bold mb-2 text-[#1e0e4b] text-center px-9" >
               Welcome to <span className="text-yellow-400">QubiNest</span>
             </div>
-            <div className="text-sm font-normal mb-4 text-center text-[#1e0e4b]">
-              Register in to your account as <br />
+            <div className="text-sm font-normal mb-4 text-center text-[#1e0e4b]" >
+              Register into your account as <br />
             </div>
-            <form className="flex flex-col gap-3" onSubmit={onSubmit}>
+            <form className="flex flex-col gap-3" onSubmit={onSubmit}  >
               <div className="block relative">
                 <label
                   htmlFor="role"
@@ -170,6 +185,57 @@ const Register = () => {
                   placeholder="Confirm your password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
+                />
+              </div>
+              <div className="block relative">
+                <label
+                  htmlFor="salary"
+                  className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2"
+                >
+                  Salary <span className="text-red-600 "> * </span> 
+                </label>
+                <input
+                  type="number"
+                  id="salary"
+                  name="salary"
+                  placeholder="Enter your salary"
+                  value={salary}
+                  onChange={(e) => setSalary(e.target.value)}
+                  className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
+                />
+              </div>
+              <div className="block relative">
+                <label
+                  htmlFor="mainPosition"
+                  className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2"
+                >
+                  Main Position <span className="text-red-600 "> * </span> 
+                </label>
+                <input
+                  type="text"
+                  id="mainPosition"
+                  name="mainPosition"
+                  placeholder="Enter your main position"
+                  value={mainPosition}
+                  onChange={(e) => setMainPosition(e.target.value)}
+                  className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
+                />
+              </div>
+              <div className="block relative">
+                <label
+                  htmlFor="joiningDate"
+                  className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2"
+                >
+                  Joining Date <span className="text-red-600 "> * </span> 
+                </label>
+                <input
+                  type="date"
+                  id="joiningDate"
+                  name="joiningDate"
+                  placeholder="Enter your joining date"
+                  value={joiningDate}
+                  onChange={(e) => setJoiningDate(e.target.value)}
                   className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
                 />
               </div>

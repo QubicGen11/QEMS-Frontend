@@ -38,8 +38,8 @@ const ViewEditProfile = () => {
             try {
                 const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
                 console.log('API response:', response.data);
-                if (Array.isArray(response.data) && response.data.length > 0) {
-                    const employee = response.data[0];
+                if (response.data) {
+                    const employee = response.data;
                     setFormData({
                         ...employee,
                         dob: employee.dob.split('T')[0], // Format date for input type date
@@ -76,7 +76,6 @@ const ViewEditProfile = () => {
         form.append('email', formData.companyEmail);
 
         try {
-
             const response = await axios.post(`${config.apiUrl}/qubinest/upload`, form, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
@@ -123,7 +122,6 @@ const ViewEditProfile = () => {
             toast.error('Error submitting form');
         }
     };
-    
 
     return (
         <div className="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabIndex={0}>

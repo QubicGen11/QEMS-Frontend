@@ -31,11 +31,11 @@ const Viewprofile = () => {
         if (Array.isArray(response.data)) {
           setEmployeeData(response.data);
         } else {
-          toast.error('Unexpected response format');
-          console.error('Unexpected response format:', response.data);
+//           toast.error('Unexpected response format');
+        //   console.error('Unexpected response format:', response.data);
         }
       } catch (error) {
-        console.error('Error fetching employee data:', error);
+        // console.error('Error fetching employee data:', error);
         // toast.error('Submit Your details to get your data');
       }
     };

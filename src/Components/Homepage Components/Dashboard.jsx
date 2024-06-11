@@ -9,7 +9,6 @@ import { useUser } from '../context/UserContext';
 import UserDetailModal from './UserDetailModal';
 import { fetchAttendanceData } from '../Homepage Components/api'; // Import the shared function
 const Dashboard = () => {
-  
   const [attendance, setAttendance] = useState([]);
   const [userAttendance, setUserAttendance] = useState([])
   const [loading, setLoading] = useState(true);
@@ -43,7 +42,8 @@ const Dashboard = () => {
   const [timer, setTimer] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [message, setMessage] = useState('');
-  const [employeeinfo, setEmployeeInfo] = useState(null);
+  const [employeeInfo, setEmployeeInfo] = useState(null);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
@@ -52,14 +52,8 @@ const Dashboard = () => {
         const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
         setEmployeeInfo(response.data);
         console.log(response.data);
-
-        // Added this block to set the employee_id cookie
-        if (response.data && response.data.length > 0) {
-          const employeeId = response.data[0].employee_id;
-          Cookies.set('employee_id', employeeId, { secure: true, sameSite: 'Strict' });
-        }
-
-        if (!response.data || response.data.length === 0) {
+  
+        if (!response.data || Object.keys(response.data).length === 0) {
           toast.error("Please fill up the details");
           setIsModalOpen(true);
         }
@@ -68,9 +62,10 @@ const Dashboard = () => {
         setIsModalOpen(true); // Show modal even if there's an error fetching data
       }
     };
-
+  
     fetchEmployeeInfo();
   }, [email]);
+  
 
   const handleCompleteDetails = () => {
     // Logic to handle completing details (e.g., redirecting to a profile completion page)
@@ -387,120 +382,114 @@ const Dashboard = () => {
   return (
     <>
       <div className="content-wrapper">
-        <UserDetailModal
-          isOpen={isModalOpen}
-          onRequestClose={handleCloseModal}
-          onCompleteDetails={handleCompleteDetails}
-        />
-        <div className="content-header">
-          <div className="container-fluid">
-            <div className="row mb-2">
-              <div className="col-sm-6">
-                {/* <h1 className="m-0">Console</h1> */}
-              </div>
-              <div className="col-sm-6">
-                {/* <ol className="breadcrumb float-sm-right">
-                  <li className="breadcrumb-item"><a href="#">Home</a></li>
-                  <li className="breadcrumb-item active">Console</li>
-                </ol> */}
-
-
-              </div>
+      <UserDetailModal
+        isOpen={isModalOpen}
+        onRequestClose={handleCloseModal}
+        onCompleteDetails={handleCompleteDetails}
+      />
+      <div className="content-header">
+        <div className="container-fluid">
+          <div className="row mb-2">
+            <div className="col-sm-6">
+              {/* <h1 className="m-0">Console</h1> */}
+            </div>
+            <div className="col-sm-6">
+              {/* <ol className="breadcrumb float-sm-right">
+                <li className="breadcrumb-item"><a href="#">Home</a></li>
+                <li className="breadcrumb-item active">Console</li>
+              </ol> */}
             </div>
           </div>
         </div>
+      </div>
 
-        <section className="content">
-          <div className="container-fluid">
-            <div className="row">
-              <div className="col-lg-12 col-12 col-sm-12">
-                <div className="card card-widget widget-user-2" bis_skin_checked={1}>
-                  <div className="card card-widget widget-user shadow-lg">
-                    <div className="widget-user-header text-white" style={{ background: 'url("https://res.cloudinary.com/defsu5bfc/image/upload/v1717239193/Black_and_Brown_Futuristic_LinkedIn_Banner_1_okjs2i.png")', backgroundSize: 'cover', backgroundRepeat: 'no-repeat', height: "25vh", backgroundPositionY: '50%' }}>
-
-
-                      {employeeinfo && employeeinfo.map((emp) => (
-                        <>
-                          <h3 className="widget-user-username text-left ml-auto text-base shadow-xl-black" style={{ fontWeight: 'bolder', textShadow: '5px 5px black' }}>{`${greetingMessage} , ${emp.firstname} ${emp.lastname}`}</h3>
-                          <h5 className="widget-user-desc text-left ml-auto">{emp.position}</h5>
-                        </>
-                      ))}
-                    </div>
-
-
-                    <div className="widget-user-image">
-                      <img className="" src="https://res.cloudinary.com/defsu5bfc/image/upload/v1714828410/logo_3_jizb6b.png" alt="User Avatar" style={{ border: "none" }} />
+      <section className="content">
+        <div className="container-fluid">
+          <div className="row">
+            <div className="col-lg-12 col-12 col-sm-12">
+              <div className="card card-widget widget-user-2" bis_skin_checked={1}>
+                <div className="card card-widget widget-user shadow-lg">
+                  <div className="widget-user-header text-white" style={{ background: 'url("https://res.cloudinary.com/defsu5bfc/image/upload/v1717239193/Black_and_Brown_Futuristic_LinkedIn_Banner_1_okjs2i.png")', backgroundSize: 'cover', backgroundRepeat: 'no-repeat', height: "25vh", backgroundPositionY: '50%' }}>
+                    {employeeInfo && (
+                      <>
+                        <h3 className="widget-user-username text-left ml-auto text-base shadow-xl-black" style={{ fontWeight: 'bolder', textShadow: '5px 5px black' }}>{`${greetingMessage}, ${employeeInfo.firstname} ${employeeInfo.lastname}`}</h3>
+                        <h5 className="widget-user-desc text-left ml-auto">{employeeInfo.position}</h5>
+                      </>
+                    )}
+                  </div>
+                  <div className="widget-user-image">
+                    <img className="" src="https://res.cloudinary.com/defsu5bfc/image/upload/v1714828410/logo_3_jizb6b.png" alt="User Avatar" style={{ border: "none" }} />
+                  </div>
+                </div>
+                <div className="row h-20">
+                  <div className="col-sm-6 col-6 border-right">
+                    <div className="description-block">
+                      <button
+                        onClick={clockIn}
+                        className="w-20 bg-green-600 text-xs text-white font-semibold py-2 px-1 rounded-full shadow-lg transform hover:scale-105 transition duration-300 ease-in-out hover:bg-yellow-500"
+                      >
+                        Clock In
+                      </button>
                     </div>
                   </div>
-                  <div className="row h-20">
-                    <div className="col-sm-6 col-6 border-right">
-                      <div className="description-block">
-                        <button
-                          onClick={clockIn}
-                          className="w-20 bg-green-600 text-xs text-white font-semibold py-2 px-1 rounded-full shadow-lg transform hover:scale-105 transition duration-300 ease-in-out hover:bg-yellow-500"
-                        >
-                          Clock In
-                        </button>
-                      </div>
-                    </div>
-                    <div className="col-sm-6 col-6 border-right">
-                      <div className="description-block">
-                        <button
-                          onClick={clockOut}
-                          className={`w-20 bg-red-400 text-xs text-white font-semibold py-2 px-1 rounded-full shadow-lg transform hover:scale-105 transition duration-300 ease-in-out ml-4 ${isClockedIn ? 'hover:bg-yellow-500' : 'hover:cursor-not-allowed'}`}
-                        >
-                          Clock Out
-                        </button>
-                        <button
-                          className={`w-20 bg-red-400 text-xs text-white font-semibold py-2 px-1 rounded-full shadow-lg transform hover:scale-105 transition duration-300 ease-in-out ml-4`}
-                          onClick={resetClockInStatus}
-                        >
-                          Reset
-                        </button>
-                      </div>
+                  <div className="col-sm-6 col-6 border-right">
+                    <div className="description-block">
+                      <button
+                        onClick={clockOut}
+                        className={`w-20 bg-red-400 text-xs text-white font-semibold py-2 px-1 rounded-full shadow-lg transform hover:scale-105 transition duration-300 ease-in-out ml-4 ${isClockedIn ? 'hover:bg-yellow-500' : 'hover:cursor-not-allowed'}`}
+                      >
+                        Clock Out
+                      </button>
+                      <button
+                        className={`w-20 bg-red-400 text-xs text-white font-semibold py-2 px-1 rounded-full shadow-lg transform hover:scale-105 transition duration-300 ease-in-out ml-4`}
+                        onClick={resetClockInStatus}
+                      >
+                        Reset
+                      </button>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div className="col-12 col-sm-12 col-md-12 col-lg-6 d-flex align-items-stretch flex-column bg-white" bis_skin_checked={1} style={{ height: 'auto' }}>
-                <div className="card bg-light d-flex flex-fill bg-white" bis_skin_checked={1}>
-                  <div className=' flex justify-between bg-white'>
-                    <div className="card-header text-muted border-bottom-0" bis_skin_checked={1}>
-                      Associate Details
-                    </div>
-                    <div className="card-header text-muted border-bottom-0" bis_skin_checked={1}>
-                      <Link to="/viewprofile" className="btn btn-sm btn-primary" cursorshover="true">
-                        <i className="fas fa-user" /> View Profile
-                      </Link>
-                    </div>
+            <div className="col-12 col-sm-12 col-md-12 col-lg-6 d-flex align-items-stretch flex-column bg-white" bis_skin_checked={1} style={{ height: 'auto' }}>
+              <div className="card bg-light d-flex flex-fill bg-white" bis_skin_checked={1}>
+                <div className=' flex justify-between bg-white'>
+                  <div className="card-header text-muted border-bottom-0" bis_skin_checked={1}>
+                    Associate Details
                   </div>
+                  <div className="card-header text-muted border-bottom-0" bis_skin_checked={1}>
+                    <Link to="/viewprofile" className="btn btn-sm btn-primary" cursorshover="true">
+                      <i className="fas fa-user" /> View Profile
+                    </Link>
+                  </div>
+                </div>
 
-                  {employeeinfo && employeeinfo.map((employee) => (
-                    <>
-                      <div className="card-body pt-0" bis_skin_checked={1}>
-                        <div className="row" bis_skin_checked={1}>
-                          <div className="col-7" bis_skin_checked={1}>
-                            <h2 className="lead"><b>{employee.firstname} {employee.lastname}</b></h2>
-                            <p className="text-muted text-sm"><b>Role: </b> {employee.position} </p>
-                            <ul className="ml-4 mb-0 fa-ul text-muted ">
-                              <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-id-card" /></span> <span className='font-bold'> Emp Id :</span>{employee.employee_id}</li>
-                              <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-envelope" /></span> <span className='font-bold'> Email :</span>{employee.email}</li>
-                              <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-briefcase" /></span> <span className='font-bold'> Business Unit:</span> Front End Developer</li>
-                            </ul>
-                          </div>
-                          <div className="col-5 text-center pt-3" bis_skin_checked={1}>
-                            <img src={`${config.apiUrl}/${employee.employeeImg}`} alt="user-avatar" className="img-circle img-fluid w-28 h-28" />
-                          </div>
+                {employeeInfo && (
+                  <>
+                    <div className="card-body pt-0" bis_skin_checked={1}>
+                      <div className="row" bis_skin_checked={1}>
+                        <div className="col-7" bis_skin_checked={1}>
+                          <h2 className="lead"><b>{employeeInfo.firstname} {employeeInfo.lastname}</b></h2>
+                          <p className="text-muted text-sm"><b>Role: </b> {employeeInfo.position} </p>
+                          <ul className="ml-4 mb-0 fa-ul text-muted ">
+                            <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-id-card" /></span> <span className='font-bold'> Emp Id :</span>{employeeInfo.employee_id}</li>
+                            <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-envelope" /></span> <span className='font-bold'> Email :</span>{employeeInfo.email}</li>
+                            <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-briefcase" /></span> <span className='font-bold'> Business Unit:</span> Front End Developer</li>
+                          </ul>
+                        </div>
+                        <div className="col-5 text-center pt-3" bis_skin_checked={1}>
+                          <img src={`${config.apiUrl}/${employeeInfo.employeeImg}`} alt="user-avatar" className="img-circle img-fluid w-28 h-28" />
                         </div>
                       </div>
-                      <div className="card-footer bg-white" bis_skin_checked={1}>
-                        <div className="text-right bg-white" bis_skin_checked={1}>
-                          {/* Add any action buttons here */}
-                        </div>
+                    </div>
+                    <div className="card-footer bg-white" bis_skin_checked={1}>
+                      <div className="text-right bg-white" bis_skin_checked={1}>
+                        {/* Add any action buttons here */}
                       </div>
-                    </>
-                  ))}
+                    </div>
+                  </>
+                )}
                 </div>
               </div>
 

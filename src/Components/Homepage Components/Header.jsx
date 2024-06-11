@@ -12,7 +12,7 @@ const Header = () => {
   const { email } = useUser();
   const userEmail = email || Cookies.get('email');
   const navigate = useNavigate();
-  const [employeeInfo, setEmployeeInfo] = useState([]);
+  const [employeeInfo, setEmployeeInfo] = useState(null); // Change to null initially
 
   useEffect(() => {
     const fetchEmployeeInfo = async () => {
@@ -42,6 +42,10 @@ const Header = () => {
     }
   };
 
+  if (!employeeInfo) {
+    return <div>Loading...</div>; // Show loading state
+  }
+
   return (
     <>
       <nav className="main-header navbar navbar-expand navbar-dark navbar-dark">
@@ -61,11 +65,11 @@ const Header = () => {
                     <a href="#" className="flex items-center px-4 -mx-2">
                       <img
                         className="object-cover mx-2 rounded-full h-9 w-9"
-                        src={employeeInfo.length > 0 ? `${imgConfig.apiUrl}/${employeeInfo[0].employeeImg}` : "default-avatar-url"}
+                        src={employeeInfo.employeeImg ? `${imgConfig.apiUrl}/${employeeInfo.employeeImg}` : "default-avatar-url"}
                         alt="avatar"
                       />
                       <button className="w-auto z-10 flex flex-wrap items-center p-2 text-sm ml-auto text-gray-600 bg-white border border-transparent rounded-md focus:border-blue-500 focus:ring-opacity-40 dark:focus:ring-opacity-40 focus:ring-blue-300 dark:focus:ring-blue-400 focus:ring dark:text-white dark:bg-gray-800 focus:outline-none">
-                        <span className="mx-1 hover:text-yellow-500 dark:hover:text-yellow-400 text-xs">{employeeInfo.length > 0 ? `${employeeInfo[0].firstname} ${employeeInfo[0].lastname}` : 'Loading...'}</span>
+                        <span className="mx-1 hover:text-yellow-500 dark:hover:text-yellow-400 text-xs">{`${employeeInfo.firstname} ${employeeInfo.lastname}`}</span>
                         <svg
                           className="w-5 h-5 mx-1"
                           viewBox="0 0 24 24"
@@ -85,23 +89,20 @@ const Header = () => {
             </a>
             <div className="dropdown-menu dropdown-menu-lg dropdown-menu-right mt-2 relative right-30 bg-gray-600 transition-all duration-300 ease-in-out w-[30vw]">
               <div className="bg-gray-800 rounded-md shadow-xl dark:bg-gray-800">
-                {employeeInfo.map((employee) => (
-                  <a
-                    key={employee.employee_id}
-                    href="#"
-                    className="flex items-center p-3 -mt-2 text-sm text-gray-600 transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
-                  >
-                    <img
-                      className="flex-shrink-0 object-cover mx-1 rounded-full w-9 h-9"
-                      src={`${imgConfig.apiUrl}/${employee.employeeImg}`}
-                      alt={`${employee.firstname} avatar`}
-                    />
-                    <div className="mx-1">
-                      <h1 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{`${employee.firstname} ${employee.lastname}`}</h1>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{userEmail}</p>
-                    </div>
-                  </a>
-                ))}
+                <a
+                  href="#"
+                  className="flex items-center p-3 -mt-2 text-sm text-gray-600 transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
+                >
+                  <img
+                    className="flex-shrink-0 object-cover mx-1 rounded-full w-9 h-9"
+                    src={`${imgConfig.apiUrl}/${employeeInfo.employeeImg}`}
+                    alt={`${employeeInfo.firstname} avatar`}
+                  />
+                  <div className="mx-1">
+                    <h1 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{`${employeeInfo.firstname} ${employeeInfo.lastname}`}</h1>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{userEmail}</p>
+                  </div>
+                </a>
                 <hr className="border-gray-200 dark:border-gray-700" />
                 <a
                   href="#"
