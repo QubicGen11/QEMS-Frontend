@@ -1,120 +1,104 @@
 .Careersmain {
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    overflow: hidden;
-    background: url("https://res.cloudinary.com/defsu5bfc/image/upload/v1715353343/Qubicnest/Loginpage/israel-andrade-YI_9SivVt_s-unsplash_i2ypfk.jpg");
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: bottom;
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: url("https://res.cloudinary.com/defsu5bfc/image/upload/v1715353343/Qubicnest/Loginpage/israel-andrade-YI_9SivVt_s-unsplash_i2ypfk.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: bottom;
 }
 
 .Careersmain::before {
-    content: "";
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
 }
 
 .logo {
-    position: absolute;
-    top: 20px; 
-    left: 20px; 
-    z-index: 1; 
+  position: absolute;
+  top: 20px; 
+  left: 20px; 
+  z-index: 1; 
 }
 
+
+
+.loginform {
+  height: auto; /* Ensure form takes up auto height */
+  overflow-y: auto; /* Enable vertical scrolling */
+  max-height: 90vh; /* Adjust to prevent overflow from the viewport */
+  margin-top: 30px;
+}
 
 /* Styling for the custom select */
 .custom-select {
-    border: solid 2px black;
-    padding: 10px; /* Adjust padding as needed */
-    font-size: 16px; /* Adjust font size as needed */
-    background-color: white; /* Background color */
-    color: black; /* Text color */
-    border-radius: 5px; /* Border radius */
-    cursor: pointer; /* Cursor style */
-    transition: border-color 0.3s ease; /* Smooth transition for border color */
-  }
-  
-  /* Animation when the select is focused */
-  .custom-select:focus {
-    outline: none; /* Remove default focus outline */
-    border-color: blue; /* Change border color when focused */
-  }
-  
-  /* Animation for hover effect */
-  .custom-select:hover {
-    background-color: #f0f0f0; /* Change background color on hover */
-  }
-  
-  /* Animation for select options */
-  .custom-select option {
-    background-color: white; /* Background color for options */
-    color: black; /* Text color for options */
-  }
-  
-  /* Animation for select dropdown */
-  .custom-select::before {
-    content: "▼"; /* Unicode symbol for down arrow */
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    pointer-events: none; /* Ensure the arrow doesn't interfere with select functionality */
-  }
-  
-  /* Animation for select dropdown on hover */
-  .custom-select:hover::before {
-    color: blue; /* Change color on hover */
-  }
-  
-  /* Animation for select dropdown on focus */
-  .custom-select:focus::before {
-    color: blue; /* Change color when focused */
-  }
-  
-  @media (max-width: 650px) {
-    
-
-    .logo {
-        position: relative;
-        
-        transform: translateX(20%);
-        transform: translatey(20%);
-    }
-
-    #welcome{
-      display: none;
-    }
-
-   
-
-
-    #form {
-     
-        position: relative;
-        top: 10%;
-        height: auto;
-        right: 5%;
-        width: 80vw;
-        
-    }
-   
-
-
-
-
+  border: solid 2px black;
+  padding: 10px; /* Adjust padding as needed */
+  font-size: 16px; /* Adjust font size as needed */
+  background-color: white; /* Background color */
+  color: black; /* Text color */
+  border-radius: 5px; /* Border radius */
+  cursor: pointer; /* Cursor style */
+  transition: border-color 0.3s ease; /* Smooth transition for border color */
 }
 
+/* Animation when the select is focused */
+.custom-select:focus {
+  outline: none; /* Remove default focus outline */
+  border-color: blue; /* Change border color when focused */
+}
 
+/* Animation for hover effect */
+.custom-select:hover {
+  background-color: #f0f0f0; /* Change background color on hover */
+}
 
-  
+/* Animation for select options */
+.custom-select option {
+  background-color: white; /* Background color for options */
+  color: black; /* Text color for options */
+}
 
+/* Animation for select dropdown */
+.custom-select::before {
+  content: "▼"; /* Unicode symbol for down arrow */
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none; /* Ensure the arrow doesn't interfere with select functionality */
+}
 
+/* Animation for select dropdown on hover */
+.custom-select:hover::before {
+  color: blue; /* Change color on hover */
+}
 
+/* Animation for select dropdown on focus */
+.custom-select:focus::before {
+  color: blue; /* Change color when focused */
+}
 
+@media (max-width: 650px) {
+  .logo {
+    position: relative;
+    top: 20%;
+    left: 50%;
+    transform: translateX(20%);
+    transform: translatey(20%);
+  }
 
+  #welcome {
+    display: none;
+  }
 
-
-
+  #form {
+    width: 70%;
+    position: relative;
+    top: 25%;
+    height: auto;
+  }
+}

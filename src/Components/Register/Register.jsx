@@ -63,7 +63,6 @@ const Register = () => {
       setJoiningDate('');
       toast.success('Registration successful');
       // Navigate to login or another page after successful registration
-      navigate('/login');
     } catch (error) {
       console.error('Registration failed:', error.response ? error.response.data : error.message);
       toast.error('User already exists. Please login.');
@@ -81,16 +80,16 @@ const Register = () => {
       </div>
       <div className="login-left flex justify-around">
         <div>
-          <h1 className="text-white text-4xl font-bold font-sans relative z-50 h-[100vh] w-[30vw] flex justify-center items-center">
+          <h1 className="text-white text-4xl font-bold font-sans relative z-50 h-[100vh] w-[30vw] flex justify-center items-center ">
             WELCOME
           </h1>
         </div>
-        <div className='loginform z-40 flex justify-center items-center' data-aos="flip-left">
+        <div className='loginform z-40 flex justify-center items-center' data-aos="flip-left" >
           <div className="max-w-md relative flex flex-col rounded-lg text-black bg-[#EEF7FF] p-10" >
             <div className="text-2xl font-bold mb-2 text-[#1e0e4b] text-center px-9" >
               Welcome to <span className="text-yellow-400">QubiNest</span>
             </div>
-            <div className="text-sm font-normal mb-4 text-center text-[#1e0e4b]" >
+            <div className="text-sm font-normal mb-4 text-center text-[#1e0e4b]"  >
               Register into your account as <br />
             </div>
             <form className="flex flex-col gap-3" onSubmit={onSubmit}  >
