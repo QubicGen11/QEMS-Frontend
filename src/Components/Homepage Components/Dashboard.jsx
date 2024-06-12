@@ -419,7 +419,7 @@ const Dashboard = () => {
                     {employeeInfo && (
                       <>
                         <h3 className="widget-user-username text-left ml-auto text-base shadow-xl-black" style={{ fontWeight: 'bolder', textShadow: '5px 5px black' }}>{`${greetingMessage}, ${employeeInfo.firstname} ${employeeInfo.lastname}`}</h3>
-                        <h5 className="widget-user-desc text-left ml-auto">{employeeInfo.position}</h5>
+                        <h5 className="widget-user-desc text-left ml-auto">{employeeInfo.mainPosition}</h5>
                       </>
                     )}
                   </div>
@@ -477,7 +477,7 @@ const Dashboard = () => {
       <div className="row" bis_skin_checked={1}>
         <div className="col-7" bis_skin_checked={1}>
           <h2 className="lead"><b>{employeeInfo.firstname} {employeeInfo.lastname}</b></h2>
-          <p className="text-muted text-sm"><b>Role: </b> {employeeInfo.position} </p>
+          <p className="text-muted text-sm"><b>Role: </b> {employeeInfo.mainPosition} </p>
           <ul className="ml-4 mb-0 fa-ul text-muted ">
             <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-id-card" /></span> <span className='font-bold'> Emp Id :</span>{employeeInfo.employee_id}</li>
             <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-envelope" /></span> <span className='font-bold'> Email :</span>{employeeInfo.companyEmail}</li>
