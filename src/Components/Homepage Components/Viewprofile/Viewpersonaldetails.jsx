@@ -37,8 +37,7 @@ const Viewpersonaldetails = () => {
     return <div>Loading...</div>;
   }
 
-  const user = employeeData.users && employeeData.users[0]; // Assuming a one-to-one relationship
-
+  const user = employeeData.users && employeeData.users[0]; 
   return (
     <>
       <h5 className="mb-3 text-2xl">Personal Details</h5>

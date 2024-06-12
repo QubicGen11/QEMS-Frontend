@@ -43,20 +43,24 @@ const Dashboard = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [message, setMessage] = useState('');
   const [employeeInfo, setEmployeeInfo] = useState(null);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  
   useEffect(() => {
     const fetchEmployeeInfo = async () => {
       try {
         const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
-        setEmployeeInfo(response.data);
-        console.log(response.data);
+        const employeeData = response.data;
   
-        if (!response.data || Object.keys(response.data).length === 0) {
+        if (!employeeData || Object.keys(employeeData).length === 0) {
           toast.error("Please fill up the details");
           setIsModalOpen(true);
+        } else {
+          setEmployeeInfo({
+            ...employeeData,
+            mainPosition: employeeData.users[0]?.mainPosition // Access mainPosition from users array
+          });
         }
+        console.log(employeeData);
       } catch (error) {
         console.error('Error fetching employee data:', error);
         setIsModalOpen(true); // Show modal even if there's an error fetching data
@@ -148,18 +152,20 @@ const Dashboard = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchEmployeeData = async () => {
-      try {
-        const response = await axios.post(`${config.apiUrl}/qubinest/getemployees`, { email });
-        setEmployeeData(response.data);
-      } catch (error) {
-        // console.error('Error fetching employee data:', error);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchEmployeeData = async () => {
+  //     try {
+  //       const response = await axios.post(`${config.apiUrl}/qubinest/getemployees`, { email });
+  //       setEmployeeData(response.data);
+  //     } catch (error) {
+  //       // console.error('Error fetching employee data:', error);
+  //     }
+  //   };
 
-    fetchEmployeeData();
-  }, [email]);
+  //   fetchEmployeeData();
+  // }, [email]);
+
+
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -466,30 +472,32 @@ const Dashboard = () => {
                 </div>
 
                 {employeeInfo && (
-                  <>
-                    <div className="card-body pt-0" bis_skin_checked={1}>
-                      <div className="row" bis_skin_checked={1}>
-                        <div className="col-7" bis_skin_checked={1}>
-                          <h2 className="lead"><b>{employeeInfo.firstname} {employeeInfo.lastname}</b></h2>
-                          <p className="text-muted text-sm"><b>Role: </b> {employeeInfo.position} </p>
-                          <ul className="ml-4 mb-0 fa-ul text-muted ">
-                            <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-id-card" /></span> <span className='font-bold'> Emp Id :</span>{employeeInfo.employee_id}</li>
-                            <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-envelope" /></span> <span className='font-bold'> Email :</span>{employeeInfo.email}</li>
-                            <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-briefcase" /></span> <span className='font-bold'> Business Unit:</span> Front End Developer</li>
-                          </ul>
-                        </div>
-                        <div className="col-5 text-center pt-3" bis_skin_checked={1}>
-                          <img src={`${config.apiUrl}/${employeeInfo.employeeImg}`} alt="user-avatar" className="img-circle img-fluid w-28 h-28" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="card-footer bg-white" bis_skin_checked={1}>
-                      <div className="text-right bg-white" bis_skin_checked={1}>
-                        {/* Add any action buttons here */}
-                      </div>
-                    </div>
-                  </>
-                )}
+  <>
+    <div className="card-body pt-0" bis_skin_checked={1}>
+      <div className="row" bis_skin_checked={1}>
+        <div className="col-7" bis_skin_checked={1}>
+          <h2 className="lead"><b>{employeeInfo.firstname} {employeeInfo.lastname}</b></h2>
+          <p className="text-muted text-sm"><b>Role: </b> {employeeInfo.position} </p>
+          <ul className="ml-4 mb-0 fa-ul text-muted ">
+            <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-id-card" /></span> <span className='font-bold'> Emp Id :</span>{employeeInfo.employee_id}</li>
+            <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-envelope" /></span> <span className='font-bold'> Email :</span>{employeeInfo.companyEmail}</li>
+            <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-briefcase" /></span> <span className='font-bold'> Business Unit:</span> {employeeInfo.mainPosition}</li>
+          </ul>
+        </div>
+        <div className="col-5 text-center pt-3" bis_skin_checked={1}>
+          <img src={`${config.apiUrl}/${employeeInfo.employeeImg}`} alt="user-avatar" className="img-circle img-fluid w-28 h-28" />
+        </div>
+      </div>
+    </div>
+    <div className="card-footer bg-white" bis_skin_checked={1}>
+      <div className="text-right bg-white" bis_skin_checked={1}>
+        {/* Add any action buttons here */}
+      </div>
+    </div>
+  </>
+)}
+
+
                 </div>
               </div>
 

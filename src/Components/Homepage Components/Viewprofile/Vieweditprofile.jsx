@@ -234,7 +234,7 @@ const ViewEditProfile = () => {
                     <input type="text" className="form-control" id="inputPosition" name="position" value={formData.position} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
-                    <label htmlFor="inputEmail" className="form-label">Email<span>*</span></label>
+                    <label htmlFor="inputEmail" className="form-label">Personal Email<span>*</span></label>
                     <input type="email" className="form-control" id="inputEmail" name="email" value={formData.email} onChange={handleChange} />
                 </div>
                 <div className="col-12 col-md-6">
