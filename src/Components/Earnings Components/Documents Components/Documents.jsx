@@ -99,7 +99,7 @@ export const Documents = () => {
                 </div>
 
                 <div
-                    className="containerviewing h-auto w-auto mt-10 ml-4"
+                    className="containerviewing mt-10 ml-4" style={{overflow:'scroll'}}
                     dangerouslySetInnerHTML={{ __html: documentContent }}
                 ></div>
             </div>
