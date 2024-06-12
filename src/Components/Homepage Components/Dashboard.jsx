@@ -51,7 +51,7 @@ const Dashboard = () => {
         const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
         const employeeData = response.data;
   
-        if (!employeeData || Object.keys(employeeData).length === 0) {
+        if (!employeeData || Object.keys(employeeData).length === 0) {    
           toast.error("Please fill up the details");
           setIsModalOpen(true);
         } else {
@@ -59,6 +59,11 @@ const Dashboard = () => {
             ...employeeData,
             mainPosition: employeeData.users[0]?.mainPosition // Access mainPosition from users array
           });
+  
+          // Add employee ID as cookie if it exists
+          if (employeeData.employee_id) {
+            Cookies.set('employee_id', employeeData.employee_id);
+          }
         }
         console.log(employeeData);
       } catch (error) {
@@ -69,6 +74,7 @@ const Dashboard = () => {
   
     fetchEmployeeInfo();
   }, [email]);
+  
   
 
   const handleCompleteDetails = () => {
