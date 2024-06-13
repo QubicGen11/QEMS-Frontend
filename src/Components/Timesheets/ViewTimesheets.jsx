@@ -8,6 +8,7 @@ import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { fetchAttendanceData } from '../Homepage Components/api'; 
+import Loading from '../Loading Components/Loading';
 
 const ViewTimesheets = () => {
   const [userAttendance, setUserAttendance] = useState([]);
@@ -116,7 +117,7 @@ const fetchAttendance = useCallback(async () => {
                   <tbody>
                     {loading ? (
                       <tr>
-                        <td colSpan="5">Loading...</td>
+                        <td colSpan="5"><Loading/></td>
                       </tr>
                     ) : userAttendance.length === 0 ? (
                       <tr>

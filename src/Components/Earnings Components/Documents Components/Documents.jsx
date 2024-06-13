@@ -6,6 +6,7 @@ import Footer from '../../Homepage Components/Footer';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import html2pdf from 'html2pdf.js';
+import "./Documents.css"
 
 export const Documents = () => {
     const { id } = useParams(); // Get employeeId from the URL parameters
@@ -58,11 +59,11 @@ export const Documents = () => {
     const handleDownload = () => {
         const element = document.querySelector('.containerviewing');
         const opt = {
-            margin: 0.5,
+             // top, right, bottom, left
             filename: `${selectedDocument}-document.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2 },
-            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            jsPDF: { unit: 'in', format: [10.42, 12.38], orientation: 'portrait' } // Use custom size
         };
 
         html2pdf().from(element).set(opt).save();
@@ -74,7 +75,7 @@ export const Documents = () => {
             <Sidemenu />
             <div className="content-wrapper bg-white">
                 <h1 className="text-3xl px-10">Documents</h1>
-                <div className="mainoptions flex gap-3 mt-3 ml-4">
+                <div className="mainoptions flex gap-3 ml-4">
                     <div className="dropdown">
                         <button className="btn btn-warning dropdown-toggle font-bold" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             {documentTypes[selectedDocument] || 'Select Document'}
@@ -87,19 +88,17 @@ export const Documents = () => {
                     </div>
 
                     <div>
-          <button className="cursor-pointer bg-gray-800 px-3 py-2 rounded-md flex text-white tracking-wider shadow-xl animate-bounce hover:animate-none" onClick={handleDownload}>
-  <svg className="w-5 h-5" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" strokeLinejoin="round" strokeLinecap="round" />
-  </svg>
-  <h1 className='text-sm'>Download</h1>
-</button>
-
-
+                        <button className="cursor-pointer bg-gray-800 px-3 py-2 rounded-md flex text-white tracking-wider shadow-xl animate-bounce hover:animate-none" onClick={handleDownload}>
+                            <svg className="w-5 h-5" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" strokeLinejoin="round" strokeLinecap="round" />
+                            </svg>
+                            <h1 className='text-sm'>Download</h1>
+                        </button>
                     </div>
-                </div>
+                </div>  
 
                 <div
-                    className="containerviewing mt-10 ml-4" style={{overflow:'scroll'}}
+                    className="containerviewing h-auto w-auto  ml-4 relative " id="document-content"
                     dangerouslySetInnerHTML={{ __html: documentContent }}
                 ></div>
             </div>

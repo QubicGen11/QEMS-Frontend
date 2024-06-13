@@ -12,6 +12,7 @@ import Holiday from "./Components/Homepage Components/Holiday Components/Holiday
 import { UserProvider } from "./Components/context/UserContext";
 import Booktimeoff from "./Components/Timesheets/Booktimeoff";
 import { Documents } from "./Components/Earnings Components/Documents Components/Documents";
+import Loading from "./Components/Loading Components/Loading";
 
 const App = () => {
   return (
@@ -29,6 +30,7 @@ const App = () => {
             <Route path="/holiday" element={<Holiday />} />
             <Route path="/booktimeoff" element={<Booktimeoff />} />
             <Route path="/documents" element={<Documents />} />
+            <Route path="/loading" element={<Loading />} />
           </Routes>
         </BrowserRouter>
       </UserProvider>

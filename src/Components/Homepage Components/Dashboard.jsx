@@ -8,6 +8,7 @@ import Cookies from 'js-cookie';
 import { useUser } from '../context/UserContext';
 import UserDetailModal from './UserDetailModal';
 import { fetchAttendanceData } from '../Homepage Components/api'; // Import the shared function
+import Loading from '../Loading Components/Loading';
 const Dashboard = () => {
   const [attendance, setAttendance] = useState([]);
   const [userAttendance, setUserAttendance] = useState([])
@@ -465,47 +466,59 @@ const Dashboard = () => {
             </div>
 
             <div className="col-12 col-sm-12 col-md-12 col-lg-6 d-flex align-items-stretch flex-column bg-white" bis_skin_checked={1} style={{ height: 'auto' }}>
-              <div className="card bg-light d-flex flex-fill bg-white" bis_skin_checked={1}>
-                <div className=' flex justify-between bg-white'>
-                  <div className="card-header text-muted border-bottom-0" bis_skin_checked={1}>
-                    Associate Details
-                  </div>
-                  <div className="card-header text-muted border-bottom-0" bis_skin_checked={1}>
-                    <Link to="/viewprofile" className="btn btn-sm btn-primary" cursorshover="true">
-                      <i className="fas fa-user" /> View Profile
-                    </Link>
-                  </div>
-                </div>
-
-                {employeeInfo && (
-  <>
-    <div className="card-body pt-0" bis_skin_checked={1}>
-      <div className="row" bis_skin_checked={1}>
-        <div className="col-7" bis_skin_checked={1}>
-          <h2 className="lead"><b>{employeeInfo.firstname} {employeeInfo.lastname}</b></h2>
-          <p className="text-muted text-sm"><b>Role: </b> {employeeInfo.mainPosition} </p>
-          <ul className="ml-4 mb-0 fa-ul text-muted ">
-            <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-id-card" /></span> <span className='font-bold'> Emp Id :</span>{employeeInfo.employee_id}</li>
-            <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-envelope" /></span> <span className='font-bold'> Email :</span>{employeeInfo.companyEmail}</li>
-            <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-briefcase" /></span> <span className='font-bold'> Business Unit:</span> {employeeInfo.mainPosition}</li>
-          </ul>
-        </div>
-        <div className="col-5 text-center pt-3" bis_skin_checked={1}>
-          <img src={`${config.apiUrl}/${employeeInfo.employeeImg}`} alt="user-avatar" className="img-circle img-fluid w-28 h-28" />
-        </div>
+  <div className="card bg-light d-flex flex-fill bg-white" bis_skin_checked={1}>
+    <div className='flex justify-between bg-white'>
+      <div className="card-header text-muted border-bottom-0" bis_skin_checked={1}>
+        Associate Details
+      </div>
+      <div className="card-header text-muted border-bottom-0" bis_skin_checked={1}>
+        <Link to="/viewprofile" className="btn btn-sm btn-primary" cursorshover="true">
+          <i className="fas fa-user" /> View Profile
+        </Link>
       </div>
     </div>
-    <div className="card-footer bg-white" bis_skin_checked={1}>
-      <div className="text-right bg-white" bis_skin_checked={1}>
-        {/* Add any action buttons here */}
+
+    {loading ? (
+      <div className="card-body d-flex justify-center align-items-center">
+        <p><Loading/></p>
       </div>
-    </div>
-  </>
-)}
+    ) : employeeInfo ? (
+      <>
+        <div className="card-body pt-0" bis_skin_checked={1}>
+          <div className="row" bis_skin_checked={1}>
+            <div className="col-7" bis_skin_checked={1}>
+              <h2 className="lead"><b>{employeeInfo.firstname} {employeeInfo.lastname}</b></h2>
+              <p className="text-muted text-sm"><b>Role: </b> {employeeInfo.mainPosition} </p>
+              <ul className="ml-4 mb-0 fa-ul text-muted ">
+                <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-id-card" /></span> <span className='font-bold'> Emp Id :</span>{employeeInfo.employee_id}</li>
+                <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-envelope" /></span> <span className='font-bold'> Email :</span>{employeeInfo.companyEmail}</li>
+                <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-briefcase" /></span> <span className='font-bold'> Business Unit:</span> {employeeInfo.mainPosition}</li>
+              </ul>
+            </div>
+            <div className="col-5 text-center pt-3" bis_skin_checked={1}>
+              <img src={`${config.apiUrl}/${employeeInfo.employeeImg}`} alt="user-avatar" className="img-circle img-fluid w-28 h-28" />
+            </div>
+          </div>
+        </div>
+        <div className="card-footer bg-white" bis_skin_checked={1}>
+          <div className="text-right bg-white" bis_skin_checked={1}>
+            {/* Add any action buttons here */}
+          </div>
+        </div>
+      </>
+    ) : (
+      <div className="card-body d-flex justify-center align-items-center">
+        {/* <p>No employee details found.</p> */}
+      </div>
+    )}
+  </div>
+</div>
 
 
-                </div>
-              </div>
+
+
+
+
 
               <div className="col-lg-6 col-12">
                 <div className="small-box bg-white">
@@ -615,7 +628,7 @@ const Dashboard = () => {
                         <tbody>
   {loading ? (
     <tr>
-      <td colSpan="4">Loading...</td>
+      <td colSpan="4"><Loading/></td>
     </tr>
   ) : userAttendance.length === 0 ? (
     <tr>
