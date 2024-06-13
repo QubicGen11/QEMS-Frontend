@@ -8,7 +8,7 @@ import Cookies from 'js-cookie';
 import { useUser } from "../context/UserContext";
 import config from "../config";
 
-const Login = () => {
+const Login = ({name}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);

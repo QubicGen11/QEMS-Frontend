@@ -1,0 +1,18 @@
+/* General styles */
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+}
+
+.content-wrapper {
+    padding: 20px;
+}
+
+.mainoptions {
+    margin-bottom: 20px;
+}
+
+.containerviewing img {
+    max-width: 100%;
+    height: auto;
+}

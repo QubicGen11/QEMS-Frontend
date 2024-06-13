@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../../Homepage Components/Header';
 import Sidemenu from '../../Homepage Components/Sidemenu';
 import Footer from '../../Homepage Components/Footer';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import html2pdf from 'html2pdf.js';
-import "./Documents.css"
+import './Documents.css';
 
 export const Documents = () => {
     const { id } = useParams(); // Get employeeId from the URL parameters
     const [documentContent, setDocumentContent] = useState('');
     const [selectedDocument, setSelectedDocument] = useState('offer'); // Default document type
+    const navigate = useNavigate(); // Use useNavigate for navigation
 
     const documentTypes = {
         offer: 'Offer Letter',
-        joining: 'Joining Letter',
+        joining: 'Joining Letter',  
         experience: 'Experience Letter',
         hike: 'Hike Letter'
     };
@@ -56,17 +56,22 @@ export const Documents = () => {
         }
     };
 
-    const handleDownload = () => {
+    const handleDownloadHTML = () => {
         const element = document.querySelector('.containerviewing');
-        const opt = {
-             // top, right, bottom, left
-            filename: `${selectedDocument}-document.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'in', format: [10.42, 12.38], orientation: 'portrait' } // Use custom size
-        };
+        const htmlContent = element.innerHTML;
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${selectedDocument}-document.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
 
-        html2pdf().from(element).set(opt).save();
+    const handleRedirect = () => {
+        navigate('/documentsnewone', { state: { documentContent } }); // Use useNavigate to redirect
     };
 
     return (
@@ -88,11 +93,20 @@ export const Documents = () => {
                     </div>
 
                     <div>
-                        <button className="cursor-pointer bg-gray-800 px-3 py-2 rounded-md flex text-white tracking-wider shadow-xl animate-bounce hover:animate-none" onClick={handleDownload}>
+                        <button className="cursor-pointer bg-gray-800 px-3 py-2 rounded-md flex text-white tracking-wider shadow-xl animate-bounce hover:animate-none" onClick={handleDownloadHTML}>
                             <svg className="w-5 h-5" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" strokeLinejoin="round" strokeLinecap="round" />
                             </svg>
-                            <h1 className='text-sm'>Download</h1>
+                            <h1 className='text-sm'>Download HTML</h1>
+                        </button>
+                    </div>
+                    
+                    <div>
+                        <button className="cursor-pointer bg-gray-800 px-3 py-2 rounded-md flex text-white tracking-wider shadow-xl animate-bounce hover:animate-none" onClick={handleRedirect}>
+                            <svg className="w-5 h-5" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" strokeLinejoin="round" strokeLinecap="round" />
+                            </svg>
+                            <h1 className='text-sm'>Download PDF</h1>
                         </button>
                     </div>
                 </div>  
