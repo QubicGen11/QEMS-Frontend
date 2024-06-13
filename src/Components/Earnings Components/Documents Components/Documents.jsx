@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import Header from '../../Homepage Components/Header';
 import Sidemenu from '../../Homepage Components/Sidemenu';
 import Footer from '../../Homepage Components/Footer';
@@ -11,7 +11,6 @@ export const Documents = () => {
     const { id } = useParams(); // Get employeeId from the URL parameters
     const [documentContent, setDocumentContent] = useState('');
     const [selectedDocument, setSelectedDocument] = useState('offer'); // Default document type
-    const navigate = useNavigate(); // Use useNavigate for navigation
 
     const documentTypes = {
         offer: 'Offer Letter',
@@ -71,7 +70,9 @@ export const Documents = () => {
     };
 
     const handleRedirect = () => {
-        navigate('/documentsnewone', { state: { documentContent } }); // Use useNavigate to redirect
+        localStorage.setItem('documentContent', documentContent);
+        const newWindow = window.open('/documentsnewone', '_blank');
+        newWindow.focus();
     };
 
     return (
@@ -112,7 +113,7 @@ export const Documents = () => {
                 </div>  
 
                 <div
-                    className="containerviewing h-auto w-auto  ml-4 relative " id="document-content"
+                    className="containerviewing h-auto w-auto ml-4 relative" id="document-content"
                     dangerouslySetInnerHTML={{ __html: documentContent }}
                 ></div>
             </div>
