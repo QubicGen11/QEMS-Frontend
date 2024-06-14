@@ -14,6 +14,8 @@ import Booktimeoff from "./Components/Timesheets/Booktimeoff";
 import { Documents } from "./Components/Earnings Components/Documents Components/Documents";
 import Loading from "./Components/Loading Components/Loading";
 import Documentsnewone from "./Components/Earnings Components/Documents Components/Documentsnewone";
+import Payslips from "./Components/Payslips Components/Payslips";
+import Payslipsnewone from "./Components/Payslips Components/payslipsnewone";
 
 const App = () => {
   return (
@@ -33,6 +35,8 @@ const App = () => {
             <Route path="/documents" element={<Documents />} />
             <Route path="/loading" element={<Loading />} />
             <Route path="/documentsnewone" element={<Documentsnewone />} />
+            <Route path="/payslips" element={<Payslips />} />
+            <Route path="/payslipsnewone" element={<Payslipsnewone />} />
           </Routes>
         </BrowserRouter>
       </UserProvider>

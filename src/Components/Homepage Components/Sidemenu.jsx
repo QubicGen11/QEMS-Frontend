@@ -105,10 +105,10 @@ const Sidemenu = () => {
                     </a>
                   </li>
                   <li className="nav-item">
-                    <a href="pages/charts/flot.html" className="nav-link">
+                    <Link to="/payslips" className="nav-link">
                       <i className="far fa-circle nav-icon" />
                       <p>Payslips</p>
-                    </a>
+                    </Link>
                   </li>
                   <li className="nav-item">
                     <Link to="/documents" className="nav-link">
