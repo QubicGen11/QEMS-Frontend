@@ -8,7 +8,7 @@ const Modal = ({ event, onSave, onCancel, onChange, onDateChange, onFileChange, 
     <div className="modal" style={{ display: 'block' }}>
     <div className="modal-dialog w-3/4" style={{ maxHeight: '90vh', overflow: 'scroll', maxWidth: '900px' }}>
       <div className="modal-content">
-        <div className="modal-header " style={{backgroundColor:"gold"}}>
+        <div className="modal-header bg-yellow-600 " >
           <h5 className="modal-title text-white text-lg">Book time off</h5>
           <button type="button" className="close" onClick={onCancel}>
             <span>&times;</span>

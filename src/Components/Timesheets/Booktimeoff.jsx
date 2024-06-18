@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import format from 'date-fns/format';
 import parse from 'date-fns/parse';
@@ -10,23 +10,8 @@ import Modal from './Modal';
 import Header from '../Homepage Components/Header';
 import Sidemenu from '../Homepage Components/Sidemenu';
 import Footer from '../Homepage Components/Footer';
-import "./Booktimeoff.css"
-
-
-const Holidaylist = [
-  {"date": "2024-01-14", "name": "Makar Sankranti"},
-  {"date": "2024-01-26", "name": "Republic Day"},
-  {"date": "2024-04-10", "name": "Ugadi"},
-  {"date": "2024-05-01", "name": "Labour Day"},
-  {"date": "2024-05-10", "name": "Ramzan (Eid-ul-Fitr)"},
-  {"date": "2024-08-15", "name": "Independence Day"},
-  {"date": "2024-08-28", "name": "Krishna Janmashtami"},
-  {"date": "2024-10-02", "name": "Gandhi Jayanti"},
-  {"date": "2024-10-08", "name": "Bakrid (Eid-ul-Adha)"},
-  {"date": "2024-10-12", "name": "Dussehra"},
-  {"date": "2024-11-02", "name": "Deepavali"},
-  {"date": "2024-12-25", "name": "Christmas"}
-]
+import axios from 'axios';
+import "./Booktimeoff.css";
 
 const locales = {
   'en-US': enUS,
@@ -52,6 +37,37 @@ const Booktimeoff = () => {
     document: null,
   });
   const [showModal, setShowModal] = useState(false);
+  const [holidays, setHolidays] = useState([]);
+  const [error, setError] = useState(null);
+
+  // Use the Indian holidays calendar ID
+  const API_KEY = 'AIzaSyATDBo4fInPRHA6uwq__gdi1eIoM6AcVFQ';
+  const CALENDAR_ID = 'en.indian#holiday@group.v.calendar.google.com';
+
+  useEffect(() => {
+    const fetchHolidays = async () => {
+      try {
+        const response = await axios.get(
+          `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${API_KEY}`
+        );
+        console.log('API Response:', response.data); // Log the API response
+        const holidayEvents = response.data.items.map(holiday => ({
+          id: holiday.id,
+          title: holiday.summary,
+          start: new Date(holiday.start.date || holiday.start.dateTime),
+          end: new Date(holiday.end.date || holiday.end.dateTime),
+        }));
+        console.log('Holiday Events:', holidayEvents); // Log the holiday events
+        setHolidays(holidayEvents);
+        setEvents(prevEvents => [...prevEvents, ...holidayEvents]);
+      } catch (error) {
+        console.error('Error fetching holidays:', error); // Log the error
+        setError('Failed to fetch holidays. Please check your API key and calendar ID.');
+      }
+    };
+
+    fetchHolidays();
+  }, []);
 
   const handleSelectSlot = ({ start, end }) => {
     setNewEvent({ ...newEvent, start, end });
@@ -63,7 +79,6 @@ const Booktimeoff = () => {
   };
 
   const handleSave = () => {
-    // Include reason in the event title
     const eventWithReason = {
       ...newEvent,
       title: `${newEvent.title} (${newEvent.reason})`,
@@ -100,23 +115,20 @@ const Booktimeoff = () => {
     <>
       <Header />
       <Sidemenu />
-
-
       <div className='content wrapper'>
         <div className="container text-center">
           <div className="row ">
             <div className="col-12 col-md-12 col-lg-12 col-xl-6" id='booktimenew'>
-          <h1 className='text-xl '>Book Time Off</h1>
-          <br />
-
-              <div style={{ height: '500px', width: '740px' }} className='content-wrapper bg-white ' id='divmain'>
+              <h1 className='text-xl '>Book Time Off</h1>
+              <br />
+              <div style={{ height: '500px', width: '900px' }} className='content-wrapper bg-white ' id='divmain'>
                 <Calendar
                   localizer={localizer}
                   events={events}
                   startAccessor="start"
                   endAccessor="end"
                   style={{ height: '100%', width: '100%', margin: '0 auto' }}
-                                    onSelectEvent={handleEventClick}
+                  onSelectEvent={handleEventClick}
                   onSelectSlot={handleSelectSlot}
                   selectable
                   components={{
@@ -124,7 +136,6 @@ const Booktimeoff = () => {
                   }}
                 />
               </div>
-
               {showModal && (
                 <Modal
                   event={newEvent}
@@ -137,71 +148,48 @@ const Booktimeoff = () => {
                 />
               )}
             </div>
-
-
-            <div className="col-12 col-md-12 col-lg-12 col-xl-6 ">
-              <div  className='content-wrapper mt-14 bg-white w-96'>
-              <div className="card">
-    <div className="card-header">
-      <h3 className="card-title">Holiday List</h3>
-      <div className="card-tools">
-        <button
-          type="button"
-          className="btn btn-tool"
-          data-card-widget="collapse"
-        >
-          <i className="fas fa-minus" />
-        </button>
-        <button type="button" className="btn btn-tool" data-card-widget="remove">
-          <i className="fas fa-times" />
-        </button>
-      </div>
-    </div>
-    <div className="card-body p-0">
-      <ul className="products-list product-list-in-card pl-2 pr-2">
-    
-
-{Holidaylist.map(item => (
-        <li className="item">
-        <div className="product-img">
-          {item.date}
-        </div>
-        <div className="product-info">
-         {item.name}
-         
-        </div>
-      </li>
-      ))}
-      
-      
-      </ul>
-    </div>
-
-  </div>
-
-
+            <div className="col-12 col-md-12 col-lg-12 col-xl-12 ">
+              <div className='content-wrapper mt-14 bg-white w-auto'>
+                <div className="card">
+                  <div className="card-header">
+                    <h3 className="card-title">Holiday List</h3>
+                    <div className="card-tools">
+                      <button
+                        type="button"
+                        className="btn btn-tool"
+                        data-card-widget="collapse"
+                      >
+                        <i className="fas fa-minus" />
+                      </button>
+                      <button type="button" className="btn btn-tool" data-card-widget="remove">
+                        <i className="fas fa-times" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="card-body p-0">
+                    {error ? (
+                      <div>{error}</div>
+                    ) : (
+                      <ul className="products-list product-list-in-card pl-2 pr-2">
+                        {holidays.map(holiday => (
+                          <li className="item" key={holiday.id}>
+                            <div className="product-img">
+                              {new Date(holiday.start).toDateString()}
+                            </div>
+                            <div className="product-info">
+                              {holiday.title}
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 </div>
-        
+              </div>
             </div>
-
           </div>
-
-
-
         </div>
-
-
-
-
-
-
-        
       </div>
-      
-
-      
-
-
       <Footer />
     </>
   );

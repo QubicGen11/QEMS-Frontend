@@ -465,10 +465,10 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="col-12 col-sm-12 col-md-12 col-lg-6 d-flex align-items-stretch flex-column bg-white" bis_skin_checked={1} style={{ height: 'auto' }}>
+            <div className="col-12 col-sm-12 col-md-12 col-lg-6 d-flex align-items-stretch flex-column " bis_skin_checked={1} style={{ height: 'auto' }}>
   <div className="card bg-light d-flex flex-fill bg-white" bis_skin_checked={1}>
     <div className='flex justify-between bg-white'>
-      <div className="card-header text-muted border-bottom-0" bis_skin_checked={1}>
+      <div className="card-header text-muted border-bottom-0 bg-white" bis_skin_checked={1}>
         Associate Details
       </div>
       <div className="card-header text-muted border-bottom-0" bis_skin_checked={1}>
