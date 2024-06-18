@@ -29,7 +29,7 @@ const Holidays = () => {
 
   return (
     <div>
-      <h1>Holiday List</h1>
+      <h1>Holiday Lists</h1>
       <ul>
         {holidays.map(holiday => (
           <li key={holiday.id}>
