@@ -10,6 +10,15 @@ import html2canvas from 'html2canvas';
 import { fetchAttendanceData } from '../Homepage Components/api'; 
 import Loading from '../Loading Components/Loading';
 
+// Function to deeply compare two arrays of objects
+const deepEqual = (array1, array2) => {
+  if (array1.length !== array2.length) return false;
+
+  return array1.every((item, index) => {
+    return JSON.stringify(item) === JSON.stringify(array2[index]);
+  });
+};
+
 const ViewTimesheets = () => {
   const [userAttendance, setUserAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,20 +50,21 @@ const ViewTimesheets = () => {
   };
 
   const fetchAttendance = useCallback(async () => {
-    setLoading(true);
     try {
       const data = await fetchAttendanceData(email);
-      setUserAttendance(data);
+      if (!deepEqual(data, userAttendance)) {
+        setUserAttendance(data);
+      }
     } catch (error) {
       console.error('Error fetching attendance data:', error);
     } finally {
       setLoading(false);
     }
-  }, [email]);
+  }, [email, userAttendance]);
 
   useEffect(() => {
     fetchAttendance();
-    const intervalId = setInterval(fetchAttendance, 10000);
+    const intervalId = setInterval(fetchAttendance, 30000);
 
     return () => clearInterval(intervalId);
   }, [fetchAttendance]);

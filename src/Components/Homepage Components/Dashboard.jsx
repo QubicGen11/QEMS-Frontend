@@ -640,8 +640,13 @@ const Dashboard = () => {
         <td>{new Date(attendance.date).toLocaleDateString()}</td>
         <td>{attendance.checkin_Time ? new Date(attendance.checkin_Time).toLocaleTimeString() : 'N/A'}</td>
         <td>{attendance.checkout_Time ? new Date(attendance.checkout_Time).toLocaleTimeString() : 'N/A'}</td>
-        <td>{attendance.status}</td>
-      </tr>
+        <td>
+                            {attendance.status === 'pending' ? (
+                              <button className="text-warning font-bold text-yellow-600">Pending</button>
+                            ) : (
+                              <button className="text-success font-bold text-green-600">Approved</button>
+                            )}
+                          </td>      </tr>
     ))
   )}
 </tbody>
