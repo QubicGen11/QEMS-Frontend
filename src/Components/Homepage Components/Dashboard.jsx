@@ -572,17 +572,17 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              <div className="row mt-3" bis_skin_checked={1} style={{overflow:'scroll'}}>
+              <div className="row mt-3" bis_skin_checked={1}  >
 
-                <div className="col-12 col-lg-6" bis_skin_checked={1}>
+                <div className="col-12 col-lg-6" bis_skin_checked={1} >
 
-                  <div className="card" bis_skin_checked={1}>
+                  <div className="card" bis_skin_checked={1} >
 
-                    <div className="card-header" bis_skin_checked={1}>
+                    <div className="card-header" bis_skin_checked={1} >
 
                       <h3 className="card-title">Time Sheets</h3>
 
-                      <div className="card-tools" bis_skin_checked={1}>
+                      <div className="card-tools" bis_skin_checked={1} >
 
                         <Link to="/viewtimesheets">
 
@@ -614,9 +614,9 @@ const Dashboard = () => {
 
                     </div>
 
-                    <div className="card-body table-responsive p-0" bis_skin_checked={1}>
+                    <div className="card-body table-responsive p-0" bis_skin_checked={1} style={{overflow:'scroll',height:'30vh'}}>
 
-                      <table className="table table-hover text-nowrap">
+                      <table className="table table-hover text-nowrap" style={{overflow:'scroll'}}>
                         <thead>
                           <tr>
                             <th>Date</th>

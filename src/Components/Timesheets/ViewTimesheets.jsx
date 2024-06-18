@@ -14,7 +14,7 @@ const ViewTimesheets = () => {
   const [userAttendance, setUserAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const entriesPerPage = 10;
+  const entriesPerPage = 5;
   const email = Cookies.get('email');
 
   const exportToExcel = () => {
