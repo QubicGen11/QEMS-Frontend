@@ -13,6 +13,8 @@ import Loading from '../Loading Components/Loading';
 const ViewTimesheets = () => {
   const [userAttendance, setUserAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const entriesPerPage = 10;
   const email = Cookies.get('email');
 
   const exportToExcel = () => {
@@ -38,10 +40,10 @@ const ViewTimesheets = () => {
     });
   };
 
-const fetchAttendance = useCallback(async () => {
+  const fetchAttendance = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await fetchAttendanceData(email); // Use the shared function
+      const data = await fetchAttendanceData(email);
       setUserAttendance(data);
     } catch (error) {
       console.error('Error fetching attendance data:', error);
@@ -52,12 +54,19 @@ const fetchAttendance = useCallback(async () => {
 
   useEffect(() => {
     fetchAttendance();
-    const intervalId = setInterval(fetchAttendance, 10000); // Polling every 10 seconds
+    const intervalId = setInterval(fetchAttendance, 10000);
 
-    return () => clearInterval(intervalId); // Cleanup interval on component unmount
+    return () => clearInterval(intervalId);
   }, [fetchAttendance]);
 
+  const totalPages = Math.ceil(userAttendance.length / entriesPerPage);
+  const currentEntries = userAttendance.slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage);
 
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
 
   return (
     <>
@@ -119,80 +128,54 @@ const fetchAttendance = useCallback(async () => {
                       <tr>
                         <td colSpan="5"><Loading/></td>
                       </tr>
-                    ) : userAttendance.length === 0 ? (
+                    ) : currentEntries.length === 0 ? (
                       <tr>
                         <td colSpan="5">No attendance records found</td>
                       </tr>
                     ) : (
-                      userAttendance.map((attendance, index) => (
+                      currentEntries.map((attendance, index) => (
                         <tr key={index}>
                           <td>{new Date(attendance.date).toLocaleDateString()}</td>
                           <td>{attendance.checkin_Time ? new Date(attendance.checkin_Time).toLocaleTimeString() : 'N/A'}</td>
                           <td>{attendance.checkout_Time ? new Date(attendance.checkout_Time).toLocaleTimeString() : 'N/A'}</td>
-                          <td>{attendance.status}</td>
+                          <td>
+                            {attendance.status === 'pending' ? (
+                              <button className="text-warning font-bold text-yellow-600">Pending</button>
+                            ) : (
+                              <button className="text-success font-bold text-green-600">Approved</button>
+                            )}
+                          </td>
                           <td>{attendance.reports}</td>
                         </tr>
                       ))
                     )}
                   </tbody>
-                  {/* <tfoot>
-                    <tr>
-                      <th>Date</th>
-                      <th>Check in time</th>
-                      <th>Check out</th>
-                      <th>Reports</th>
-                      <th>Status</th>
-                    </tr>
-                  </tfoot> */}
                 </table>
               </div>
             </div>
             <div className="row px-10">
               <div className="col-sm-12 col-md-5">
                 <div className="dataTables_info" id="example1_info" role="status" aria-live="polite">
-                  Showing 1 to 10 of {userAttendance.length} entries
+                  Showing {(currentPage - 1) * entriesPerPage + 1} to {Math.min(currentPage * entriesPerPage, userAttendance.length)} of {userAttendance.length} entries
                 </div>
               </div>
               <div className="col-sm-12 col-md-7">
                 <div className="dataTables_paginate paging_simple_numbers" id="example1_paginate">
                   <ul className="pagination">
-                    <li className="paginate_button page-item previous disabled" id="example1_previous">
-                      <a href="#" aria-controls="example1" data-dt-idx={0} tabIndex={0} className="page-link">
+                    <li className={`paginate_button page-item previous ${currentPage === 1 ? 'disabled' : ''}`} id="example1_previous">
+                      <a href="#" aria-controls="example1" data-dt-idx={0} tabIndex={0} className="page-link" onClick={() => handlePageChange(currentPage - 1)}>
                         Previous
                       </a>
                     </li>
-                    <li className="paginate_button page-item active">
-                      <a href="#" aria-controls="example1" data-dt-idx={1} tabIndex={0} className="page-link">
-                        1
-                      </a>
-                    </li>
-                    <li className="paginate_button page-item">
-                      <a href="#" aria-controls="example1" data-dt-idx={2} tabIndex={0} className="page-link">
-                        2
-                      </a>
-                    </li>
-                    <li className="paginate_button page-item">
-                      <a href="#" aria-controls="example1" data-dt-idx={3} tabIndex={0} className="page-link">
-                        3
-                      </a>
-                    </li>
-                    <li className="paginate_button page-item">
-                      <a href="#" aria-controls="example1" data-dt-idx={4} tabIndex={0} className="page-link">
-                        4
-                      </a>
-                    </li>
-                    <li className="paginate_button page-item">
-                      <a href="#" aria-controls="example1" data-dt-idx={5} tabIndex={0} className="page-link">
-                        5
-                      </a>
-                    </li>
-                    <li className="paginate_button page-item">
-                      <a href="#" aria-controls="example1" data-dt-idx={6} tabIndex={0} className="page-link">
-                        6
-                      </a>
-                    </li>
-                    <li className="paginate_button page-item next" id="example1_next">
-                      <a href="#" aria-controls="example1" data-dt-idx={7} tabIndex={0} className="page-link">
+                    {Array.from({ length: totalPages }, (_, i) => (
+                      <li key={i + 1} className={`paginate_button page-item ${currentPage === i + 1 ? 'active' : ''}`}>
+                        <a href="#" aria-controls="example1" data-dt-idx={i + 1} tabIndex={0} className="page-link" onClick={() => handlePageChange(i + 1)}>
+                          {i + 1}
+                        </a>
+                      </li>
+                    ))}
+                    <li className={`paginate_button page-item next ${currentPage === totalPages ? 'disabled' : ''}`} id="example1_next">
+                      <a href="#" aria-controls="example1" data-dt-idx={7} tabIndex={0} className="page-link" onClick={() => handlePageChange(currentPage + 1)}>
                         Next
                       </a>
                     </li>

@@ -572,7 +572,7 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              <div className="row mt-3" bis_skin_checked={1}>
+              <div className="row mt-3" bis_skin_checked={1} style={{overflow:'scroll'}}>
 
                 <div className="col-12 col-lg-6" bis_skin_checked={1}>
 
