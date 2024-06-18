@@ -16,6 +16,7 @@ import "./Booktimeoff.css";
 const locales = {
   'en-US': enUS,
 };
+
 const localizer = dateFnsLocalizer({
   format,
   parse,
@@ -40,26 +41,31 @@ const Booktimeoff = () => {
   const [holidays, setHolidays] = useState([]);
   const [error, setError] = useState(null);
 
-  // Use the Indian holidays calendar ID
   const API_KEY = 'AIzaSyATDBo4fInPRHA6uwq__gdi1eIoM6AcVFQ';
   const CALENDAR_ID = 'en.indian#holiday@group.v.calendar.google.com';
 
   useEffect(() => {
     const fetchHolidays = async () => {
       try {
+        const now = new Date();
+        const oneYearLater = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
         const response = await axios.get(
-          `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${API_KEY}`
+          `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${API_KEY}&timeMin=${now.toISOString()}&timeMax=${oneYearLater.toISOString()}`
         );
-        console.log('API Response:', response.data); // Log the API response
-        const holidayEvents = response.data.items.map(holiday => ({
-          id: holiday.id,
-          title: holiday.summary,
-          start: new Date(holiday.start.date || holiday.start.dateTime),
-          end: new Date(holiday.end.date || holiday.end.dateTime),
-        }));
-        console.log('Holiday Events:', holidayEvents); // Log the holiday events
-        setHolidays(holidayEvents);
-        setEvents(prevEvents => [...prevEvents, ...holidayEvents]);
+        console.log('Full API Response:', response.data); // Log the full API response
+        if (response.data.items && response.data.items.length > 0) {
+          const holidayEvents = response.data.items.map(holiday => ({
+            id: holiday.id,
+            title: holiday.summary,
+            start: new Date(holiday.start.date || holiday.start.dateTime),
+            end: new Date(holiday.end.date || holiday.end.dateTime),
+          }));
+          console.log('Mapped Holiday Events:', holidayEvents); // Log the mapped holiday events
+          setHolidays(holidayEvents);
+          setEvents(prevEvents => [...prevEvents, ...holidayEvents]);
+        } else {
+          console.log('No events found in the calendar');
+        }
       } catch (error) {
         console.error('Error fetching holidays:', error); // Log the error
         setError('Failed to fetch holidays. Please check your API key and calendar ID.');
