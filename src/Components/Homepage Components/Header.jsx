@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import config from "../config"; // Import the config file
@@ -104,12 +104,12 @@ const Header = () => {
                   </div>
                 </a>
                 <hr className="border-gray-200 dark:border-gray-700" />
-                <a
-                  href="#"
+                <Link
+                 to={'/viewprofile'}
                   className="block px-4 py-3 text-sm text-gray-600 capitalize transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
                 >
                   View Profile
-                </a>
+                </Link>
                 <a
                   href="#"
                   className="block px-4 py-3 text-sm text-gray-600 capitalize transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"

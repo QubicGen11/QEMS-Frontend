@@ -9,6 +9,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { fetchAttendanceData } from '../Homepage Components/api'; 
 import Loading from '../Loading Components/Loading';
+import config from '../config';
 
 // Function to deeply compare two arrays of objects
 const deepEqual = (array1, array2) => {
@@ -21,6 +22,7 @@ const deepEqual = (array1, array2) => {
 
 const ViewTimesheets = () => {
   const [userAttendance, setUserAttendance] = useState([]);
+  const [role, setRole] = useState('');
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const entriesPerPage = 5;
@@ -62,12 +64,27 @@ const ViewTimesheets = () => {
     }
   }, [email, userAttendance]);
 
+  const authorizeUser = useCallback(async () => {
+    try {
+      const response = await axios.post(`${config.apiUrl}/qubinest/authUser`, { userEmail: email });
+      setRole(response.data.role);
+      console.log(response.data.role);
+    } catch (error) {
+      console.error('Error authorizing user:', error);
+    }
+  }, [email]);
+
   useEffect(() => {
+    authorizeUser();
     fetchAttendance();
     const intervalId = setInterval(fetchAttendance, 30000);
 
     return () => clearInterval(intervalId);
-  }, [fetchAttendance]);
+  }, [authorizeUser, fetchAttendance]);
+
+  useEffect(() => {
+    console.log('Role:', role);
+  }, [role]);
 
   const totalPages = Math.ceil(userAttendance.length / entriesPerPage);
   const currentEntries = userAttendance.slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage);
@@ -106,11 +123,13 @@ const ViewTimesheets = () => {
                     <button className="dropdown-item">Year</button>
                   </div>
                 </div>
-                <div className="btn-group ml-4">
-                  <button type="button" className="btn btn-success">
-                    Approve
-                  </button>
-                </div>
+                {(role === 'Manager' || role === 'Admin') && (
+                  <div className="btn-group ml-4">
+                    <button type="button" className="btn btn-success">
+                      Approve
+                    </button>
+                  </div>
+                )}
               </div>
               <div className="col-sm-12 col-md-6">
                 <div id="example1_filter" className="dataTables_filter">
@@ -136,7 +155,7 @@ const ViewTimesheets = () => {
                   <tbody>
                     {loading ? (
                       <tr>
-                        <td colSpan="5"><Loading/></td>
+                        <td colSpan="5"><Loading /></td>
                       </tr>
                     ) : currentEntries.length === 0 ? (
                       <tr>
