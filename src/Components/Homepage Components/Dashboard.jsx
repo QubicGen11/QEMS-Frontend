@@ -193,7 +193,7 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Error submitting report:', error);
       toast.error('Failed to submit report. Please try again.');
-    }y
+    }
   };
 
 
@@ -201,6 +201,7 @@ const Dashboard = () => {
   const clockIn = async () => {
     const today = new Date().toLocaleDateString();
     const currentTime = new Date().toLocaleTimeString();
+    
     const timestamp = new Date().getTime();
     const userClockInKey = `lastClockIn_${email}`;
     const lastClockIn = JSON.parse(localStorage.getItem(userClockInKey));
@@ -471,9 +472,9 @@ const Dashboard = () => {
       <div className="card-header text-muted border-bottom-0 bg-white" bis_skin_checked={1}>
         Associate Details
       </div>
-      <div className="card-header text-muted border-bottom-0" bis_skin_checked={1}>
-        <Link to="/viewprofile" className="btn btn-sm btn-primary" cursorshover="true">
-          <i className="fas fa-user" /> View Profile
+      <div className="card-header text-muted border-bottom-0 bg-white" bis_skin_checked={1}>
+        <Link to="/viewprofile" className="btn btn-sm btn-primary text-white" cursorshover="true">
+          <i className="fas fa-user text-white" /> View Profile
         </Link>
       </div>
     </div>

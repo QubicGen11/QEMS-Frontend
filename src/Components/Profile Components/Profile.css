@@ -1,0 +1,13 @@
+.nav-link.active {
+    background-color: #f8f9fa;
+    border-color: #dee2e6 #dee2e6 #fff;
+    color: #495057;
+  }
+  
+  .tab-pane {
+    display: none;
+  }
+  
+  .tab-pane.show.active {
+    display: block;
+  }

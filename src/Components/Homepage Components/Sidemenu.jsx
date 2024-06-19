@@ -99,10 +99,10 @@ const Sidemenu = () => {
                 </a>
                 <ul className={`nav nav-treeview ${isEarningsOpen ? 'd-block' : 'd-none'}`}>
                   <li className="nav-item">
-                    <a href="pages/charts/chartjs.html" className="nav-link">
+                    <Link to="/profile" className="nav-link">
                       <i className="far fa-circle nav-icon" />
                       <p>Profile</p>
-                    </a>
+                    </Link>
                   </li>
                   <li className="nav-item">
                     <Link to="/payslips" className="nav-link">

@@ -5,12 +5,14 @@ import Sidemenu from '../Homepage Components/Sidemenu';
 import Footer from '../Homepage Components/Footer';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import Loading from '../loadingComponents/Loading'
 // import './Payslips.css';
 
 const Payslips = () => {
     const { id } = useParams(); // Get employeeId from the URL parameters
     const [payslipContent, setPayslipContent] = useState('');
     const [selectedPayslip, setSelectedPayslip] = useState('current'); // Default payslip type
+    const [loading, setLoading] = useState(false); // Loading state
 
     const payslipTypes = {
         current: 'Current Payslip',
@@ -20,6 +22,7 @@ const Payslips = () => {
 
     const fetchPayslip = async (employeeId, type) => {
         console.log('Fetching payslip for:', { employeeId, type }); // Debugging line
+        setLoading(true); // Start loading
         try {
             const response = await axios.get(`http://localhost:3000/documents/payslip/${employeeId}`, {
                 headers: {
@@ -30,6 +33,8 @@ const Payslips = () => {
             setPayslipContent(response.data);
         } catch (error) {
             console.error('Error fetching payslip:', error);
+        } finally {
+            setLoading(false); // Stop loading
         }
     };
 
@@ -111,10 +116,13 @@ const Payslips = () => {
                     </div>
                 </div>  
 
-                <div
-                    className="payslipviewing h-auto w-auto ml-4 relative" id="payslip-content"
-                    dangerouslySetInnerHTML={{ __html: payslipContent }}
-                ></div>
+                <div className="payslipviewing h-auto w-auto ml-4 relative" id="payslip-content">
+                    {loading ? (
+                        <div className="text-center"><Loading/></div>
+                    ) : (
+                        <div dangerouslySetInnerHTML={{ __html: payslipContent }}></div>
+                    )}
+                </div>
             </div>
             <Footer />
         </>
