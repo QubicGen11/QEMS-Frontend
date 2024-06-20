@@ -8,6 +8,7 @@ const Sidemenu = () => {
   const [isFormsOpen, setIsFormsOpen] = useState(false);
   const [isTablesOpen, setIsTablesOpen] = useState(false);
   const [isEmployees, setEmployees] = useState(false);
+  const [isLeave, setLeave] = useState(false);
 
 
   const toggleDropdown = (setter, currentState) => {
@@ -162,6 +163,47 @@ const Sidemenu = () => {
                
                 </ul>
               </li>
+
+
+              <li className="nav-item">
+                <a
+                  href="#"
+                  className="nav-link"
+                  onClick={() => toggleDropdown(setLeave, isLeave)}
+                >
+                  <i className="nav-icon fas fa-user" />
+                  <p>
+                    Leave Management 
+                    <i className="right fas fa-angle-left" />
+                  </p>
+                </a>
+                <ul className={`nav nav-treeview ${isLeave ? 'd-block' : 'd-none'}`}>
+              
+                  <li className="nav-item">
+                    <Link to="/allemployees" className="nav-link">
+                      <i className="far fa-circle nav-icon" />
+                      <p>All Leave Requests</p>
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link to="/register" className="nav-link">
+                      <i className="far fa-circle nav-icon" />
+                      <p>Leave Balance</p>
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link to="/register" className="nav-link">
+                      <i className="far fa-circle nav-icon" />
+                      <p>Leave Type</p>
+                    </Link>
+                  </li>
+               
+                </ul>
+              </li>
+
+
+
+
 
               <li className="nav-item">
                 <a
