@@ -18,6 +18,9 @@ import Payslips from "./Components/Payslips Components/Payslips";
 import Payslipsnewone from "./Components/Payslips Components/payslipsnewone";
 import Profile from "./Components/Profile Components/Profile";
 import Allemployees from "./Components/Employee Components/Allemployees";
+import Allemployeleaves from "./Components/Leave Components/Allemployeleaves";
+import Leavebalance from "./Components/Leave Components/Leavebalance";
+import Leavetype from "./Components/Leave Components/Leavetype";
 
 const App = () => {
   return (
@@ -41,6 +44,10 @@ const App = () => {
             <Route path="/payslipsnewone" element={<Payslipsnewone />} />
             <Route path="/profile/*" element={<Profile />} />
             <Route path="/allemployees" element={<Allemployees />} />
+            <Route path="/allemployeleaves" element={<Allemployeleaves />} />
+            <Route path="/leavebalance" element={<Leavebalance />} />
+            <Route path="/leavetype" element={<Leavetype />} />
+
 
           </Routes>
         </BrowserRouter>

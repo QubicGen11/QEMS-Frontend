@@ -1,5 +1,28 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faBars,
+  faSearch,
+  faTachometerAlt,
+  faCopy,
+  faAngleLeft,
+  faChartPie,
+  faUser,
+  faEdit,
+  faTable,
+  faFileAlt,
+  faBalanceScale,
+  faCheckSquare,
+  faListAlt,
+  faCircle,
+  faPlusCircle,
+  faTree,
+  faTrophy,
+  faCalendarAlt,
+  faUserAlt,
+  faPersonThroughWindow
+} from '@fortawesome/free-solid-svg-icons';
 
 const Sidemenu = () => {
   const [isTimeSheetsOpen, setIsTimeSheetsOpen] = useState(false);
@@ -7,9 +30,8 @@ const Sidemenu = () => {
   const [isPerformanceMetricsOpen, setIsPerformanceMetricsOpen] = useState(false);
   const [isFormsOpen, setIsFormsOpen] = useState(false);
   const [isTablesOpen, setIsTablesOpen] = useState(false);
-  const [isEmployees, setEmployees] = useState(false);
-  const [isLeave, setLeave] = useState(false);
-
+  const [isEmployeesOpen, setIsEmployeesOpen] = useState(false);
+  const [isLeaveOpen, setIsLeaveOpen] = useState(false);
 
   const toggleDropdown = (setter, currentState) => {
     setter(!currentState);
@@ -26,9 +48,11 @@ const Sidemenu = () => {
                 className="w-96"
                 alt="User Image"
               />
-               <li className="nav-item lg:hidden w-3">
-                        <a className="nav-link" data-widget="pushmenu" href="#" role="button"><i className="fas fa-bars" /></a>
-                    </li>
+              <li className="nav-item lg:hidden w-3">
+                <a className="nav-link" data-widget="pushmenu" href="#" role="button">
+                  <FontAwesomeIcon icon={faBars} />
+                </a>
+              </li>
             </div>
           </div>
           <div className="form-inline">
@@ -41,7 +65,7 @@ const Sidemenu = () => {
               />
               <div className="input-group-append">
                 <button className="btn btn-sidebar">
-                  <i className="fas fa-search fa-fw" />
+                  <FontAwesomeIcon icon={faSearch} />
                 </button>
               </div>
             </div>
@@ -53,9 +77,9 @@ const Sidemenu = () => {
               role="menu"
               data-accordion="false"
             >
-              <li className="nav-item ">
+              <li className="nav-item">
                 <Link to="/dashboard" className="nav-link">
-                  <i className="nav-icon fas fa-tachometer-alt" />
+                  <FontAwesomeIcon icon={faTachometerAlt} className="nav-icon" />
                   <p>Console</p>
                 </Link>
               </li>
@@ -66,22 +90,22 @@ const Sidemenu = () => {
                   className="nav-link"
                   onClick={() => toggleDropdown(setIsTimeSheetsOpen, isTimeSheetsOpen)}
                 >
-                  <i className="nav-icon fas fa-copy" />
+                  <FontAwesomeIcon icon={faCopy} className="nav-icon" />
                   <p>
                     Time Sheets
-                    <i className="fas fa-angle-left right" />
+                    <FontAwesomeIcon icon={faAngleLeft} className="right" />
                   </p>
                 </a>
                 <ul className={`nav nav-treeview ${isTimeSheetsOpen ? 'd-block' : 'd-none'}`}>
                   <li className="nav-item">
                     <Link to="/viewtimesheets" className="nav-link">
-                      <i className="far fa-circle nav-icon" />
+                      <FontAwesomeIcon icon={faUser} className="nav-icon" />
                       <p>View Timesheets</p>
                     </Link>
                   </li>
                   <li className="nav-item">
                     <Link to="/booktimeoff" className="nav-link">
-                      <i className="far fa-circle nav-icon" />
+                      <FontAwesomeIcon icon={faCalendarAlt} className="nav-icon" />
                       <p>Book Timeoff</p>
                     </Link>
                   </li>
@@ -94,40 +118,40 @@ const Sidemenu = () => {
                   className="nav-link"
                   onClick={() => toggleDropdown(setIsEarningsOpen, isEarningsOpen)}
                 >
-                  <i className="nav-icon fas fa-chart-pie" />
+                  <FontAwesomeIcon icon={faChartPie} className="nav-icon" />
                   <p>
                     Earnings
-                    <i className="right fas fa-angle-left" />
+                    <FontAwesomeIcon icon={faAngleLeft} className="right" />
                   </p>
                 </a>
                 <ul className={`nav nav-treeview ${isEarningsOpen ? 'd-block' : 'd-none'}`}>
                   <li className="nav-item">
                     <Link to="/profile" className="nav-link">
-                      <i className="far fa-circle nav-icon" />
+                      <FontAwesomeIcon icon={faUser} className="nav-icon" />
                       <p>Profile</p>
                     </Link>
                   </li>
                   <li className="nav-item">
                     <Link to="/payslips" className="nav-link">
-                      <i className="far fa-circle nav-icon" />
+                      <FontAwesomeIcon icon={faFileAlt} className="nav-icon" />
                       <p>Payslips</p>
                     </Link>
                   </li>
                   <li className="nav-item">
                     <Link to="/documents" className="nav-link">
-                      <i className="far fa-circle nav-icon" />
+                      <FontAwesomeIcon icon={faListAlt} className="nav-icon" />
                       <p>Documents</p>
                     </Link>
                   </li>
                   <li className="nav-item">
-                    <a href="pages/charts/uplot.html" className="nav-link">
-                      <i className="far fa-circle nav-icon" />
+                    <a href="#" className="nav-link">
+                      <FontAwesomeIcon icon={faBalanceScale} className="nav-icon" />
                       <p>PF</p>
                     </a>
                   </li>
                   <li className="nav-item">
-                    <a href="pages/charts/uplot.html" className="nav-link">
-                      <i className="far fa-circle nav-icon" />
+                    <a href="#" className="nav-link">
+                      <FontAwesomeIcon icon={faCheckSquare} className="nav-icon" />
                       <p>Form16</p>
                     </a>
                   </li>
@@ -138,71 +162,63 @@ const Sidemenu = () => {
                 <a
                   href="#"
                   className="nav-link"
-                  onClick={() => toggleDropdown(setEmployees, isEmployees)}
+                  onClick={() => toggleDropdown(setIsEmployeesOpen, isEmployeesOpen)}
                 >
-                  <i className="nav-icon fas fa-user" />
+                  <FontAwesomeIcon icon={faUserAlt} className="nav-icon" />
                   <p>
                     Employees
-                    <i className="right fas fa-angle-left" />
+                    <FontAwesomeIcon icon={faAngleLeft} className="right" />
                   </p>
                 </a>
-                <ul className={`nav nav-treeview ${isEmployees ? 'd-block' : 'd-none'}`}>
-              
+                <ul className={`nav nav-treeview ${isEmployeesOpen ? 'd-block' : 'd-none'}`}>
                   <li className="nav-item">
                     <Link to="/allemployees" className="nav-link">
-                      <i className="far fa-circle nav-icon" />
+                      <FontAwesomeIcon icon={faCircle} className="nav-icon" />
                       <p>All Employees</p>
                     </Link>
                   </li>
                   <li className="nav-item">
                     <Link to="/register" className="nav-link">
-                      <i className="far fa-circle nav-icon" />
+                      <FontAwesomeIcon icon={faPlusCircle} className="nav-icon" />
                       <p>Add Employees</p>
                     </Link>
                   </li>
-               
                 </ul>
               </li>
-
 
               <li className="nav-item">
                 <a
                   href="#"
                   className="nav-link"
-                  onClick={() => toggleDropdown(setLeave, isLeave)}
+                  onClick={() => toggleDropdown(setIsLeaveOpen, isLeaveOpen)}
                 >
-                  <i className="nav-icon fas fa-user" />
+                  <FontAwesomeIcon icon={faPersonThroughWindow} className="nav-icon" />
                   <p>
-                    Leave Management 
-                    <i className="right fas fa-angle-left" />
+                    Leave Management
+                    <FontAwesomeIcon icon={faAngleLeft} className="right" />
                   </p>
                 </a>
-                <ul className={`nav nav-treeview ${isLeave ? 'd-block' : 'd-none'}`}>
-              
+                <ul className={`nav nav-treeview ${isLeaveOpen ? 'd-block' : 'd-none'}`}>
                   <li className="nav-item">
-                    <Link to="/allemployees" className="nav-link">
-                      <i className="far fa-circle nav-icon" />
+                    <Link to="/allemployeleaves" className="nav-link">
+                      <FontAwesomeIcon icon={faCircle} className="nav-icon" />
                       <p>All Leave Requests</p>
                     </Link>
                   </li>
                   <li className="nav-item">
-                    <Link to="/register" className="nav-link">
-                      <i className="far fa-circle nav-icon" />
+                    <Link to="/leavebalance" className="nav-link">
+                      <FontAwesomeIcon icon={faBalanceScale} className="nav-icon" />
                       <p>Leave Balance</p>
                     </Link>
                   </li>
                   <li className="nav-item">
-                    <Link to="/register" className="nav-link">
-                      <i className="far fa-circle nav-icon" />
+                    <Link to="/leavetype" className="nav-link">
+                      <FontAwesomeIcon icon={faListAlt} className="nav-icon" />
                       <p>Leave Type</p>
                     </Link>
                   </li>
-               
                 </ul>
               </li>
-
-
-
 
 
               <li className="nav-item">
@@ -211,29 +227,25 @@ const Sidemenu = () => {
                   className="nav-link"
                   onClick={() => toggleDropdown(setIsPerformanceMetricsOpen, isPerformanceMetricsOpen)}
                 >
-                  <i className="nav-icon fas fa-tree" />
+                  <FontAwesomeIcon icon={faTree} className="nav-icon" />
                   <p>
                     Performance Metrics
-                    <i className="fas fa-angle-left right" />
+                    <FontAwesomeIcon icon={faAngleLeft} className="right" />
                   </p>
                 </a>
                 <ul className={`nav nav-treeview ${isPerformanceMetricsOpen ? 'd-block' : 'd-none'}`}>
                   <li className="nav-item">
-                    <a href="pages/UI/general.html" className="nav-link">
-                      <i className="far fa-circle nav-icon" />
+                    <a href="#" className="nav-link">
+                    <FontAwesomeIcon icon={faCheckSquare} className="nav-icon" />
                       <p>Apply Goals</p>
                     </a>
                   </li>
                   <li className="nav-item">
-                    <a href="pages/UI/icons.html" className="nav-link">
-                      <i className="far fa-circle nav-icon" />
+                    <a href="#" className="nav-link">
+                      <FontAwesomeIcon icon={faTrophy} className="nav-icon" />
                       <p>Achievements</p>
                     </a>
                   </li>
-                 
-             
-                  
-                 
                 </ul>
               </li>
 
@@ -243,12 +255,11 @@ const Sidemenu = () => {
                   className="nav-link"
                   onClick={() => toggleDropdown(setIsFormsOpen, isFormsOpen)}
                 >
-                  <i className="nav-icon fas fa-edit" />
+                  <FontAwesomeIcon icon={faEdit} className="nav-icon" />
                   <p>
-                    Trainings 
+                    Trainings
                   </p>
                 </a>
-             
               </li>
 
               <li className="nav-item">
@@ -257,12 +268,11 @@ const Sidemenu = () => {
                   className="nav-link"
                   onClick={() => toggleDropdown(setIsTablesOpen, isTablesOpen)}
                 >
-                  <i className="nav-icon fas fa-table" />
+                  <FontAwesomeIcon icon={faTable} className="nav-icon" />
                   <p>
                     Help
                   </p>
                 </a>
-            
               </li>
             </ul>
           </nav>

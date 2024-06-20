@@ -10,15 +10,17 @@ const Allemployees = () => {
   const getStatusClasses = (status) => {
     switch (status) {
       case "Active":
-        return "bg-emerald-100/60 text-white-500 bg-emerald-500";
-      case "Pending":
-        return "bg-yellow-100/60 text-white-500 bg-yellow-500";
+        return "bg-green-100 text-green-800";
       case "Decline":
-        return "bg-red-100/60 text-white-500 bg-red-500";
+        return "bg-red-100 text-red-800";
+      case "Pending":
+        return "bg-yellow-100 text-yellow-800";
       default:
-        return "bg-gray-100/60 text-white-500 bg-gray-500";
+        return "bg-gray-100 text-gray-800";
     }
   };
+
+
 
   const handleStatusChange = (newStatus) => {
     setStatus(newStatus);
