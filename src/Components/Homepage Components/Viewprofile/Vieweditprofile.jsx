@@ -3,11 +3,13 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Cookies from 'js-cookie';
+import { useNavigate } from 'react-router-dom';
 import "./Vieweditprofile.css";
 import config from '../../config';
 
 const ViewEditProfile = () => {
     const email = Cookies.get('email');
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         firstname: '',
         lastname: '',
@@ -17,7 +19,6 @@ const ViewEditProfile = () => {
         education: '',
         skills: '',
         phone: '',
-        position: '',
         email: '',
         linkedin: '',
         about: '',
@@ -37,7 +38,6 @@ const ViewEditProfile = () => {
             }
             try {
                 const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
-                console.log('API response:', response.data);
                 if (response.data) {
                     const employee = response.data;
                     setFormData({
@@ -117,14 +117,15 @@ const ViewEditProfile = () => {
                 Cookies.set('employee_id', newEmployeeId); // Set employee ID as a cookie after creation
                 toast.success('Employee created successfully');
             }
+            navigate('/viewprofile/personal-details');
+            window.location.reload();
         } catch (error) {
             console.error('Error submitting form:', error);
             toast.error('Error submitting form');
         }
     };
-
     return (
-        <div className="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabIndex={0}>
+        <div className="tab-pane fade show active" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabIndex={0}>
             <form onSubmit={handleSubmit} className="row gy-3 gy-xxl-4">
                 <div className="col-12 col-md-12 flex">
                     <div className="text-start"
@@ -229,15 +230,16 @@ const ViewEditProfile = () => {
                     <label htmlFor="inputPhone" className="form-label">Phone<span>*</span></label>
                     <input type="text" className="form-control" id="inputPhone" name="phone" value={formData.phone} onChange={handleChange} />
                 </div>
-                <div className="col-12 col-md-6">
-                    <label htmlFor="inputPosition" className="form-label">Position<span>*</span></label>
-                    <input type="text" className="form-control" id="inputPosition" name="position" value={formData.position} onChange={handleChange} />
-                </div>
+                
+                    
+
+
+                
                 <div className="col-12 col-md-6">
                     <label htmlFor="inputEmail" className="form-label">Personal Email<span>*</span></label>
                     <input type="email" className="form-control" id="inputEmail" name="email" value={formData.email} onChange={handleChange} />
                 </div>
-                <div className="col-12 col-md-6">
+                <div className="col-12 col-md-12">
                     <label htmlFor="inputLinkedin" className="form-label">LinkedIn<span>*</span></label>
                     <input type="text" className="form-control" id="inputLinkedin" name="linkedin" value={formData.linkedin} onChange={handleChange} />
                 </div>

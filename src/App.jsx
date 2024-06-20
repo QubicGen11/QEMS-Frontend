@@ -30,7 +30,7 @@ const App = () => {
             <Route path="/dashboard" element={<Dashboardmain />} />
             <Route path="/viewtimesheets" element={<ViewTimesheets />} />
             <Route path="*" element={<Nopage />} />
-            <Route path="/viewprofile" element={<Viewprofile />} />
+            <Route path="/viewprofile/*" element={<Viewprofile />} />
             <Route path="/holiday" element={<Holiday />} />
             <Route path="/booktimeoff" element={<Booktimeoff />} />
             <Route path="/documents" element={<Documents />} />
@@ -38,7 +38,6 @@ const App = () => {
             <Route path="/documentsnewone" element={<Documentsnewone />} />
             <Route path="/payslips" element={<Payslips />} />
             <Route path="/payslipsnewone" element={<Payslipsnewone />} />
-            {/* <Route path="/profile" element={<Profile />} /> */}
             <Route path="/profile/*" element={<Profile />} />
           </Routes>
         </BrowserRouter>

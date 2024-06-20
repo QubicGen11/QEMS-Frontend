@@ -1,23 +1,23 @@
-import React from 'react'
-import Sidemenu from './Sidemenu'
-import Header from './Header'
-import ViewBreadcrums from './Viewprofile/ViewBreadcrums'
-import Viewleftpart from './Viewprofile/Viewleftpart'
-import Viewpersonaldetails from './Viewprofile/Viewpersonaldetails'
-import Viewprojectdetails from './Viewprofile/Viewprojectdetails'
-import Viewpassword from './Viewprofile/Viewpassword'
- import { toast } from 'react-toastify';
+import React, { useEffect, useState } from 'react';
+import { Link, Route, Routes, useLocation, Navigate } from 'react-router-dom';
+import Sidemenu from './Sidemenu';
+import Header from './Header';
+import ViewBreadcrums from './Viewprofile/ViewBreadcrums';
+import Viewleftpart from './Viewprofile/Viewleftpart';
+import Viewpersonaldetails from './Viewprofile/Viewpersonaldetails';
+import Viewprojectdetails from './Viewprofile/Viewprojectdetails';
+import Viewpassword from './Viewprofile/Viewpassword';
+import VieweditProfile from './Viewprofile/Vieweditprofile';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Cookies from 'js-cookie';
-import config from '../config'
+import config from '../config';
 import axios from 'axios';
-import  { useEffect, useState } from 'react';
-import "./Viewprofile/Vieweditprofile"
-import VieweditProfile from './Viewprofile/Vieweditprofile';
 
 const Viewprofile = () => {
-      const email = Cookies.get('email');
+  const email = Cookies.get('email');
   const [employeeData, setEmployeeData] = useState([]);
+  const location = useLocation();
 
   useEffect(() => {
     const fetchEmployeeData = async () => {
@@ -27,180 +27,74 @@ const Viewprofile = () => {
       }
       try {
         const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
-        console.log('API response:', response.data); // Log the response data
-        if (Array.isArray(response.data)) {
+        if (response.data) {
           setEmployeeData(response.data);
         } else {
-//           toast.error('Unexpected response format');
-        //   console.error('Unexpected response format:', response.data);
+          toast.error('Unexpected response format');
         }
       } catch (error) {
-        // console.error('Error fetching employee data:', error);
-        // toast.error('Submit Your details to get your data');
+        toast.error('Submit Your details to get your data');
       }
     };
 
     fetchEmployeeData();
   }, [email]);
 
+  return (
+    <>
+      <Sidemenu />
+      <Header />
 
+      <div className="content-wrapper" style={{ minHeight: "1604.8px" }}>
+        <ViewBreadcrums />
 
-  if (!Array.isArray(employeeData)) {
-    return <div>Error: Employee data is not an array.</div>;
-  }
-    return (
-        <>
-            <Sidemenu />
-            <Header />
-
-
-
-
-            <div
-                className="content-wrapper"
-                bis_skin_checked={1}
-                style={{ minHeight: "1604.8px" }}
-            >
-                {/* This is breadcrums */}
-                <ViewBreadcrums/>
-
-                {/* Breadcrusm ends */}
-
-                <section className="content">
-                    <div className="container-fluid" bis_skin_checked={1}>
-                        <div className="row" bis_skin_checked={1}>
-                           <Viewleftpart/>
-
-                            <div className="col-12 col-md-9 col-lg-8 col-xl-9" bis_skin_checked={1}>
-                                <div className="card widget-card border-light shadow-sm" bis_skin_checked={1}>
-                                    <div className="card-body p-4" bis_skin_checked={1}>
-                                        <ul className="nav nav-tabs" id="profileTab" role="tablist">
-                                            
-                                            <li className="nav-item" role="presentation">
-                                                <button
-                                                    className="nav-link active"
-                                                    id="overview-tab"
-                                                    data-bs-toggle="tab"
-                                                    data-bs-target="#overview-tab-pane"
-                                                    type="button"
-                                                    role="tab"
-                                                    aria-controls="overview-tab-pane"
-                                                    aria-selected="true"
-                                                    cursorshover="true"
-                                                >
-                                                    Personal Details
-                                                </button>
-                                            </li>
-                                           
-                                            <li className="nav-item" role="presentation">
-                                                <button
-                                                    className="nav-link"
-                                                    id="email-tab"
-                                                    data-bs-toggle="tab"
-                                                    data-bs-target="#email-tab-pane"
-                                                    type="button"
-                                                    role="tab"
-                                                    aria-controls="email-tab-pane"
-                                                    aria-selected="false"
-                                                    cursorshover="true"
-                                                    tabIndex={-1}
-                                                >
-                                                    Project Details
-                                                </button>
-                                            </li>
-                                            <li className="nav-item" role="presentation">
-                                                <button
-                                                    className="nav-link"
-                                                    id="password-tab"
-                                                    data-bs-toggle="tab"
-                                                    data-bs-target="#password-tab-pane"
-                                                    type="button"
-                                                    role="tab"
-                                                    aria-controls="password-tab-pane"
-                                                    aria-selected="false"
-                                                    cursorshover="true"
-                                                    tabIndex={-1}
-                                                >
-                                                    Password
-                                                </button>
-                                            </li>
-                                            <li className="nav-item" role="presentation">
-                                                <button
-                                                    className="nav-link"
-                                                    id="profile-tab"
-                                                    data-bs-toggle="tab"
-                                                    data-bs-target="#profile-tab-pane"
-                                                    type="button"
-                                                    role="tab"
-                                                    aria-controls="profile-tab-pane"
-                                                    aria-selected="false"
-                                                    cursorshover="true"
-                                                    tabIndex={-1}
-                                                >
-                                                    Edit Profile
-                                                </button>
-                                            </li>
-                                        </ul>
-                                        <div
-                                            className="tab-content pt-4"
-                                            id="profileTabContent"
-                                            bis_skin_checked={1}
-                                        >
-                                            <div
-                                                className="tab-pane fade active show"
-                                                id="overview-tab-pane"
-                                                role="tabpanel"
-                                                aria-labelledby="overview-tab"
-                                                tabIndex={0}
-                                                bis_skin_checked={1}
-
-                                            >
-
-                                               
-
-                                            {employeeData.map((emp)=>{
-                                                return(
-                                                    <>
-                                                        
-                                                <p className="lead mb-3 font-sans text-md">
-                                                    {emp.about}
-                                                </p>
-
-                                                    </>
-                                                )
-                                            })}
-
-                                                {/* This is for profile  */}
-                                              <Viewpersonaldetails/>
-                                            </div>
-
-
-                                            {/* This is for edit Profile */}
-
-<VieweditProfile/>
-                                            {/* This is for Project Details */}
-                                            <Viewprojectdetails/>
-
-
-                                            {/* This is for password */}
-                                            <Viewpassword/>
-
-
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+        <section className="content">
+          <div className="container-fluid">
+            <div className="row">
+              <Viewleftpart />
+              <div className="col-12 col-md-9 col-lg-8 col-xl-9">
+                <div className="card widget-card border-light shadow-sm">
+                  <div className="card-body p-4">
+                    <ul className="nav nav-tabs" id="profileTab" role="tablist">
+                      <li className="nav-item" role="presentation">
+                        <Link to="/viewprofile/personal-details" className={`nav-link ${location.pathname === '/viewprofile/personal-details' ? 'active' : ''}`}>
+                          Personal Details
+                        </Link>
+                      </li>
+                      <li className="nav-item" role="presentation">
+                        <Link to="/viewprofile/project-details" className={`nav-link ${location.pathname === '/viewprofile/project-details' ? 'active' : ''}`}>
+                          Project Details
+                        </Link>
+                      </li>
+                      <li className="nav-item" role="presentation">
+                        <Link to="/viewprofile/password" className={`nav-link ${location.pathname === '/viewprofile/password' ? 'active' : ''}`}>
+                          Password
+                        </Link>
+                      </li>
+                      <li className="nav-item" role="presentation">
+                        <Link to="/viewprofile/edit-profile" className={`nav-link ${location.pathname === '/viewprofile/edit-profile' ? 'active' : ''}`}>
+                          Edit Profile
+                        </Link>
+                      </li>
+                    </ul>
+                    <div className="tab-content pt-4" id="profileTabContent">
+                      <Routes>
+                        <Route path="/" element={<Navigate to="/viewprofile/personal-details" />} />
+                        <Route path="personal-details" element={<Viewpersonaldetails data={employeeData} />} />
+                        <Route path="project-details" element={<Viewprojectdetails data={employeeData} />} />
+                        <Route path="password" element={<Viewpassword />} />
+                        <Route path="edit-profile" element={<VieweditProfile data={employeeData} />} />
+                      </Routes>
                     </div>
-                </section>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
+        </section>
+      </div>
+    </>
+  );
+};
 
-
-
-
-
-        </>
-    )
-}
-
-export default Viewprofile
+export default Viewprofile;

@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Cookies from 'js-cookie';
 import config from '../../config';
+import Loading from '../../Loading Components/Loading'
 
 const Viewpersonaldetails = () => {
   const email = Cookies.get('email');
@@ -34,7 +35,9 @@ const Viewpersonaldetails = () => {
   }, [email]);
 
   if (!employeeData) {
-    return <div>Loading...</div>;
+    return <div>
+      <Loading/>
+    </div>;
   }
 
   const user = employeeData.users && employeeData.users[0]; 

@@ -18,7 +18,7 @@ const UserDetailModal = ({ isOpen, onRequestClose, onCompleteDetails }) => {
             <p>You need to complete your details to enable clock-in and clock-out functionality.</p>
           </div>
           <div className="modal-footer">
-            <a href="/viewprofile"><button type="button" className="btn btn-primary" onClick={onCompleteDetails} >Complete Details</button></a>
+            <a href="viewprofile/edit-profile"><button type="button" className="btn btn-primary" onClick={onCompleteDetails} >Complete Details</button></a>
             <button type="button" className="btn btn-secondary" onClick={onRequestClose}>Close</button>
           </div>
         </div>

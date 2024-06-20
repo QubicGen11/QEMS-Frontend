@@ -5,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import config from '../../config';
 import Cookies from 'js-cookie';
 import imgConfig from '../../imgConfig';
+import Loading from '../../Loading Components/Loading';
 
 const Viewleftpart = () => {
   const email = Cookies.get('email');
@@ -34,10 +35,13 @@ const Viewleftpart = () => {
   }, [email]);
 
   if (!employeeData) {
-    return <div>Loading...</div>;
+    return <div><Loading /></div>;
   }
 
   const emp = employeeData; // Adjusted for single object response
+
+  // Get mainPosition from the users array if it exists
+  const mainPosition = emp.users && emp.users.length > 0 ? emp.users[0].mainPosition : '';
 
   return (
     <>
@@ -52,7 +56,7 @@ const Viewleftpart = () => {
               />
             </div>
             <h3 className="profile-username text-center">{emp.firstname} {emp.lastname}</h3>
-            <p className="text-muted text-center">{emp.position}</p>
+            <p className="text-muted text-center">{mainPosition}</p>
           </div>
         </div>
         <div className="card card-primary" bis_skin_checked={1}>
@@ -70,7 +74,7 @@ const Viewleftpart = () => {
             <strong>
               <i className="fas fa-map-marker-alt mr-1" /> Location
             </strong>
-            <p className="text-muted p-2">{emp.location}</p>
+            <p className="text-muted p-2">Anantapur</p>
             <hr />
             <strong>
               <i className="fas fa-pencil-alt mr-1" /> Skills
@@ -79,12 +83,12 @@ const Viewleftpart = () => {
               {emp.skills}
             </p>
             <hr />
-             <strong>
-                                            <i className="far fa-file-alt mr-1" /> About
-                                        </strong>
-                                        <p className="text-muted">
-                                            {emp.about}
-                                        </p>
+            <strong>
+              <i className="far fa-file-alt mr-1" /> About
+            </strong>
+            <p className="text-muted">
+              {emp.about}
+            </p>
             <hr />
           </div>
         </div>
