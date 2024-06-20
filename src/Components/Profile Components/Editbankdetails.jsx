@@ -10,7 +10,6 @@ const Editbankdetails = ({ canEdit }) => {
     const employee_id = Cookies.get('employee_id');
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        associateId: '',
         bankName: '',
         accountNumber: '',
         ifscCode: '',
@@ -43,13 +42,12 @@ const Editbankdetails = ({ canEdit }) => {
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
             if (diffDays < 30) {
-                canEdit = false;
                 toast.info(`You can edit your bank details after ${30 - diffDays} days`);
             } else {
                 canEdit = true;
             }
         }
-    }, []);
+    }, [canEdit]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -68,7 +66,7 @@ const Editbankdetails = ({ canEdit }) => {
         }
 
         try {
-            await axios.put(`${config.apiUrl}/api/bankdetails/${employee_id}`, formData);
+            await axios.post(`${config.apiUrl}/api/bankdetails/${employee_id}`, formData);
             toast.success('Bank details updated successfully');
             localStorage.setItem('lastEditTimestamp', new Date().toISOString());
             navigate('/profile/bank-details');
@@ -82,10 +80,6 @@ const Editbankdetails = ({ canEdit }) => {
     return (
         <div className="tab-pane fade show active" id="edit-bank-details" role="tabpanel" aria-labelledby="edit-bank-details-tab" tabIndex={0}>
             <form onSubmit={handleSubmit} className="row gy-3 gy-xxl-4">
-                <div className="col-12 col-md-6">
-                    <label htmlFor="associateId" className="form-label">Associate ID <span>*</span></label>
-                    <input type="text" className="form-control" id="associateId" name="associateId" value={formData.employee_id} onChange={handleChange} disabled={!canEdit} />
-                </div>
                 <div className="col-12 col-md-6">
                     <label htmlFor="bankName" className="form-label">Bank Name<span>*</span></label>
                     <input type="text" className="form-control" id="bankName" name="bankName" value={formData.bankName} onChange={handleChange} disabled={!canEdit} />

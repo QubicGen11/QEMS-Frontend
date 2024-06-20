@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import './Profile.css';
-import { Link, Route, Routes, useLocation } from 'react-router-dom';
+import { Link, Route, Routes, useLocation, Navigate } from 'react-router-dom';
 import Sidemenu from "../Homepage Components/Sidemenu";
 import Header from "../Homepage Components/Header";
 import Footer from "../Homepage Components/Footer";
@@ -162,7 +162,7 @@ const Profile = () => {
                   <div className="card-body p-4">
                     <ul className="nav nav-tabs" id="profileTab" role="tablist">
                       <li className="nav-item" role="presentation">
-                        <Link to="/profile/personal-details" className={`nav-link ${location.pathname === '/profile/personal-details' ? 'active' : ''}`}>
+                        <Link to="/profile/personal-details" className={`nav-link ${location.pathname === '/profile/personal-details' || location.pathname === '/profile' ? 'active' : ''}`}>
                           Personal Details
                         </Link>
                       </li>
@@ -179,6 +179,7 @@ const Profile = () => {
                     </ul>
                     <div className="tab-content pt-4" id="profileTabContent">
                       <Routes>
+                        <Route path="/" element={<Navigate to="/profile/personal-details" />} />
                         <Route path="personal-details" element={<Bankpersonal />} />
                         <Route path="bank-details" element={<Bankdetails />} />
                         <Route path="edit-bank-details" element={<Editbankdetails canEdit={canEdit} />} />
