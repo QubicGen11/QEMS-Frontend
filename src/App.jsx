@@ -17,6 +17,7 @@ import Documentsnewone from "./Components/Earnings Components/Documents Componen
 import Payslips from "./Components/Payslips Components/Payslips";
 import Payslipsnewone from "./Components/Payslips Components/payslipsnewone";
 import Profile from "./Components/Profile Components/Profile";
+import Allemployees from "./Components/Employee Components/Allemployees";
 
 const App = () => {
   return (
@@ -39,6 +40,8 @@ const App = () => {
             <Route path="/payslips" element={<Payslips />} />
             <Route path="/payslipsnewone" element={<Payslipsnewone />} />
             <Route path="/profile/*" element={<Profile />} />
+            <Route path="/allemployees" element={<Allemployees />} />
+
           </Routes>
         </BrowserRouter>
       </UserProvider>

@@ -7,6 +7,8 @@ const Sidemenu = () => {
   const [isPerformanceMetricsOpen, setIsPerformanceMetricsOpen] = useState(false);
   const [isFormsOpen, setIsFormsOpen] = useState(false);
   const [isTablesOpen, setIsTablesOpen] = useState(false);
+  const [isEmployees, setEmployees] = useState(false);
+
 
   const toggleDropdown = (setter, currentState) => {
     setter(!currentState);
@@ -128,6 +130,36 @@ const Sidemenu = () => {
                       <p>Form16</p>
                     </a>
                   </li>
+                </ul>
+              </li>
+
+              <li className="nav-item">
+                <a
+                  href="#"
+                  className="nav-link"
+                  onClick={() => toggleDropdown(setEmployees, isEmployees)}
+                >
+                  <i className="nav-icon fas fa-user" />
+                  <p>
+                    Employees
+                    <i className="right fas fa-angle-left" />
+                  </p>
+                </a>
+                <ul className={`nav nav-treeview ${isEmployees ? 'd-block' : 'd-none'}`}>
+              
+                  <li className="nav-item">
+                    <Link to="/allemployees" className="nav-link">
+                      <i className="far fa-circle nav-icon" />
+                      <p>All Employees</p>
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link to="/register" className="nav-link">
+                      <i className="far fa-circle nav-icon" />
+                      <p>Add Employees</p>
+                    </Link>
+                  </li>
+               
                 </ul>
               </li>
 
