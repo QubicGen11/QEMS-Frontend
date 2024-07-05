@@ -80,12 +80,24 @@ const Allemployees = () => {
                   {employees.length} users
                 </span>
               </div>
-              <div>
+              <div className="flex gap-2">
                 <button 
                   onClick={handleDeleteSelected} 
-                  className="p-2 bg-red-600 text-white px-3 rounded-md"
+                  className=" bg text-gray-900 px-2 rounded-md"
                 >
-                  Delete Selected
+                  Delete 
+                </button>
+                <button 
+                  onClick={handleDeleteSelected} 
+                  className=" bg0 text-gray-900e px-2 rounded-md"
+                >
+                  Make Team Lead
+                </button>
+                <button 
+                  onClick={handleDeleteSelected} 
+                  className=" 500 text-gray-900ite px-2 rounded-md"
+                >
+                  Disable Employee
                 </button>
               </div>
             </div>
