@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Cookies from 'js-cookie';
+import axios from 'axios';
 import {
   faBars,
   faSearch,
@@ -21,7 +23,9 @@ import {
   faTrophy,
   faCalendarAlt,
   faUserAlt,
-  faPersonThroughWindow
+  faPersonThroughWindow,
+  faClock,
+  faClipboardList
 } from '@fortawesome/free-solid-svg-icons';
 
 const Sidemenu = () => {
@@ -32,6 +36,26 @@ const Sidemenu = () => {
   const [isTablesOpen, setIsTablesOpen] = useState(false);
   const [isEmployeesOpen, setIsEmployeesOpen] = useState(false);
   const [isLeaveOpen, setIsLeaveOpen] = useState(false);
+  const [isAttendanceOpen, setIsAttendanceOpen] = useState(false);
+  const [isTeamsOpen, setIsTeamsOpen] = useState(false);
+  const [userRole, setUserRole] = useState(null);
+
+  const companyEmail = Cookies.get('email'); // Assuming the email of the current user is stored in cookies
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const response = await axios.post('http://localhost:3000/qubinest/authUser', {
+          userEmail: companyEmail
+        });
+        setUserRole(response.data.role);
+      } catch (error) {
+        console.error('Error fetching user role:', error);
+      }
+    };
+
+    fetchUserRole();
+  }, [companyEmail]);
 
   const toggleDropdown = (setter, currentState) => {
     setter(!currentState);
@@ -83,6 +107,72 @@ const Sidemenu = () => {
                   <p>Console</p>
                 </Link>
               </li>
+
+              {(userRole === 'Admin' || userRole === 'Manager') && (
+                <li className="nav-item">
+                  <a
+                    href="#"
+                    className="nav-link"
+                    onClick={() => toggleDropdown(setIsAttendanceOpen, isAttendanceOpen)}
+                  >
+                    <FontAwesomeIcon icon={faClock} className="nav-icon" />
+                    <p>
+                      Attendance
+                      <FontAwesomeIcon icon={faAngleLeft} className="right" />
+                    </p>
+                  </a>
+                  <ul className={`nav nav-treeview ${isAttendanceOpen ? 'd-block' : 'd-none'}`}>
+                    <li className="nav-item">
+                      <Link to="/todaysattendance" className="nav-link">
+                        <FontAwesomeIcon icon={faClipboardList} className="nav-icon" />
+                        <p>Today's Attendance</p>
+                      </Link>
+                    </li>
+                    <li className="nav-item">
+                      <Link to="/employeeattendance" className="nav-link">
+                        <FontAwesomeIcon icon={faUser} className="nav-icon" />
+                        <p>Employee Attendance</p>
+                      </Link>
+                    </li>
+                    <li className="nav-item">
+                      <Link to="/attendancesheet" className="nav-link">
+                        <FontAwesomeIcon icon={faFileAlt} className="nav-icon" />
+                        <p>Attendance Sheet</p>
+                      </Link>
+                    </li>
+                  </ul>
+                </li>
+              )}
+
+              {(userRole === 'Admin' || userRole === 'Manager') && (
+                <li className="nav-item">
+                  <a
+                    href="#"
+                    className="nav-link"
+                    onClick={() => toggleDropdown(setIsTeamsOpen, isTeamsOpen)}
+                  >
+                    <FontAwesomeIcon icon={faClock} className="nav-icon" />
+                    <p>
+                      Teams
+                      <FontAwesomeIcon icon={faAngleLeft} className="right" />
+                    </p>
+                  </a>
+                  <ul className={`nav nav-treeview ${isTeamsOpen ? 'd-block' : 'd-none'}`}>
+                    <li className="nav-item">
+                      <Link to="/createTeam" className="nav-link">
+                        <FontAwesomeIcon icon={faClipboardList} className="nav-icon" />
+                        <p>Create Team</p>
+                      </Link>
+                    </li>
+                    <li className="nav-item">
+                      <Link to="/editTeam" className="nav-link">
+                        <FontAwesomeIcon icon={faUser} className="nav-icon" />
+                        <p>Edit Team</p>
+                      </Link>
+                    </li>
+                  </ul>
+                </li>
+              )}
 
               <li className="nav-item">
                 <a
@@ -158,68 +248,77 @@ const Sidemenu = () => {
                 </ul>
               </li>
 
-              <li className="nav-item">
-                <a
-                  href="#"
-                  className="nav-link"
-                  onClick={() => toggleDropdown(setIsEmployeesOpen, isEmployeesOpen)}
-                >
-                  <FontAwesomeIcon icon={faUserAlt} className="nav-icon" />
-                  <p>
-                    Employees
-                    <FontAwesomeIcon icon={faAngleLeft} className="right" />
-                  </p>
-                </a>
-                <ul className={`nav nav-treeview ${isEmployeesOpen ? 'd-block' : 'd-none'}`}>
+              {(userRole === 'Manager' || userRole === 'Admin') && (
+                <>
                   <li className="nav-item">
-                    <Link to="/allemployees" className="nav-link">
-                      <FontAwesomeIcon icon={faCircle} className="nav-icon" />
-                      <p>All Employees</p>
-                    </Link>
+                    <a
+                      href="#"
+                      className="nav-link"
+                      onClick={() => toggleDropdown(setIsEmployeesOpen, isEmployeesOpen)}
+                    >
+                      <FontAwesomeIcon icon={faUserAlt} className="nav-icon" />
+                      <p>
+                        Employees
+                        <FontAwesomeIcon icon={faAngleLeft} className="right" />
+                      </p>
+                    </a>
+                    <ul className={`nav nav-treeview ${isEmployeesOpen ? 'd-block' : 'd-none'}`}>
+                      <li className="nav-item">
+                        <Link to="/allemployees" className="nav-link">
+                          <FontAwesomeIcon icon={faCircle} className="nav-icon" />
+                          <p>All Employees</p>
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link to="/register" className="nav-link">
+                          <FontAwesomeIcon icon={faPlusCircle} className="nav-icon" />
+                          <p>Add Employees</p>
+                        </Link>
+                      </li>
+                    </ul>
                   </li>
-                  <li className="nav-item">
-                    <Link to="/register" className="nav-link">
-                      <FontAwesomeIcon icon={faPlusCircle} className="nav-icon" />
-                      <p>Add Employees</p>
-                    </Link>
-                  </li>
-                </ul>
-              </li>
 
-              <li className="nav-item">
-                <a
-                  href="#"
-                  className="nav-link"
-                  onClick={() => toggleDropdown(setIsLeaveOpen, isLeaveOpen)}
-                >
-                  <FontAwesomeIcon icon={faPersonThroughWindow} className="nav-icon" />
-                  <p>
-                    Leave Management
-                    <FontAwesomeIcon icon={faAngleLeft} className="right" />
-                  </p>
-                </a>
-                <ul className={`nav nav-treeview ${isLeaveOpen ? 'd-block' : 'd-none'}`}>
                   <li className="nav-item">
-                    <Link to="/allemployeleaves" className="nav-link">
-                      <FontAwesomeIcon icon={faCircle} className="nav-icon" />
-                      <p>All Leave Requests</p>
-                    </Link>
+                    <a
+                      href="#"
+                      className="nav-link"
+                      onClick={() => toggleDropdown(setIsLeaveOpen, isLeaveOpen)}
+                    >
+                      <FontAwesomeIcon icon={faPersonThroughWindow} className="nav-icon" />
+                      <p>
+                        Leave Management
+                        <FontAwesomeIcon icon={faAngleLeft} className="right" />
+                      </p>
+                    </a>
+                    <ul className={`nav nav-treeview ${isLeaveOpen ? 'd-block' : 'd-none'}`}>
+                      <li className="nav-item">
+                        <Link to="/allemployeleaverequests" className="nav-link">
+                          <FontAwesomeIcon icon={faCircle} className="nav-icon" />
+                          <p>All Leave Requests</p>
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link to="/allemployeleaves" className="nav-link">
+                          <FontAwesomeIcon icon={faCircle} className="nav-icon" />
+                          <p>Employee Leaves</p>
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link to="/leavebalance" className="nav-link">
+                          <FontAwesomeIcon icon={faBalanceScale} className="nav-icon" />
+                          <p>Leave Balance</p>
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link to="/leavetype" className="nav-link">
+                          <FontAwesomeIcon icon={faListAlt} className="nav-icon" />
+                          <p>Leave Type</p>
+                        </Link>
+                      </li>
+                    </ul>
                   </li>
-                  <li className="nav-item">
-                    <Link to="/leavebalance" className="nav-link">
-                      <FontAwesomeIcon icon={faBalanceScale} className="nav-icon" />
-                      <p>Leave Balance</p>
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link to="/leavetype" className="nav-link">
-                      <FontAwesomeIcon icon={faListAlt} className="nav-icon" />
-                      <p>Leave Type</p>
-                    </Link>
-                  </li>
-                </ul>
-              </li>
-
+                </>
+              )}
 
               <li className="nav-item">
                 <a
@@ -236,7 +335,7 @@ const Sidemenu = () => {
                 <ul className={`nav nav-treeview ${isPerformanceMetricsOpen ? 'd-block' : 'd-none'}`}>
                   <li className="nav-item">
                     <a href="#" className="nav-link">
-                    <FontAwesomeIcon icon={faCheckSquare} className="nav-icon" />
+                      <FontAwesomeIcon icon={faCheckSquare} className="nav-icon" />
                       <p>Apply Goals</p>
                     </a>
                   </li>
@@ -274,6 +373,7 @@ const Sidemenu = () => {
                   </p>
                 </a>
               </li>
+
             </ul>
           </nav>
         </div>

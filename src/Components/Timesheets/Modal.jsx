@@ -79,6 +79,19 @@ const Modal = ({ event, onSave, onCancel, onChange, onDateChange, onFileChange, 
               />
             </div>
             <div className="form-group w-96">
+              <label htmlFor="reason" style={{ textAlign: 'left', display: 'block' }}>Department</label>
+              <input
+                type="text"
+                id="department"
+                name="department"
+                value={event.department}
+                onChange={onChange}
+                placeholder="Department"
+                className="form-control"
+                style={{ margin: '0 auto', display: 'block' }}
+              />
+            </div>
+            <div className="form-group w-96">
               <label htmlFor="comments" style={{ textAlign: 'left', display: 'block' }}>Comments</label>
               <textarea
                 id="comments"

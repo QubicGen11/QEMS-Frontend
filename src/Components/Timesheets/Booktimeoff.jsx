@@ -12,7 +12,7 @@ import Sidemenu from '../Homepage Components/Sidemenu';
 import Footer from '../Homepage Components/Footer';
 import axios from 'axios';
 import "./Booktimeoff.css";
-
+import Cookies from 'js-cookie';
 const locales = {
   'en-US': enUS,
 };
@@ -40,6 +40,7 @@ const Booktimeoff = () => {
   const [showModal, setShowModal] = useState(false);
   const [holidays, setHolidays] = useState([]);
   const [error, setError] = useState(null);
+  const email = Cookies.get('email');
 
   const API_KEY = 'AIzaSyATDBo4fInPRHA6uwq__gdi1eIoM6AcVFQ';
   const CALENDAR_ID = 'en.indian#holiday@group.v.calendar.google.com';
@@ -52,7 +53,6 @@ const Booktimeoff = () => {
         const response = await axios.get(
           `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${API_KEY}&timeMin=${now.toISOString()}&timeMax=${oneYearLater.toISOString()}`
         );
-        console.log('Full API Response:', response.data); // Log the full API response
         if (response.data.items && response.data.items.length > 0) {
           const holidayEvents = response.data.items.map(holiday => ({
             id: holiday.id,
@@ -60,14 +60,13 @@ const Booktimeoff = () => {
             start: new Date(holiday.start.date || holiday.start.dateTime),
             end: new Date(holiday.end.date || holiday.end.dateTime),
           }));
-          console.log('Mapped Holiday Events:', holidayEvents); // Log the mapped holiday events
           setHolidays(holidayEvents);
           setEvents(prevEvents => [...prevEvents, ...holidayEvents]);
         } else {
           console.log('No events found in the calendar');
         }
       } catch (error) {
-        console.error('Error fetching holidays:', error); // Log the error
+        console.error('Error fetching holidays:', error);
         setError('Failed to fetch holidays. Please check your API key and calendar ID.');
       }
     };
@@ -84,13 +83,33 @@ const Booktimeoff = () => {
     alert('Event: ' + event.title);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const eventWithReason = {
       ...newEvent,
       title: `${newEvent.title} (${newEvent.reason})`,
     };
     setEvents([...events, eventWithReason]);
     setShowModal(false);
+
+    const payload = {
+      companyEmail: email,
+      department:newEvent.department,
+      leaveType: newEvent.type,
+      duration: newEvent.dayType,
+      reason: newEvent.reason,
+      startDate: newEvent.start,
+      endDate: newEvent.end,
+      comments: newEvent.comments,
+      document: newEvent.document,
+    };
+
+    try {
+      const response = await axios.post('http://localhost:3000/qubinest/newleaverequest', payload);
+      console.log('Leave request response:', response.data);
+    } catch (error) {
+      console.error('Error submitting leave request:', error);
+      setError('Failed to submit leave request. Please try again.');
+    }
   };
 
   const handleChange = e => {

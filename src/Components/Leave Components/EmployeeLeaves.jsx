@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faCalendarAlt, faCheckSquare, faHashtag, faInfoCircle, faFileAlt, faPersonThroughWindow } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-const Allemployeleaves = () => {
+const EmployeeLeaves = () => {
   const [leaveRequests, setLeaveRequests] = useState([]);
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [modalData, setModalData] = useState(null);
@@ -80,7 +80,7 @@ const Allemployeleaves = () => {
       <Sidemenu />
       <div className="content-wrapper">
         <section className="container mx-auto p-4">
-          <h2 className="text-lg font-bold mb-3">Leave Requests</h2>
+          <h2 className="text-lg font-bold mb-3">Employee Leaves</h2>
           <div className="overflow-x-auto relative shadow-md sm:rounded-lg">
             <table className="w-full text-sm text-left text-gray-500">
               <thead className="text-xs text-gray-700 uppercase bg-gray-50">
@@ -93,7 +93,6 @@ const Allemployeleaves = () => {
                   <th scope="col" className="py-3 px-6">No Of Days</th>
                   <th scope="col" className="py-3 px-6">Status</th>
                   <th scope="col" className="py-3 px-6">Reason</th>
-                  <th scope="col" className="py-3 px-6">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -117,10 +116,6 @@ const Allemployeleaves = () => {
                       </div>
                     </td>
                     <td className="py-4 px-6">{request.reason.length > 20 ? `${request.reason.substring(0, 20)}...` : request.reason}</td>
-                    <td className="py-4 px-6 flex gap-2">
-                      <a href="#" className="font-medium bg-green-600 text-white rounded-md p-2" onClick={(e) => { e.stopPropagation(); handleStatusChange(request.id, "Approved", request.name); }}>Approve</a>
-                      <a href="#" className="font-medium bg-red-600 text-white rounded-md p-2" onClick={(e) => { e.stopPropagation(); handleStatusChange(request.id, "Rejected", request.name); }}>Decline</a>
-                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -174,4 +169,4 @@ const Allemployeleaves = () => {
     </div>
   );
 };
-export default Allemployeleaves;
+export default EmployeeLeaves;

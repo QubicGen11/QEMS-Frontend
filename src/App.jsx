@@ -21,6 +21,10 @@ import Allemployees from "./Components/Employee Components/Allemployees";
 import Allemployeleaves from "./Components/Leave Components/Allemployeleaves";
 import Leavebalance from "./Components/Leave Components/Leavebalance";
 import Leavetype from "./Components/Leave Components/Leavetype";
+import AllEmployeeAttendance from "./Components/Attendance Components/AllEmployeeAttendance";
+import CreateTeamComponent from "./Components/Team Components/CreateTeamComponent";
+import EmployeeLeaves from "./Components/Leave Components/EmployeeLeaves";
+import SingleEmployeeAttendance from "./Components/Attendance Components/SingleEmployeeAttendance";
 
 const App = () => {
   return (
@@ -35,6 +39,9 @@ const App = () => {
             <Route path="/viewtimesheets" element={<ViewTimesheets />} />
             <Route path="*" element={<Nopage />} />
             <Route path="/viewprofile/*" element={<Viewprofile />} />
+            <Route path="/employeeattendance" element={<AllEmployeeAttendance />} />
+            <Route path="/singleemployeeattendance/:employeeId" element={<SingleEmployeeAttendance />} />
+            <Route path="/createTeam" element={<CreateTeamComponent />} />
             <Route path="/holiday" element={<Holiday />} />
             <Route path="/booktimeoff" element={<Booktimeoff />} />
             <Route path="/documents" element={<Documents />} />
@@ -44,11 +51,10 @@ const App = () => {
             <Route path="/payslipsnewone" element={<Payslipsnewone />} />
             <Route path="/profile/*" element={<Profile />} />
             <Route path="/allemployees" element={<Allemployees />} />
-            <Route path="/allemployeleaves" element={<Allemployeleaves />} />
+            <Route path="/allemployeleaverequests" element={<Allemployeleaves />} />
+            <Route path="/allemployeleaves" element={<EmployeeLeaves />} />
             <Route path="/leavebalance" element={<Leavebalance />} />
             <Route path="/leavetype" element={<Leavetype />} />
-
-
           </Routes>
         </BrowserRouter>
       </UserProvider>

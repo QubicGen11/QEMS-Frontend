@@ -22,7 +22,6 @@ const Login = ({name}) => {
       console.log(response);
       Cookies.set('email', email, { secure: true, sameSite: 'Strict' });
       setUserEmail(email); // Set the email in context
-      
       // Retrieve existing emails from local storage
       const existingEmails = JSON.parse(localStorage.getItem('userEmails')) || [];
       // Add new email if it doesn't already exist

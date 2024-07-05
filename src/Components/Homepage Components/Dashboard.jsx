@@ -9,9 +9,10 @@ import { useUser } from '../context/UserContext';
 import UserDetailModal from './UserDetailModal';
 import { fetchAttendanceData } from '../Homepage Components/api'; // Import the shared function
 import Loading from '../Loading Components/Loading';
+
 const Dashboard = () => {
   const [attendance, setAttendance] = useState([]);
-  const [userAttendance, setUserAttendance] = useState([])
+  const [userAttendance, setUserAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [clockInTime, setClockInTime] = useState('');
@@ -45,13 +46,13 @@ const Dashboard = () => {
   const [message, setMessage] = useState('');
   const [employeeInfo, setEmployeeInfo] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
   useEffect(() => {
     const fetchEmployeeInfo = async () => {
       try {
         const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
         const employeeData = response.data;
-  
+
         if (!employeeData || Object.keys(employeeData).length === 0) {    
           toast.error("Please fill up the details");
           setIsModalOpen(true);
@@ -60,7 +61,7 @@ const Dashboard = () => {
             ...employeeData,
             mainPosition: employeeData.users[0]?.mainPosition // Access mainPosition from users array
           });
-  
+
           // Add employee ID as cookie if it exists
           if (employeeData.employee_id) {
             Cookies.set('employee_id', employeeData.employee_id);
@@ -72,11 +73,9 @@ const Dashboard = () => {
         setIsModalOpen(true); // Show modal even if there's an error fetching data
       }
     };
-  
+
     fetchEmployeeInfo();
   }, [email]);
-  
-  
 
   const handleCompleteDetails = () => {
     // Logic to handle completing details (e.g., redirecting to a profile completion page)
@@ -86,9 +85,6 @@ const Dashboard = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
-
-
-
 
   useEffect(() => {
     const fetchAttendance = async () => {
@@ -102,13 +98,7 @@ const Dashboard = () => {
     };
 
     fetchAttendance();
-    const intervalId = setInterval(fetchAttendance, 10000); // Polling every 10 seconds
-
-    return () => clearInterval(intervalId); // Cleanup interval on component unmount
   }, [email]);
-
-
-
 
   useEffect(() => {
     const userClockInKey = `lastClockIn_${email}`;
@@ -159,21 +149,6 @@ const Dashboard = () => {
     }
   };
 
-  // useEffect(() => {
-  //   const fetchEmployeeData = async () => {
-  //     try {
-  //       const response = await axios.post(`${config.apiUrl}/qubinest/getemployees`, { email });
-  //       setEmployeeData(response.data);
-  //     } catch (error) {
-  //       // console.error('Error fetching employee data:', error);
-  //     }
-  //   };
-
-  //   fetchEmployeeData();
-  // }, [email]);
-
-
-
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (reportText.length < MIN_CHAR_LIMIT || reportText.length > MAX_CHAR_LIMIT) {
@@ -195,8 +170,6 @@ const Dashboard = () => {
       toast.error('Failed to submit report. Please try again.');
     }
   };
-
-
 
   const clockIn = async () => {
     const today = new Date().toLocaleDateString();
@@ -221,7 +194,6 @@ const Dashboard = () => {
       return response.data;
     } catch (error) {
       if (error.response.status === 500) {
-        // toast.error('Please register as an employee before clocking in');
         setIsModalOpen(true);
       }
       const errorMessage = error.response ? error.response.data.message : error.message;
@@ -515,12 +487,6 @@ const Dashboard = () => {
   </div>
 </div>
 
-
-
-
-
-
-
               <div className="col-lg-6 col-12">
                 <div className="small-box bg-white">
                   <div className="inner h-6/6">
@@ -754,5 +720,4 @@ const Dashboard = () => {
     </>
   );
 };
-
 export default Dashboard;

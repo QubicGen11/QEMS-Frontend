@@ -3,23 +3,27 @@ import Header from "../Homepage Components/Header";
 import Sidemenu from "../Homepage Components/Sidemenu";
 import Footer from "../Homepage Components/Footer";
 import axios from "axios";
+import { RiDeleteBinLine } from "react-icons/ri";
+import { BiPencil } from "react-icons/bi";
 import imgConfig from "../imgConfig"; // Ensure this is correctly configured
+import { CiMenuKebab } from "react-icons/ci";
+import { Link } from "react-router-dom";
 
-const Allemployees = () => {
+const AllEmployeeAttendance = () => {
   const [employees, setEmployees] = useState([]);
-  const [allSelected, setAllSelected] = useState(false);
-  const [selectedEmployees, setSelectedEmployees] = useState(new Set());
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
 
   const getStatusClasses = (status) => {
     switch (status) {
       case "Active":
-        return "bg-green-100 text-green-800";
+        return " text-green-800";
       case "Decline":
-        return "bg-red-100 text-red-800";
+        return " text-red-800";
       case "Pending":
-        return "bg-yellow-100 text-yellow-800";
+        return " text-yellow-800";
       default:
-        return "bg-gray-100 text-gray-800";
+        return " text-gray-800";
     }
   };
 
@@ -36,32 +40,20 @@ const Allemployees = () => {
     fetchEmployees();
   }, []);
 
-  const handleSelectAll = () => {
-    const newSelectedEmployees = new Set();
-    if (!allSelected) {
-      employees.forEach(employee => newSelectedEmployees.add(employee.employeeId));
-    }
-    setSelectedEmployees(newSelectedEmployees);
-    setAllSelected(!allSelected);
-  };
-
-  const handleSelectEmployee = (employeeId) => {
-    const newSelectedEmployees = new Set(selectedEmployees);
-    if (newSelectedEmployees.has(employeeId)) {
-      newSelectedEmployees.delete(employeeId);
-    } else {
-      newSelectedEmployees.add(employeeId);
-    }
-    setSelectedEmployees(newSelectedEmployees);
-    setAllSelected(newSelectedEmployees.size === employees.length);
-  };
-
   const handleDeleteClick = (employee) => {
-    // Handle individual employee delete logic here
+    setSelectedEmployee(employee);
+    setModalOpen(true);
   };
 
-  const handleDeleteSelected = async () => {
-    // Handle deleting selected employees
+  const handleDeleteConfirm = async () => {
+    try {
+      await axios.delete(`http://localhost:3000/qubinest/employees/${selectedEmployee.employeeId}`);
+      setEmployees(employees.filter(emp => emp.employeeId !== selectedEmployee.employeeId));
+      setModalOpen(false);
+      setSelectedEmployee(null);
+    } catch (error) {
+      console.error("Failed to delete the employee", error);
+    }
   };
 
   return (
@@ -71,23 +63,13 @@ const Allemployees = () => {
         <Sidemenu />
         <div className="content-wrapper">
           <section className="container px-4 mx-auto">
-            <div className="top-bar flex justify-between items-center">
-              <div className="flex items-center gap-x-3">
-                <h2 className="text-lg font-medium text-gray-800 text-black:text-white">
-                  All Employees
-                </h2>
-                <span className="px-3 py-1 text-xs text-blue-600 bg-blue-100 rounded-full text-black:bg-gray-800 text-black:text-blue-400">
-                  {employees.length} users
-                </span>
-              </div>
-              <div>
-                <button 
-                  onClick={handleDeleteSelected} 
-                  className="p-2 bg-red-600 text-white px-3 rounded-md"
-                >
-                  Delete Selected
-                </button>
-              </div>
+            <div className="flex items-center gap-x-3">
+              <h2 className="text-lg font-medium text-gray-800 text-black:text-white">
+                All Employees
+              </h2>
+              <span className="px-3 py-1 text-xs text-blue-600 bg-blue-100 rounded-full text-black:bg-gray-800 text-black:text-blue-400">
+                {employees.length} users
+              </span>
             </div>
             <div className="flex flex-col mt-6">
               <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -101,8 +83,6 @@ const Allemployees = () => {
                               <input
                                 type="checkbox"
                                 className="text-blue-500 border-gray-300 rounded text-black:bg-gray-900 text-black:ring-offset-gray-900 text-black:border-gray-700"
-                                checked={allSelected}
-                                onChange={handleSelectAll}
                               />
                               <span>Name</span>
                             </div>
@@ -122,12 +102,7 @@ const Allemployees = () => {
                           <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
                             Position
                           </th>
-                          <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
-                            Joining Date
-                          </th>
-                          <th scope="col" className="relative py-3.5 px-4">
-                            <span className="sr-only">Edit</span>
-                          </th>
+                          
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200 text-black:divide-gray-700 text-black:bg-gray-900">
@@ -138,8 +113,6 @@ const Allemployees = () => {
                                 <input
                                   type="checkbox"
                                   className="text-blue-500 border-gray-300 rounded text-black:bg-gray-900 text-black:ring-offset-gray-900 text-black:border-gray-700"
-                                  checked={selectedEmployees.has(employee.employeeId)}
-                                  onChange={() => handleSelectEmployee(employee.employeeId)}
                                 />
                                 <div className="flex items-center gap-x-2">
                                   <img
@@ -173,11 +146,13 @@ const Allemployees = () => {
                             <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
                               {employee.mainPosition}
                             </td>
-                            <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
-                              {new Date(employee.joiningDate).toLocaleDateString()}
-                            </td>
+                            
                             <td className="px-4 py-4 text-sm whitespace-nowrap">
-                              <div className="relative">
+                              <div className="flex items-center gap-x-6">
+                                <Link to={`/singleemployeeattendance/:${employee.employeeId}`} 
+                                  className="text-gray-500 transition-colors duration-200 text-black:hover:text-yellow-500 text-black:text-gray-300 text-xs hover:text-red-500 focus:outline-none">
+                                  View Attendance
+                                </Link>
                               </div>
                             </td>
                           </tr>
@@ -278,8 +253,52 @@ const Allemployees = () => {
         </div>
         <Footer />
       </div>
+      {/* Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Background overlay */}
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setModalOpen(false)}></div>
+          {/* Modal */}
+          <div className="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+              {/* Modal content */}
+              <div className="sm:flex sm:items-start">
+                <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                  <RiDeleteBinLine className="h-6 w-6 text-red-600" />
+                </div>
+                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-headline">
+                    Delete Employee
+                  </h3>
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-500">
+                      Are you sure you want to delete <span className="font-bold">{selectedEmployee?.username}</span>? This action cannot be undone.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="bg-gray-50 gap-3 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+              <button
+                onClick={handleDeleteConfirm}
+                type="button"
+                className="p-2 bg-red-500 text-white rounded-xl"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => setModalOpen(false)}
+                type="button" 
+                className="p-2 bg-gray-200 rounded-xl"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
 
-export default Allemployees;
+export default AllEmployeeAttendance;

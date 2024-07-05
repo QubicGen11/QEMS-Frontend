@@ -16,12 +16,13 @@ const Register = () => {
   const [salary, setSalary] = useState('');
   const [mainPosition, setMainPosition] = useState('');
   const [joiningDate, setJoiningDate] = useState('');
+  const [department, setDepartment] = useState(''); // New state for department
   const navigate = useNavigate();
 
   const onSubmit = async (event) => {
     event.preventDefault();
 
-    if (!username || !email || !password || !confirmPassword || !role || !salary || !mainPosition || !joiningDate) {
+    if (!username || !email || !password || !confirmPassword || !role || !salary || !mainPosition || !joiningDate || !department) {
       toast.error('Please fill all the details');
       return;
     }
@@ -50,7 +51,8 @@ const Register = () => {
         role,
         salary: parseFloat(salary),
         mainPosition,
-        joiningDate
+        joiningDate,
+        department
       });
       console.log(response);
       setUsername('');
@@ -61,6 +63,7 @@ const Register = () => {
       setSalary('');
       setMainPosition('');
       setJoiningDate('');
+      setDepartment('');
       toast.success('Registration successful');
       // Navigate to login or another page after successful registration
     } catch (error) {
@@ -85,144 +88,161 @@ const Register = () => {
           </h1>
         </div>
         <div className='loginform z-40 flex justify-center items-center' data-aos="flip-left">
-  <div className="max-w-4xl relative flex flex-col rounded-lg text-black bg-[#EEF7FF] p-10">
-    <div className="text-2xl font-bold mb-2 text-[#1e0e4b] text-center px-9">
-      Welcome to <span className="text-yellow-400">QubiNest</span>
-    </div>
-    <div className="text-sm font-normal mb-4 text-center text-[#1e0e4b]">
-      Register into your account as <br />
-    </div>
-    <form className="grid grid-cols-2 gap-4 " onSubmit={onSubmit}>
-      <div className="block relative">
-        <label htmlFor="role" className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2">
-          Role <span className="text-red-600 "> * </span>
-        </label>
-        <select
-          id="role"
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-          className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
-        >
-          <option value="">Select</option>
-          <option value="Employee">Employee</option>
-          <option value="Intern">Intern</option>
-          <option value="Manager">Manager</option>
-          <option value="Admin">Admin</option>
-        </select>
-      </div>
-      <div className="block relative">
-        <label htmlFor="username" className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2">
-          Username <span className="text-red-600 "> * </span>
-        </label>
-        <input
-          type="text"
-          id="username"
-          name="username"
-          placeholder="Enter your username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
-        />
-      </div>
-      <div className="block relative">
-        <label htmlFor="email" className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2">
-          Email <span className="text-red-600 "> * </span>
-        </label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
-        />
-      </div>
-      <div className="block relative">
-        <label htmlFor="password" className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2">
-          Password <span className="text-red-600 "> * </span>
-        </label>
-        <input
-          type={showPassword ? "text" : "password"}
-          id="password"
-          name="password"
-          placeholder="Enter your password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
-        />
-        <span
-          className="absolute right-3 top-1/2 transform -translate-y-2/2 cursor-pointer"
-          onClick={() => setShowPassword(!showPassword)}
-        >
-          {showPassword ? "🙈" : "👁️"}
-        </span>
-      </div>
-      <div className="block relative">
-        <label htmlFor="confirmPassword" className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2">
-          Confirm Password <span className="text-red-600 ">*</span>
-        </label>
-        <input
-          type="password"
-          id="confirmPassword"
-          name="confirmPassword"
-          placeholder="Confirm your password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
-        />
-      </div>
-      <div className="block relative">
-        <label htmlFor="salary" className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2">
-          Salary <span className="text-red-600 "> * </span>
-        </label>
-        <input
-          type="number"
-          id="salary"
-          name="salary"
-          placeholder="Enter your salary"
-          value={salary}
-          onChange={(e) => setSalary(e.target.value)}
-          className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
-        />
-      </div>
-      <div className="block relative">
-        <label htmlFor="mainPosition" className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2">
-          Main Position <span className="text-red-600 "> * </span>
-        </label>
-        <input
-          type="text"
-          id="mainPosition"
-          name="mainPosition"
-          placeholder="Enter your main position"
-          value={mainPosition}
-          onChange={(e) => setMainPosition(e.target.value)}
-          className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
-        />
-      </div>
-      <div className="block relative">
-        <label htmlFor="joiningDate" className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2">
-          Joining Date <span className="text-red-600 "> * </span>
-        </label>
-        <input
-          type="date"
-          id="joiningDate"
-          name="joiningDate"
-          placeholder="Enter your joining date"
-          value={joiningDate}
-          onChange={(e) => setJoiningDate(e.target.value)}
-          className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
-        />
-      </div>
-      <button
-        type="submit"
-        className="w-max ml-32  px-7 py-2 rounded flex bg-yellow-400 text-black text-sm font-bold transform transition-all duration-500 ease-in-out hover:scale-110 hover:brightness-110 hover:animate-pulse active:animate-bounce"
-      >
-        Register
-      </button>
-    </form>
-  </div>
-</div>
+          <div className="max-w-4xl relative flex flex-col rounded-lg text-black bg-[#EEF7FF] p-10">
+            <div className="text-2xl font-bold mb-2 text-[#1e0e4b] text-center px-9">
+              Welcome to <span className="text-yellow-400">QubiNest</span>
+            </div>
+            <div className="text-sm font-normal mb-4 text-center text-[#1e0e4b]">
+              Register into your account as <br />
+            </div>
+            <form className="grid grid-cols-2 gap-4 " onSubmit={onSubmit}>
+              <div className="block relative">
+                <label htmlFor="role" className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2">
+                  Role <span className="text-red-600 "> * </span>
+                </label>
+                <select
+                  id="role"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
+                >
+                  <option value="">Select</option>
+                  <option value="Employee">Employee</option>
+                  <option value="Intern">Intern</option>
+                  <option value="Manager">Manager</option>
+                  <option value="Admin">Admin</option>
+                </select>
+              </div>
+              <div className="block relative">
+                <label htmlFor="username" className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2">
+                  Username <span className="text-red-600 "> * </span>
+                </label>
+                <input
+                  type="text"
+                  id="username"
+                  name="username"
+                  placeholder="Enter your username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
+                />
+              </div>
+              <div className="block relative">
+                <label htmlFor="email" className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2">
+                  Email <span className="text-red-600 "> * </span>
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
+                />
+              </div>
+              <div className="block relative">
+                <label htmlFor="password" className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2">
+                  Password <span className="text-red-600 "> * </span>
+                </label>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  name="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
+                />
+                <span
+                  className="absolute right-3 top-1/2 transform -translate-y-2/2 cursor-pointer"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? "🙈" : "👁️"}
+                </span>
+              </div>
+              <div className="block relative">
+                <label htmlFor="confirmPassword" className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2">
+                  Confirm Password <span className="text-red-600 ">*</span>
+                </label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  placeholder="Confirm your password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
+                />
+              </div>
+              <div className="block relative">
+                <label htmlFor="salary" className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2">
+                  Salary <span className="text-red-600 "> * </span>
+                </label>
+                <input
+                  type="number"
+                  id="salary"
+                  name="salary"
+                  placeholder="Enter your salary"
+                  value={salary}
+                  onChange={(e) => setSalary(e.target.value)}
+                  className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
+                />
+              </div>
+              <div className="block relative">
+                <label htmlFor="mainPosition" className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2">
+                  Main Position <span className="text-red-600 "> * </span>
+                </label>
+                <input
+                  type="text"
+                  id="mainPosition"
+                  name="mainPosition"
+                  placeholder="Enter your main position"
+                  value={mainPosition}
+                  onChange={(e) => setMainPosition(e.target.value)}
+                  className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
+                />
+              </div>
+              <div className="block relative">
+                <label htmlFor="joiningDate" className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2">
+                  Joining Date <span className="text-red-600 "> * </span>
+                </label>
+                <input
+                  type="date"
+                  id="joiningDate"
+                  name="joiningDate"
+                  placeholder="Enter your joining date"
+                  value={joiningDate}
+                  onChange={(e) => setJoiningDate(e.target.value)}
+                  className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
+                />
+              </div>
+              <div className="block relative">
+                <label htmlFor="department" className="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2">
+                  Department <span className="text-red-600 "> * </span>
+                </label>
+                <select
+                  id="department"
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value)}
+                  className="rounded border bg-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"
+                >
+                  <option value="">Select</option>
+                  <option value="Robotic Process Automation (RPA) Department">Robotic Process Automation (RPA) Department</option>
+                  <option value="Web Development Department">Web Development Department</option>
+                  <option value="Training and Development Department">Training and Development Department</option>
+                  <option value="Administration Department">Administration Department</option>
+                </select>
+              </div>
+              <button
+                type="submit"
+                className="  w-full mt-3 text-center rounded h-14 flex bg-yellow-400 text-black text-sm font-bold transform transition-all duration-500 ease-in-out hover:scale-110 hover:brightness-110 hover:animate-pulse active:animate-bounce"
+              >
+                Register
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   );
