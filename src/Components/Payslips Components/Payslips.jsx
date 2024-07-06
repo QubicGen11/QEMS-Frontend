@@ -6,6 +6,7 @@ import Footer from '../Homepage Components/Footer';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import Loading from '../loadingComponents/Loading'
+import config from '../config';
 // import './Payslips.css';
 
 const Payslips = () => {
@@ -24,7 +25,7 @@ const Payslips = () => {
         console.log('Fetching payslip for:', { employeeId, type }); // Debugging line
         setLoading(true); // Start loading
         try {
-            const response = await axios.get(`http://localhost:3000/documents/payslip/${employeeId}`, {
+            const response = await axios.get(`${config.apiUrl}/documents/payslip/${employeeId}`, {
                 headers: {
                     'Content-Type': 'text/html',
                 },

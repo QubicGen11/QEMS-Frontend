@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faCalendarAlt, faCheckSquare, faHashtag, faInfoCircle, faFileAlt, faPersonThroughWindow } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import config from "../config";
 const EmployeeLeaves = () => {
   const [leaveRequests, setLeaveRequests] = useState([]);
   const [openDropdownId, setOpenDropdownId] = useState(null);
@@ -16,7 +17,7 @@ const EmployeeLeaves = () => {
   }, []);
   const fetchLeaveRequests = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/qubinest/allleaverequests");
+      const response = await axios.get(`${config.apiUrl}/qubinest/allleaverequests`);
       const formattedRequests = response.data.map((request, index) => ({
         id: request.leave_id,
         image: `https://randomuser.me/api/portraits/men/${index + 1}.jpg`, // Assign a random image
@@ -51,7 +52,7 @@ const EmployeeLeaves = () => {
     const endpoint = newStatus === "Approved" ? "approveleaves" : "declineleaves";
 
     try {
-      await axios.post(`http://localhost:3000/qubinest/${endpoint}`, {
+      await axios.post(`${config.apiUrl}/qubinest/${endpoint}`, {
         companyEmail,
         employeeEmail
       });

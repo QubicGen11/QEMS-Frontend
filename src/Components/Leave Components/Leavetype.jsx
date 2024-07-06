@@ -4,6 +4,7 @@ import Header from "../Homepage Components/Header";
 import Sidemenu from "../Homepage Components/Sidemenu";
 import Footer from "../Homepage Components/Footer";
 import Holidaymodal from "./Holidaymodal"; // Import the modal component
+import config from "../config";
 
 const Leavetype = () => {
   const [leaveRequests, setLeaveRequests] = useState([]);
@@ -15,7 +16,7 @@ const Leavetype = () => {
   useEffect(() => {
     const fetchLeaveRequests = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/qubinest/allholidays");
+        const response = await axios.get(`${config.apiUrl}/qubinest/allholidays`);
         setLeaveRequests(response.data);
       } catch (error) {
         console.error("Error fetching leave requests:", error);
@@ -46,9 +47,9 @@ const Leavetype = () => {
 
   const handleModalSave = async () => {
     try {
-      await axios.post("http://localhost:3000/qubinest/createholiday", currentLeave);
+      await axios.post(`${config.apiUrl}/qubinest/createholiday`, currentLeave);
       setModalOpen(false);
-      const response = await axios.get("http://localhost:3000/qubinest/allholidays");
+      const response = await axios.get(`${config.apiUrl}/qubinest/allholidays`);
       setLeaveRequests(response.data); // Refresh the leave requests after adding a new one
     } catch (error) {
       console.error("Error saving leave request:", error);
@@ -77,9 +78,9 @@ const Leavetype = () => {
     console.log("Selected leave for deletion:", selectedLeave);
     if (selectedLeave && selectedLeave.leaveName) {
       try {
-        await axios.delete(`http://localhost:3000/qubinest/deleteholiday/${selectedLeave.leaveName}`);
+        await axios.delete(`${config.apiUrl}/qubinest/deleteholiday/${selectedLeave.leaveName}`);
         setDeleteModalOpen(false);
-        const response = await axios.get("http://localhost:3000/qubinest/allholidays");
+        const response = await axios.get(`${config.apiUrl}/qubinest/allholidays`);
         setLeaveRequests(response.data); // Refresh the leave requests after deletion
       } catch (error) {
         console.error("Error deleting leave request:", error);

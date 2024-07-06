@@ -8,6 +8,7 @@ import { BiPencil } from "react-icons/bi";
 import imgConfig from "../imgConfig"; // Ensure this is correctly configured
 import { CiMenuKebab } from "react-icons/ci";
 import { Link } from "react-router-dom";
+import config from "../config";
 
 const AllEmployeeAttendance = () => {
   const [employees, setEmployees] = useState([]);
@@ -29,7 +30,7 @@ const AllEmployeeAttendance = () => {
 
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/qubinest/allusers");
+      const response = await axios.get(`${config.apiUrl}/qubinest/allusers`);
       setEmployees(response.data);
     } catch (error) {
       console.error('Error fetching employees:', error);

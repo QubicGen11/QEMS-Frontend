@@ -4,6 +4,7 @@ import Sidemenu from "../Homepage Components/Sidemenu";
 import Footer from "../Homepage Components/Footer";
 import axios from "axios";
 import imgConfig from "../imgConfig"; // Ensure this is correctly configured
+import config from "../config";
 
 const Allemployees = () => {
   const [employees, setEmployees] = useState([]);
@@ -25,7 +26,7 @@ const Allemployees = () => {
 
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/qubinest/allusers");
+      const response = await axios.get(`${config.apiUrl}/qubinest/allusers`);
       setEmployees(response.data);
     } catch (error) {
       console.error('Error fetching employees:', error);

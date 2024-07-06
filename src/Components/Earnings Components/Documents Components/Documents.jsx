@@ -6,6 +6,8 @@ import Footer from '../../Homepage Components/Footer';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import './Documents.css';
+import config from '../../config';
+
 
 export const Documents = () => {
     const { id } = useParams(); // Get employeeId from the URL parameters
@@ -22,7 +24,7 @@ export const Documents = () => {
     const fetchDocument = async (employeeId, type) => {
         console.log('Fetching document for:', { employeeId, type }); // Debugging line
         try {
-            const response = await axios.get(`http://localhost:3000/documents/${type}/${employeeId}`, {
+            const response = await axios.get(`${config.apiUrl}/documents/${type}/${employeeId}`, {
                 headers: {
                     'Content-Type': 'text/html',
                 },

@@ -13,6 +13,7 @@ import Footer from '../Homepage Components/Footer';
 import axios from 'axios';
 import "./Booktimeoff.css";
 import Cookies from 'js-cookie';
+import config from '../config';
 const locales = {
   'en-US': enUS,
 };
@@ -104,7 +105,7 @@ const Booktimeoff = () => {
     };
 
     try {
-      const response = await axios.post('http://localhost:3000/qubinest/newleaverequest', payload);
+      const response = await axios.post(`${config.apiUrl}/qubinest/newleaverequest`, payload);
       console.log('Leave request response:', response.data);
     } catch (error) {
       console.error('Error submitting leave request:', error);

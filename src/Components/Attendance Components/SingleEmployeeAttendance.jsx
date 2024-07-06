@@ -5,6 +5,7 @@ import Header from '../Homepage Components/Header';
 import Sidemenu from '../Homepage Components/Sidemenu';
 import Footer from '../Homepage Components/Footer';
 import Cookies from 'js-cookie';
+import config from '../config';
 
 const SingleEmployeeAttendance = () => {
   const [attendance, setAttendance] = useState([]);
@@ -18,7 +19,7 @@ const SingleEmployeeAttendance = () => {
   useEffect(() => {
     const fetchAttendance = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/qubinest/singleUserAttendance/${employeeId.split(':')[1]}`);
+        const response = await axios.get(`${config.apiUrl}/qubinest/singleUserAttendance/${employeeId.split(':')[1]}`);
         setAttendance(response.data);
         setFilteredAttendance(response.data);
       } catch (error) {
@@ -28,7 +29,7 @@ const SingleEmployeeAttendance = () => {
 
     const fetchAvgTimings = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/qubinest/allAttendance/${employeeId.split(':')[1]}`);
+        const response = await axios.get(`${config.apiUrl}/qubinest/allAttendance/${employeeId.split(':')[1]}`);
         setAvgTimings(response.data);
       } catch (error) {
         console.error('Error fetching average timings:', error);
@@ -59,7 +60,7 @@ const SingleEmployeeAttendance = () => {
 
   const handleApprove = async () => {
     try {
-      const response = await axios.post('http://localhost:3000/qubinest/approveAttendance', {
+      const response = await axios.post(`${config.apiUrl}/qubinest/approveAttendance`, {
         employeeId: employeeId.split(':')[1],
         adminEmail,
         year,
@@ -94,7 +95,7 @@ const SingleEmployeeAttendance = () => {
 
   const handleDecline = async () => {
     try {
-      const response = await axios.post('http://localhost:3000/qubinest/declineAttendance', {
+      const response = await axios.post(`${config.apiUrl}/qubinest/declineAttendance`, {
         employeeId: employeeId.split(':')[1],
         adminEmail,
         year,
