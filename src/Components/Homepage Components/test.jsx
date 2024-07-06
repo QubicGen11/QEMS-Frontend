@@ -51,57 +51,38 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchEmployeeInfo = async () => {
-      const cachedData = JSON.parse(localStorage.getItem(`employeeInfo_${email}`));
-      const now = new Date().getTime();
-  
-      if (cachedData && now - cachedData.timestamp < CACHE_EXPIRY_TIME) {
-        const data = cachedData.data;
-        const mainPosition = data.users?.[0]?.mainPosition || '';
-        const businessUnit = data.users?.[0]?.businessUnit || '';
-  
-        setEmployeeInfo({
-          ...data,
-          mainPosition,
-          businessUnit
-        });
-        return;
-      }
-  
-      try {
-        const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
-        const employeeData = response.data;
-  
-        if (!employeeData || Object.keys(employeeData).length === 0) {
-          toast.error("Please fill up the details");
-          setIsModalOpen(true);
-        } else {
-          const mainPosition = employeeData.users?.[0]?.mainPosition || '';
-          const businessUnit = employeeData.users?.[0]?.businessUnit || '';
-  
-          setEmployeeInfo({
-            ...employeeData,
-            mainPosition,
-            businessUnit
-          });
-  
-          // Add employee ID as cookie if it exists
-          if (employeeData.employee_id) {
-            Cookies.set('employee_id', employeeData.employee_id);
-          }
-  
-          // Cache the data in local storage with timestamp
-          localStorage.setItem(`employeeInfo_${email}`, JSON.stringify({ data: employeeData, timestamp: now }));
+        const cachedEmployeeData = localStorage.getItem(`employeeData_${email}`);
+        if (cachedEmployeeData) {
+          console.log('Using cached employee data');
+          setEmployeeInfo(JSON.parse(cachedEmployeeData));      
+          return;
         }
-        console.log(employeeData);
-      } catch (error) {
-        console.error('Error fetching employee data:', error);
-        setIsModalOpen(true); // Show modal even if there's an error fetching data
-      }
-    };
-  
-    fetchEmployeeInfo();
-  }, [email]);
-  
+      
+        try {
+          const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
+          const employeeData = response.data;
+          if (!employeeData || Object.keys(employeeData).length === 0) {
+            toast.error("Please fill up the details");
+            setIsModalOpen(true);
+          } else {
+            setEmployeeInfo({
+              ...employeeData,
+              mainPosition: employeeData.users[0]?.mainPosition // Access mainPosition from users array
+            });
+            localStorage.setItem(`employeeData_${email}`, JSON.stringify(employeeData));
+            if (employeeData.employee_id) {
+              Cookies.set('employee_id', employeeData.employee_id);
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching employee data:', error);
+          setIsModalOpen(true);
+        }
+      };
+      
+
+        fetchEmployeeInfo();
+    }, [email]);
 
   const emp = employeeInfo; // Adjusted for single object response
 
@@ -116,26 +97,25 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchAttendance = async () => {
-      const cachedData = JSON.parse(localStorage.getItem(`attendanceData_${email}`));
-      const now = new Date().getTime();
-
-      if (cachedData && now - cachedData.timestamp < CACHE_EXPIRY_TIME) {
-        setUserAttendance(cachedData.data);
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const data = await fetchAttendanceData(email); // Use the shared function
-        setUserAttendance(data);
-        setLoading(false);
-
-        // Cache the data in local storage with timestamp
-        localStorage.setItem(`attendanceData_${email}`, JSON.stringify({ data, timestamp: now }));
-      } catch (error) {
-        setLoading(false);
-      }
-    };
+        const cachedAttendance = localStorage.getItem(`attendanceData_${email}`);
+        if (cachedAttendance) {
+          console.log('Using cached attendance data');
+          setUserAttendance(JSON.parse(cachedAttendance));
+          setLoading(false);
+          return;
+        }
+      
+        try {
+          const data = await fetchAttendanceData(email);
+          setUserAttendance(data);
+          setLoading(false);
+          localStorage.setItem(`attendanceData_${email}`, JSON.stringify(data));
+        } catch (error) {
+          setLoading(false);
+          console.error('Error fetching attendance data:', error);
+        }
+      };
+      
 
     fetchAttendance();
   }, [email]);
@@ -610,7 +590,7 @@ const Dashboard = () => {
 
                       <h3 className="card-title">Time Sheets</h3>
 
-                      <div className="card-tools flex" bis_skin_checked={1} >
+                      <div className="card-tools" bis_skin_checked={1} >
 
                         <Link to="/viewtimesheets">
 
@@ -766,35 +746,4 @@ const Dashboard = () => {
 
               </div>
 
-              <div className="col-12 col-lg-12 mt-2 bg-white">
-                <h1 className='text-2xl'>Games</h1>
-                {gameSrc && <iframe src={gameSrc} frameBorder="0" style={{ width: '80vw', height: '70vh' }}></iframe>}
-
-                <button onClick={handleStartGame} className="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
-                  <span className="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
-                  Start Game
-                </button>
-                <button onClick={handleNextGame} className="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
-                  <span className="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
-                  Next Game
-                </button>
-                <button onClick={handleResetGame} className="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
-                  <span className="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
-                  Reset Game
-                </button>
-                <button onClick={handleResetStartGame} className="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
-                  <span className="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
-                  Restart Game
-                </button>
-
-                <div>{timeLeft > 0 ? `Time left: ${Math.floor(timeLeft / 60)}:${timeLeft % 60}` : ''}</div>
-                <div>{message}</div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-    </>
-  );
-};
-export default Dashboard;
+              <div className="col-12 col-lg-12 mt-2
