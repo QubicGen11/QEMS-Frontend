@@ -10,6 +10,8 @@ import UserDetailModal from './UserDetailModal';
 import { fetchAttendanceData } from '../Homepage Components/api'; // Import the shared function
 import Loading from '../Loading Components/Loading';
 
+const CACHE_EXPIRY_TIME = 60 * 60 * 1000; // 1 hour
+
 const Dashboard = () => {
   const [attendance, setAttendance] = useState([]);
   const [userAttendance, setUserAttendance] = useState([]);
@@ -49,12 +51,14 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchEmployeeInfo = async () => {
-      const cachedData = localStorage.getItem(`employeeInfo_${email}`);
-      if (cachedData) {
-        setEmployeeInfo(JSON.parse(cachedData));
+      const cachedData = JSON.parse(localStorage.getItem(`employeeInfo_${email}`));
+      const now = new Date().getTime();
+
+      if (cachedData && now - cachedData.timestamp < CACHE_EXPIRY_TIME) {
+        setEmployeeInfo(cachedData.data);
         return;
       }
-      
+
       try {
         const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
         const employeeData = response.data;
@@ -73,8 +77,8 @@ const Dashboard = () => {
             Cookies.set('employee_id', employeeData.employee_id);
           }
 
-          // Cache the data in local storage
-          localStorage.setItem(`employeeInfo_${email}`, JSON.stringify(employeeData));
+          // Cache the data in local storage with timestamp
+          localStorage.setItem(`employeeInfo_${email}`, JSON.stringify({ data: employeeData, timestamp: now }));
         }
         console.log(employeeData);
       } catch (error) {
@@ -99,9 +103,11 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchAttendance = async () => {
-      const cachedData = localStorage.getItem(`attendanceData_${email}`);
-      if (cachedData) {
-        setUserAttendance(JSON.parse(cachedData));
+      const cachedData = JSON.parse(localStorage.getItem(`attendanceData_${email}`));
+      const now = new Date().getTime();
+
+      if (cachedData && now - cachedData.timestamp < CACHE_EXPIRY_TIME) {
+        setUserAttendance(cachedData.data);
         setLoading(false);
         return;
       }
@@ -111,8 +117,8 @@ const Dashboard = () => {
         setUserAttendance(data);
         setLoading(false);
 
-        // Cache the data in local storage
-        localStorage.setItem(`attendanceData_${email}`, JSON.stringify(data));
+        // Cache the data in local storage with timestamp
+        localStorage.setItem(`attendanceData_${email}`, JSON.stringify({ data, timestamp: now }));
       } catch (error) {
         setLoading(false);
       }

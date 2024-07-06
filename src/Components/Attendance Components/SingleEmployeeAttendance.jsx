@@ -213,7 +213,7 @@ const SingleEmployeeAttendance = () => {
                   Employee Attendance of {employeeTitle} {employee.username}
                 </h2>
               )}
-              <section className="text-gray-600 body-font">
+              {/* <section className="text-gray-600 body-font">
                 <div className="container px-5 py-24 mx-auto">
                   <div className="flow-root rounded-lg border border-gray-100 py-3 shadow-sm">
                     <dl className="-my-3 divide-y divide-gray-100 text-sm">
@@ -240,7 +240,7 @@ const SingleEmployeeAttendance = () => {
                     </dl>
                   </div>
                 </div>
-              </section>
+              </section> */}
               <div className="flex flex-col mt-6">
                 <div className="topbar-table flex justify-between p-3">
                   <div className="dropdowns flex gap-3">

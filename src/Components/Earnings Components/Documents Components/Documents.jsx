@@ -22,19 +22,42 @@ export const Documents = () => {
     };
 
     const fetchDocument = async (employeeId, type) => {
-        console.log('Fetching document for:', { employeeId, type }); // Debugging line
+        const cachedItem = localStorage.getItem(`${type}-${employeeId}`);
+        const now = new Date();
+    
+        if (cachedItem) {
+            const { content, timestamp } = JSON.parse(cachedItem);
+            const cachedDate = new Date(timestamp);
+            const differenceInMinutes = (now - cachedDate) / (1000 * 60);
+    
+            if (differenceInMinutes < 60) { // Cache expires after 60 minutes
+                console.log('Using cached document');
+                setDocumentContent(content);
+                return;
+            }
+        }
+    
+        // If no valid cache, fetch from server
         try {
             const response = await axios.get(`${config.apiUrl}/documents/${type}/${employeeId}`, {
                 headers: {
                     'Content-Type': 'text/html',
                 },
             });
-            console.log('Document fetched successfully:', response.data); // Debugging line
+            console.log('Document fetched successfully:', response.data);
             setDocumentContent(response.data);
+            localStorage.setItem(`${type}-${employeeId}`, JSON.stringify({ content: response.data, timestamp: now }));
         } catch (error) {
             console.error('Error fetching document:', error);
         }
     };
+
+    const handleClearCache = (employeeId, type) => {
+        localStorage.removeItem(`${type}-${employeeId}`);
+        fetchDocument(employeeId, type); // Refetch the document after clearing the cache
+    };
+    
+    
 
     useEffect(() => {
         const employeeId = id || Cookies.get('employee_id'); // Get employee ID from URL or cookie
@@ -94,6 +117,8 @@ export const Documents = () => {
                             ))}
                         </div>
                     </div>
+                    <button onClick={() => handleClearCache(id, selectedDocument)}>Refresh Document</button>
+
 
                     <div>
                         <button className="cursor-pointer bg-gray-800 px-3 py-2 rounded-md flex text-white tracking-wider shadow-xl animate-bounce hover:animate-none" onClick={handleDownloadHTML}>

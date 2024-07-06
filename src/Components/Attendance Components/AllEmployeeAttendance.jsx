@@ -30,12 +30,47 @@ const AllEmployeeAttendance = () => {
 
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get(`${config.apiUrl}/qubinest/allusers`);
-      setEmployees(response.data);
+      const [usersResponse, employeesResponse] = await Promise.all([
+        axios.get(`${config.apiUrl}/qubinest/allusers`),
+        axios.get(`${config.apiUrl}/qubinest/employees`)
+      ]);
+  
+      const users = usersResponse.data;
+      const employees = employeesResponse.data;
+  
+      // Log the data to check structure
+      console.log("Users Data:", users);
+      console.log("Employees Data:", employees);
+  
+      // Merge the data based on email
+      const combinedData = employees.map(employee => {
+        const user = users.find(u => u.email === employee.companyEmail);
+  
+        if (user) {
+          console.log(`Match found for ${employee.email}:`, user);
+        } else {
+          console.log(`No match found for ${employee.email}`);
+        }
+  
+        return {
+          ...employee,
+          username: user?.username || `${employee.firstname} ${employee.lastname}`,
+          role: user?.role || "N/A",
+          salary: user?.salary || "N/A",
+          mainPosition: user?.mainPosition || "N/A",
+          status: user?.status || "N/A",
+        };
+      });
+  
+      console.log("Combined Data:", combinedData);
+      setEmployees(combinedData);
     } catch (error) {
       console.error('Error fetching employees:', error);
     }
   };
+  
+  
+  
 
   useEffect(() => {
     fetchEmployees();
@@ -48,8 +83,8 @@ const AllEmployeeAttendance = () => {
 
   const handleDeleteConfirm = async () => {
     try {
-      await axios.delete(`http://localhost:3000/qubinest/employees/${selectedEmployee.employeeId}`);
-      setEmployees(employees.filter(emp => emp.employeeId !== selectedEmployee.employeeId));
+      await axios.delete(`http://localhost:3000/qubinest/employees/${selectedEmployee.employee_id}`);
+      setEmployees(employees.filter(emp => emp.employee_id !== selectedEmployee.employee_id));
       setModalOpen(false);
       setSelectedEmployee(null);
     } catch (error) {
@@ -103,62 +138,58 @@ const AllEmployeeAttendance = () => {
                           <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
                             Position
                           </th>
-                          
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200 text-black:divide-gray-700 text-black:bg-gray-900">
-                        {employees.map((employee) => (
-                          <tr key={employee.employeeId || employee.username}>
-                            <td className="px-4 py-4 text-sm font-medium text-gray-700 whitespace-nowrap">
-                              <div className="inline-flex items-center gap-x-3">
-                                <input
-                                  type="checkbox"
-                                  className="text-blue-500 border-gray-300 rounded text-black:bg-gray-900 text-black:ring-offset-gray-900 text-black:border-gray-700"
-                                />
-                                <div className="flex items-center gap-x-2">
-                                  <img
-                                    className="object-cover w-10 h-10 rounded-full"
-                                    src={`${imgConfig.apiUrl}/${employee.employeeImg || 'default.png'}`}
-                                    alt=""
-                                  />
-                                  <div>
-                                    <h2 className="font-medium text-gray-800 text-black:text-white">
-                                      {employee.username}
-                                    </h2>
-                                    <p className="text-sm font-normal text-gray-600 text-black:text-gray-400">
-                                      @{employee.username ? employee.username.split(' ').join('') : 'unknown'}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-                            <td className={`relative px-4 py-4 text-sm font-medium text-gray-700 whitespace-nowrap ${getStatusClasses(employee.status)}`}>
-                              {employee.status}
-                            </td>
-                            <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
-                              {employee.email}
-                            </td>
-                            <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
-                              {employee.role}
-                            </td>
-                            <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
-                              {employee.salary}
-                            </td>
-                            <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
-                              {employee.mainPosition}
-                            </td>
-                            
-                            <td className="px-4 py-4 text-sm whitespace-nowrap">
-                              <div className="flex items-center gap-x-6">
-                                <Link to={`/singleemployeeattendance/:${employee.employeeId}`} 
-                                  className="text-gray-500 transition-colors duration-200 text-black:hover:text-yellow-500 text-black:text-gray-300 text-xs hover:text-red-500 focus:outline-none">
-                                  View Attendance
-                                </Link>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
+  {employees.map((employee) => (
+    <tr key={employee.employee_id || employee.email}>
+      <td className="px-4 py-4 text-sm font-medium text-gray-700 whitespace-nowrap">
+        <div className="inline-flex items-center gap-x-3">
+          <input
+            type="checkbox"
+            className="text-blue-500 border-gray-300 rounded text-black:bg-gray-900 text-black:ring-offset-gray-900 text-black:border-gray-700"
+          />
+          <div className="flex items-center gap-x-2">
+            <img
+              className="object-cover w-10 h-10 rounded-full"
+              src={employee.employeeImg ? employee.employeeImg : 'https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp'}
+              alt={`${employee.firstname} avatar`}
+            />
+            <div>
+              <h2 className="font-medium text-gray-800 text-black:text-white">
+                {employee.username}
+              </h2>
+            </div>
+          </div>
+        </div>
+      </td>
+      <td className={`relative px-4 py-4 text-sm font-medium text-gray-700 whitespace-nowrap ${getStatusClasses(employee.status)}`}>
+        {employee.status}
+      </td>
+      <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
+        {employee.email}
+      </td>
+      <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
+        {employee.mainPosition}
+      </td>
+      <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
+        {employee.salary}
+      </td>
+      <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
+        {employee.mainPosition}
+      </td>
+      <td className="px-4 py-4 text-sm whitespace-nowrap">
+        <div className="flex items-center gap-x-6">
+          <Link to={`/singleemployeeattendance/:${employee.employee_id}`} 
+            className="text-gray-500 transition-colors duration-200 text-black:hover:text-yellow-500 text-black:text-gray-300 text-xs hover:text-red-500 focus:outline-none">
+            View Attendance
+          </Link>
+        </div>
+      </td>
+    </tr>
+  ))}
+</tbody>
+
                     </table>
                   </div>
                 </div>
