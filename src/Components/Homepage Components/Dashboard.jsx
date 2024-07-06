@@ -581,47 +581,46 @@ const Dashboard = () => {
 
                     </div>
 
-                    <div className="card-body table-responsive p-0" bis_skin_checked={1} style={{overflow:'scroll',height:'30vh'}}>
-
-                      <table className="table table-hover text-nowrap" style={{overflow:'scroll'}}>
-                        <thead>
-                          <tr>
-                            <th>Date</th>
-                            <th>Check In</th>
-                            <th>Check Out</th>
-                            <th>Status</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-  {loading ? (
-    <tr>
-      <td colSpan="4"><Loading/></td>
-    </tr>
-  ) : userAttendance.length === 0 ? (
-    <tr>
-      <td colSpan="4">No attendance records found</td>
-    </tr>
-  ) : (
-    userAttendance.map((attendance, index) => (
-      <tr key={attendance.id || index}>  {/* Ensure a unique key for each row */}
-        <td>{new Date(attendance.date).toLocaleDateString()}</td>
-        <td>{attendance.checkin_Time ? new Date(attendance.checkin_Time).toLocaleTimeString() : 'N/A'}</td>
-        <td>{attendance.checkout_Time ? new Date(attendance.checkout_Time).toLocaleTimeString() : 'N/A'}</td>
-        <td>
-                            {attendance.status === 'pending' ? (
-                              <button className="text-warning font-bold text-yellow-600">Pending</button>
-                            ) : (
-                              <button className="text-success font-bold text-green-600">Approved</button>
-                            )}
-                          </td>      </tr>
-    ))
-  )}
-</tbody>
-
-                      </table>
-
-
-                    </div>
+                    <div className="card-body table-responsive p-0" style={{ overflow: 'scroll', height: '30vh' }}>
+          <table className="table table-hover text-nowrap" style={{ overflow: 'scroll' }}>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Check In</th>
+                <th>Check Out</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan="4"><Loading /></td>
+                </tr>
+              ) : userAttendance.length === 0 ? (
+                <tr>
+                  <td colSpan="4">No attendance records found</td>
+                </tr>
+              ) : (
+                userAttendance.map((attendance, index) => (
+                  <tr key={attendance.id || index}> {/* Ensure a unique key for each row */}
+                    <td>{new Date(attendance.date).toLocaleDateString()}</td>
+                    <td>{attendance.checkin_Time ? new Date(attendance.checkin_Time).toLocaleTimeString() : 'N/A'}</td>
+                    <td>{attendance.checkout_Time ? new Date(attendance.checkout_Time).toLocaleTimeString() : 'N/A'}</td>
+                    <td>
+                      {attendance.status === 'pending' ? (
+                        <span className="text-warning font-bold text-yellow-600">Pending</span>
+                      ) : attendance.status === 'approved' ? (
+                        <span className="text-success font-bold text-green-600">Approved</span>
+                      ) : (
+                        <span className="text-danger font-bold text-red-600">Declined</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
 
 

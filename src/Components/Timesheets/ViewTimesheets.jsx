@@ -7,7 +7,7 @@ import Footer from '../Homepage Components/Footer';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { fetchAttendanceData } from '../Homepage Components/api'; 
+import { fetchAttendanceData } from '../Homepage Components/api';
 import Loading from '../Loading Components/Loading';
 import config from '../config';
 
@@ -25,6 +25,7 @@ const ViewTimesheets = () => {
   const [role, setRole] = useState('');
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState([]);
   const entriesPerPage = 5;
   const email = Cookies.get('email');
 
@@ -74,6 +75,40 @@ const ViewTimesheets = () => {
     }
   }, [email]);
 
+  const handleApprove = async () => {
+    try {
+      const response = await axios.post(`${config.apiUrl}/qubinest/approveSingleAttendance`, {
+        employeeId: email,
+        adminEmail: email,
+        selectedIds
+      });
+
+      if (response.status === 200) {
+        console.log('Attendance approved successfully');
+        fetchAttendance();
+      }
+    } catch (error) {
+      console.error('Error approving attendance:', error);
+    }
+  };
+
+  const handleDecline = async () => {
+    try {
+      const response = await axios.post(`${config.apiUrl}/qubinest/declineSingleAttendance`, {
+        employeeId: email,
+        adminEmail: email,
+        selectedIds
+      });
+
+      if (response.status === 200) {
+        console.log('Attendance declined successfully');
+        fetchAttendance();
+      }
+    } catch (error) {
+      console.error('Error declining attendance:', error);
+    }
+  };
+
   useEffect(() => {
     authorizeUser();
     fetchAttendance();
@@ -81,6 +116,10 @@ const ViewTimesheets = () => {
 
     return () => clearInterval(intervalId);
   }, [authorizeUser, fetchAttendance]);
+
+  useEffect(() => {
+    fetchAttendance();
+  }, [selectedIds]);
 
   useEffect(() => {
     console.log('Role:', role);
@@ -92,6 +131,14 @@ const ViewTimesheets = () => {
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
+    }
+  };
+
+  const handleCheckboxChange = (id) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter((selectedId) => selectedId !== id));
+    } else {
+      setSelectedIds([...selectedIds, id]);
     }
   };
 
@@ -125,8 +172,11 @@ const ViewTimesheets = () => {
                 </div>
                 {(role === 'Manager' || role === 'Admin') && (
                   <div className="btn-group ml-4">
-                    <button type="button" className="btn btn-success">
+                    <button type="button" className="btn btn-success" onClick={handleApprove}>
                       Approve
+                    </button>
+                    <button type="button" className="btn btn-danger" onClick={handleDecline}>
+                      Decline
                     </button>
                   </div>
                 )}
@@ -145,6 +195,7 @@ const ViewTimesheets = () => {
                 <table id="example1" className="table table-bordered table-striped dataTable dtr-inline" aria-describedby="example1_info">
                   <thead style={{ overflow: 'scroll' }}>
                     <tr>
+                      <th>Select</th>
                       <th>Date</th>
                       <th>Check in time</th>
                       <th>Check out</th>
@@ -155,23 +206,32 @@ const ViewTimesheets = () => {
                   <tbody>
                     {loading ? (
                       <tr>
-                        <td colSpan="5"><Loading /></td>
+                        <td colSpan="6"><Loading /></td>
                       </tr>
                     ) : currentEntries.length === 0 ? (
                       <tr>
-                        <td colSpan="5">No attendance records found</td>
+                        <td colSpan="6">No attendance records found</td>
                       </tr>
                     ) : (
                       currentEntries.map((attendance, index) => (
-                        <tr key={index}>
+                        <tr key={attendance.id}>
+                          <td>
+                            <input
+                              type="checkbox"
+                              checked={selectedIds.includes(attendance.id)}
+                              onChange={() => handleCheckboxChange(attendance.id)}
+                            />
+                          </td>
                           <td>{new Date(attendance.date).toLocaleDateString()}</td>
                           <td>{attendance.checkin_Time ? new Date(attendance.checkin_Time).toLocaleTimeString() : 'N/A'}</td>
                           <td>{attendance.checkout_Time ? new Date(attendance.checkout_Time).toLocaleTimeString() : 'N/A'}</td>
                           <td>
                             {attendance.status === 'pending' ? (
-                              <button className="text-warning font-bold text-yellow-600">Pending</button>
+                              <span className="text-warning font-bold text-yellow-600">Pending</span>
+                            ) : attendance.status === 'approved' ? (
+                              <span className="text-success font-bold text-green-600">Approved</span>
                             ) : (
-                              <button className="text-success font-bold text-green-600">Approved</button>
+                              <span className="text-danger font-bold text-red-600">Declined</span>
                             )}
                           </td>
                           <td>{attendance.reports}</td>
