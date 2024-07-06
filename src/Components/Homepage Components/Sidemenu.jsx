@@ -46,19 +46,17 @@ const Sidemenu = () => {
   useEffect(() => {
     const fetchUserRole = async () => {
       try {
-        const response = await axios.post(`${config.apiUrl}}/qubinest/authUser`, {
+        const response = await axios.post(`${config.apiUrl}/qubinest/authUser`, {
           userEmail: companyEmail
         });
         setUserRole(response.data.role);
-        console.log('User role:', response.data.role);
       } catch (error) {
         console.error('Error fetching user role:', error);
       }
     };
-  
+
     fetchUserRole();
   }, [companyEmail]);
-  
 
   const toggleDropdown = (setter, currentState) => {
     setter(!currentState);
