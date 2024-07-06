@@ -30,37 +30,60 @@ const ViewTimesheets = () => {
   const email = Cookies.get('email');
 
   const exportToExcel = () => {
-    const table = document.getElementById('example1');
-    const ws = XLSX.utils.table_to_sheet(table);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-    XLSX.writeFile(wb, "table_data.xlsx");
+    try {
+      const table = document.getElementById('example1');
+      const ws = XLSX.utils.table_to_sheet(table);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+      XLSX.writeFile(wb, "table_data.xlsx");
+    } catch (error) {
+      console.error('Error exporting to Excel:', error);
+    }
   };
 
   const exportToPDF = () => {
-    const input = document.getElementById('example1');
-    html2canvas(input).then((canvas) => {
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: "landscape",
+    try {
+      const input = document.getElementById('example1');
+      html2canvas(input).then((canvas) => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF({
+          orientation: "landscape",
+        });
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save("table_data.pdf");
       });
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save("table_data.pdf");
-    });
+    } catch (error) {
+      console.error('Error exporting to PDF:', error);
+    }
   };
 
   const fetchAttendance = useCallback(async () => {
     try {
-      const data = await fetchAttendanceData(email);
-      if (!deepEqual(data, userAttendance)) {
-        setUserAttendance(data);
+      const localData = localStorage.getItem('userAttendance');
+      const localDataTimestamp = localStorage.getItem('userAttendanceTimestamp');
+      const currentTime = new Date().getTime();
+
+      // Check if local data exists and is not older than 30 minutes
+      if (localData && localDataTimestamp && (currentTime - localDataTimestamp < 30 * 60 * 1000)) {
+        const parsedData = JSON.parse(localData);
+        if (!deepEqual(parsedData, userAttendance)) {
+          setUserAttendance(parsedData);
+        }
+        setLoading(false);
+      } else {
+        const data = await fetchAttendanceData(email);
+        if (!deepEqual(data, userAttendance)) {
+          setUserAttendance(data);
+          localStorage.setItem('userAttendance', JSON.stringify(data));
+          localStorage.setItem('userAttendanceTimestamp', currentTime);
+        }
+        setLoading(false);
       }
     } catch (error) {
       console.error('Error fetching attendance data:', error);
-    } finally {
       setLoading(false);
     }
   }, [email, userAttendance]);
@@ -170,7 +193,7 @@ const ViewTimesheets = () => {
                     <button className="dropdown-item">Year</button>
                   </div>
                 </div>
-                {(role === 'Manager' || role === 'Admin') && (
+                {/* {(role === 'Manager' || role === 'Admin') && (
                   <div className="btn-group ml-4">
                     <button type="button" className="btn btn-success" onClick={handleApprove}>
                       Approve
@@ -179,7 +202,7 @@ const ViewTimesheets = () => {
                       Decline
                     </button>
                   </div>
-                )}
+                )} */}
               </div>
               <div className="col-sm-12 col-md-6">
                 <div id="example1_filter" className="dataTables_filter">

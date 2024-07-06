@@ -12,35 +12,39 @@ const Viewpersonaldetails = () => {
 
   useEffect(() => {
     const fetchEmployeeData = async () => {
-      if (!email) {
-        toast.error('No email found in cookies');
-        return;
-      }
-
       try {
         const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
-        console.log('API response:', response.data); // Log the response data
-        if (response.data) {
-          setEmployeeData(response.data);
-        } else {
-//           toast.error('Unexpected response format');
-          // console.error('Unexpected response format:', response.data);
-        }
+        const data = response.data;
+        localStorage.setItem('employeeData', JSON.stringify(data)); // Store data in local storage
+        setEmployeeData(data);
       } catch (error) {
         console.error('Error fetching employee data:', error);
       }
     };
 
-    fetchEmployeeData();
+    if (!email) {
+      toast.error('No email found in cookies');
+      return;
+    }
+
+    // Check if employee data is already in local storage
+    const storedEmployeeData = localStorage.getItem('employeeData');
+    if (storedEmployeeData) {
+      setEmployeeData(JSON.parse(storedEmployeeData));
+    } else {
+      fetchEmployeeData();
+    }
   }, [email]);
 
   if (!employeeData) {
-    return <div>
-      <Loading/>
-    </div>;
+    return (
+      <div>
+        <Loading />
+      </div>
+    );
   }
 
-  const user = employeeData.users && employeeData.users[0]; 
+  const user = employeeData.users && employeeData.users[0];
   return (
     <>
       <h5 className="mb-3 text-2xl">Personal Details</h5>

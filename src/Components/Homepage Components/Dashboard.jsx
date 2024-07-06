@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -49,6 +49,12 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchEmployeeInfo = async () => {
+      const cachedData = localStorage.getItem(`employeeInfo_${email}`);
+      if (cachedData) {
+        setEmployeeInfo(JSON.parse(cachedData));
+        return;
+      }
+      
       try {
         const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
         const employeeData = response.data;
@@ -66,6 +72,9 @@ const Dashboard = () => {
           if (employeeData.employee_id) {
             Cookies.set('employee_id', employeeData.employee_id);
           }
+
+          // Cache the data in local storage
+          localStorage.setItem(`employeeInfo_${email}`, JSON.stringify(employeeData));
         }
         console.log(employeeData);
       } catch (error) {
@@ -76,6 +85,8 @@ const Dashboard = () => {
 
     fetchEmployeeInfo();
   }, [email]);
+
+  const emp = employeeInfo; // Adjusted for single object response
 
   const handleCompleteDetails = () => {
     // Logic to handle completing details (e.g., redirecting to a profile completion page)
@@ -88,10 +99,20 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchAttendance = async () => {
+      const cachedData = localStorage.getItem(`attendanceData_${email}`);
+      if (cachedData) {
+        setUserAttendance(JSON.parse(cachedData));
+        setLoading(false);
+        return;
+      }
+
       try {
         const data = await fetchAttendanceData(email); // Use the shared function
         setUserAttendance(data);
         setLoading(false);
+
+        // Cache the data in local storage
+        localStorage.setItem(`attendanceData_${email}`, JSON.stringify(data));
       } catch (error) {
         setLoading(false);
       }
@@ -469,8 +490,13 @@ const Dashboard = () => {
               </ul>
             </div>
             <div className="col-5 text-center pt-3" bis_skin_checked={1}>
-              <img src={`${config.apiUrl}/${employeeInfo.employeeImg}`} alt="user-avatar" className="img-circle img-fluid w-28 h-28" />
+          <img
+  className="profile-user-img img-fluid img-circle h-24"
+  src={emp.employeeImg ? emp.employeeImg : 'https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp'}
+  alt={`${emp.firstname} avatar`}
+/>              
             </div>
+            
           </div>
         </div>
         <div className="card-footer bg-white" bis_skin_checked={1}>

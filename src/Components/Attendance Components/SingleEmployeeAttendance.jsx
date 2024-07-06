@@ -21,8 +21,6 @@ const SingleEmployeeAttendance = () => {
   const { employeeId } = useParams();
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
   const adminEmail = Cookies.get('email');
 
   useEffect(() => {
@@ -94,26 +92,17 @@ const SingleEmployeeAttendance = () => {
 
   useEffect(() => {
     handleFilter();
-  }, [year, month, startDate, endDate]);
+  }, [year, month]);
 
   const handleFilter = () => {
-    if (!year && !month && !startDate && !endDate) {
+    if (!year || !month) {
       setFilteredAttendance(attendance);
       return;
     }
 
     const filtered = attendance.filter(record => {
       const recordDate = new Date(record.date);
-      const recordYear = recordDate.getFullYear();
-      const recordMonth = recordDate.getMonth() + 1;
-      const recordDateString = recordDate.toISOString().split('T')[0];
-
-      return (
-        (!year || recordYear === parseInt(year, 10)) &&
-        (!month || recordMonth === parseInt(month, 10)) &&
-        (!startDate || recordDateString >= startDate) &&
-        (!endDate || recordDateString <= endDate)
-      );
+      return recordDate.getFullYear() === year && recordDate.getMonth() + 1 === month;
     });
 
     setFilteredAttendance(filtered);
@@ -277,18 +266,6 @@ const SingleEmployeeAttendance = () => {
                         </option>
                       ))}
                     </select>
-                    <input
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      className="p-2 bg-gray-200 ml-1 font-semibold rounded-md"
-                    />
-                    <input
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="p-2 bg-gray-200 ml-1 font-semibold rounded-md"
-                    />
                   </div>
                   <div className="btns flex gap-3">
                     <button className="font-semibold text-green-500" onClick={handleApprove}>

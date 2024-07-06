@@ -13,29 +13,32 @@ const Viewleftpart = () => {
 
   useEffect(() => {
     const fetchEmployeeData = async () => {
-      if (!email) {
-        toast.error('No email found in cookies');
-        return;
-      }
       try {
         const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
-        console.log('API response:', response.data); // Log the response data
-        if (response.data) {
-          setEmployeeData(response.data);
-        } else {
-          toast.error('Unexpected response format');
-          console.error('Unexpected response format:', response.data);
-        }
+        const data = response.data;
+        localStorage.setItem('employeeData', JSON.stringify(data)); // Store data in local storage
+        setEmployeeData(data);
       } catch (error) {
         console.error('Error fetching employee data:', error);
       }
     };
 
-    fetchEmployeeData();
+    if (!email) {
+      toast.error('No email found in cookies');
+      return;
+    }
+
+    // Check if employee data is already in local storage
+    const storedEmployeeData = localStorage.getItem('employeeData');
+    if (storedEmployeeData) {
+      setEmployeeData(JSON.parse(storedEmployeeData));
+    } else {
+      fetchEmployeeData();
+    }
   }, [email]);
 
   if (!employeeData) {
-    return <div><Loading /></div>;
+    return <div>Loading...</div>;
   }
 
   const emp = employeeData; // Adjusted for single object response
@@ -43,27 +46,30 @@ const Viewleftpart = () => {
   // Get mainPosition from the users array if it exists
   const mainPosition = emp.users && emp.users.length > 0 ? emp.users[0].mainPosition : '';
 
+  // Check if employeeImg is available and construct the image URL
+  const employeeImgUrl = emp.employeeImg ? `${imgConfig.apiUrl}/${emp.employeeImg}` : 'https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp';
+
   return (
     <>
-      <div className="col-md-3" bis_skin_checked={1}>
-        <div className="card card-primary card-outline" bis_skin_checked={1}>
-          <div className="card-body box-profile" bis_skin_checked={1}>
-            <div className="text-center" bis_skin_checked={1}>
-              <img
-                className="profile-user-img img-fluid img-circle h-24"
-                src={`${imgConfig.apiUrl}/${emp.employeeImg}`}
-                alt={`${emp.firstname} avatar`}
-              />
+      <div className="col-md-3">
+        <div className="card card-primary card-outline">
+          <div className="card-body box-profile">
+            <div className="text-center">
+            <img
+  className="profile-user-img img-fluid img-circle h-24"
+  src={emp.employeeImg ? emp.employeeImg : 'https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp'}
+  alt={`${emp.firstname} avatar`}
+/>
             </div>
             <h3 className="profile-username text-center">{emp.firstname} {emp.lastname}</h3>
             <p className="text-muted text-center">{mainPosition}</p>
           </div>
         </div>
-        <div className="card card-primary" bis_skin_checked={1}>
-          <div className="card-header" bis_skin_checked={1}>
+        <div className="card card-primary">
+          <div className="card-header">
             <h3 className="card-title">About Me</h3>
           </div>
-          <div className="card-body" bis_skin_checked={1}>
+          <div className="card-body">
             <strong>
               <i className="fas fa-book mr-1" /> Education
             </strong>

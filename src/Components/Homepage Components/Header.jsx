@@ -1,30 +1,40 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import config from "../config"; // Import the config file
 import { useUser } from '../context/UserContext';
 import Cookies from 'js-cookie';
-import imgConfig from '../imgConfig';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Header = () => {
   const { email } = useUser();
   const userEmail = email || Cookies.get('email');
   const navigate = useNavigate();
   const [employeeInfo, setEmployeeInfo] = useState(null); // Change to null initially
+  const [isClockedIn, setIsClockedIn] = useState(false);
+  const [isReportSubmitted, setIsReportSubmitted] = useState(false);
+  const [clockInTime, setClockInTime] = useState(null);
+  const [clockOutTime, setClockOutTime] = useState(null);
+  const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
     const fetchEmployeeInfo = async () => {
       try {
         const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${userEmail}`);
-        setEmployeeInfo(response.data);
+        const data = response.data;
+        localStorage.setItem('employeeInfo', JSON.stringify(data)); // Store data in local storage
+        setEmployeeInfo(data);
       } catch (error) {
         console.error('Error fetching employee data:', error);
       }
     };
 
-    if (userEmail) {
+    // Check if employee data is already in local storage
+    const storedEmployeeInfo = localStorage.getItem('employeeInfo');
+    if (storedEmployeeInfo) {
+      setEmployeeInfo(JSON.parse(storedEmployeeInfo));
+    } else if (userEmail) {
       fetchEmployeeInfo();
     }
   }, [userEmail]);
@@ -34,11 +44,108 @@ const Header = () => {
       await axios.post(`${config.apiUrl}/qubinest/logout`);
       Cookies.remove('employee_id');
       Cookies.remove('email');
+
+      // Clear local storage except for "clock in" and "clock out"
+      const clockInData = localStorage.getItem(`lastClockIn_${userEmail}`);
+      const clockOutData = localStorage.getItem(`lastClockOut_${userEmail}`);
+      localStorage.clear();
+      if (clockInData) {
+        localStorage.setItem(`lastClockIn_${userEmail}`, clockInData);
+      }
+      if (clockOutData) {
+        localStorage.setItem(`lastClockOut_${userEmail}`, clockOutData);
+      }
+
       toast.success('Logout successful');
       navigate('/');
     } catch (error) {
       console.error(error);
       toast.error('Logout not possible');
+    }
+  };
+
+  const clockIn = async () => {
+    const today = new Date().toLocaleDateString();
+    const currentTime = new Date().toLocaleTimeString();
+    
+    const timestamp = new Date().getTime();
+    const userClockInKey = `lastClockIn_${email}`;
+    const lastClockIn = JSON.parse(localStorage.getItem(userClockInKey));
+
+    if (lastClockIn && lastClockIn.date === today) {
+      toast.error('You have already clocked in today.');
+      return;
+    }
+
+    try {
+      console.log('Sending clock-in request...');
+      const response = await axios.post(`${config.apiUrl}/qubinest/clockin`, { email });
+      toast.success('Clock-in successful!');
+      setIsClockedIn(true);
+      setClockInTime(currentTime);
+      localStorage.setItem(userClockInKey, JSON.stringify({ date: today, time: currentTime, timestamp }));
+      return response.data;
+    } catch (error) {
+      if (error.response.status === 500) {
+        setIsModalOpen(true);
+      }
+      const errorMessage = error.response ? error.response.data.message : error.message;
+      toast.error(errorMessage);
+      console.error('Error clocking in:', error);
+      throw error;
+    }
+  };
+
+  const clockOut = async () => {
+    if (!isClockedIn) {
+      toast.error('You need to clock in first.');
+      return;
+    }
+
+    const today = new Date().toLocaleDateString();
+    const currentTime = new Date().toLocaleTimeString();
+    const timestamp = new Date().getTime();
+    const userClockOutKey = `lastClockOut_${email}`;
+    const lastClockOut = JSON.parse(localStorage.getItem(userClockOutKey));
+
+    if (lastClockOut && lastClockOut.date === today) {
+      toast.error('You have already clocked out today.');
+      return;
+    }
+
+    if (!isReportSubmitted) {
+      toast.error('Please submit your daily report before clocking out.');
+      return;
+    }
+
+    try {
+      console.log('Sending clock-out request...');
+      const response = await axios.post(`${config.apiUrl}/qubinest/clockout`, { email });
+      toast.success('Clock-out successful!');
+      setIsClockedIn(false);
+      setClockOutTime(currentTime);
+      localStorage.setItem(userClockOutKey, JSON.stringify({ date: today, time: currentTime, timestamp }));
+      localStorage.setItem('You have worked for : ', JSON.stringify(time));
+      setTime({ hours: 0, minutes: 0, seconds: 0 });
+
+      setTimeout(() => {
+        // Clear all local storage items except clock-in and clock-out data
+        const itemsToKeep = ['lastClockIn_', 'lastClockOut_', 'You have worked for : '];
+        const keys = Object.keys(localStorage);
+        for (let key of keys) {
+          if (!itemsToKeep.some(item => key.startsWith(item))) {
+            localStorage.removeItem(key);
+          }
+        }
+        toast.success('Data has been successfully reset.');
+      }, 10000);
+
+      return response.data;
+    } catch (error) {
+      const errorMessage = error.response ? error.response.data.message : error.message;
+      toast.error(errorMessage);
+      console.error('Error clocking out:', error);
+      throw error;
     }
   };
 
@@ -65,8 +172,8 @@ const Header = () => {
                     <a href="#" className="flex items-center px-4 -mx-2">
                       <img
                         className="object-cover mx-2 rounded-full h-9 w-9"
-                        src={employeeInfo.employeeImg ? `${imgConfig.apiUrl}/${employeeInfo.employeeImg}` : "default-avatar-url"}
-                        alt="avatar"
+                        src={employeeInfo.employeeImg ? employeeInfo.employeeImg : 'https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp'}
+                        alt={`${employeeInfo.firstname} avatar`}
                       />
                       <button className="w-auto z-10 flex flex-wrap items-center p-2 text-sm ml-auto text-gray-600 bg-white border border-transparent rounded-md focus:border-blue-500 focus:ring-opacity-40 dark:focus:ring-opacity-40 focus:ring-blue-300 dark:focus:ring-blue-400 focus:ring dark:text-white dark:bg-gray-800 focus:outline-none">
                         <span className="mx-1 hover:text-yellow-500 dark:hover:text-yellow-400 text-xs">{`${employeeInfo.firstname} ${employeeInfo.lastname}`}</span>
@@ -95,7 +202,7 @@ const Header = () => {
                 >
                   <img
                     className="flex-shrink-0 object-cover mx-1 rounded-full w-9 h-9"
-                    src={`${imgConfig.apiUrl}/${employeeInfo.employeeImg}`}
+                    src={employeeInfo.employeeImg ? employeeInfo.employeeImg : 'https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp'}
                     alt={`${employeeInfo.firstname} avatar`}
                   />
                   <div className="mx-1">
@@ -105,7 +212,7 @@ const Header = () => {
                 </a>
                 <hr className="border-gray-200 dark:border-gray-700" />
                 <Link
-                 to={'/viewprofile'}
+                  to={'/viewprofile'}
                   className="block px-4 py-3 text-sm text-gray-600 capitalize transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
                 >
                   View Profile
