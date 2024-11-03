@@ -12,79 +12,48 @@ const Allemployeleaves = () => {
   const [leaveRequests, setLeaveRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [modalData, setModalData] = useState(null);
   const companyEmail = Cookies.get('email');
-
-  useEffect(() => {
-    fetchLeaveRequests();
-  }, []);
 
   const fetchLeaveRequests = async () => {
     setIsLoading(true);
-    setError(null);
     try {
       const response = await axios.get(`${config.apiUrl}/qubinest/allleaverequests`);
       
-      const formattedRequests = response.data.map(request => {
-        // Format without waiting for employee data
-        return {
-          id: request.leave_id,
-          employee_id: request.employee_id,
-          image: `https://ui-avatars.com/api/?name=${encodeURIComponent(request.employee_id)}&background=random&size=200`,
-          name: request.employee_id,
-          position: 'Employee',
-          department: request.department,
-          employeeEmail: request.companyEmail,
-          leaveType: request.leaveType,
-          leaveFrom: new Date(request.startDate).toLocaleDateString(),
-          leaveTo: new Date(request.endDate).toLocaleDateString(),
-          noOfDays: Math.ceil(Math.abs(new Date(request.endDate) - new Date(request.startDate)) / (1000 * 60 * 60 * 24)) + 1,
-          status: request.status || 'Pending',
-          reason: request.reason || 'No reason provided'
-        };
-      });
+      const formattedRequests = response.data.map(request => ({
+        id: request.leave_id,
+        employee_id: request.employee_id,
+        name: request.employee_id,
+        leaveType: request.leaveType,
+        leaveFrom: new Date(request.startDate).toLocaleDateString(),
+        leaveTo: new Date(request.endDate).toLocaleDateString(),
+        noOfDays: Math.ceil(Math.abs(new Date(request.endDate) - new Date(request.startDate)) / (1000 * 60 * 60 * 24)) + 1,
+        status: request.status?.toLowerCase() || 'pending',
+        reason: request.reason,
+        employeeEmail: request.companyEmail
+      }));
 
-      // Try to fetch employee details in background
-      formattedRequests.forEach(async (request, index) => {
-        try {
-          const employeeResponse = await axios.get(
-            `${config.apiUrl}/qubinest/getemployee/${request.employee_id}`
-          );
-          if (employeeResponse.data.success && employeeResponse.data.data) {
-            const employeeData = employeeResponse.data.data;
-            setLeaveRequests(prev => prev.map((req, i) => 
-              i === index ? {
-                ...req,
-                image: employeeData.profileImage || req.image,
-                name: `${employeeData.firstName} ${employeeData.lastName}`,
-                position: employeeData.position || req.position,
-                department: employeeData.department || req.department
-              } : req
-            ));
-          }
-        } catch (error) {
-          console.warn(`Error fetching employee details for ${request.employee_id}:`, error);
-        }
-      });
-
+      console.log('Formatted requests:', formattedRequests);
       setLeaveRequests(formattedRequests);
     } catch (error) {
       console.error("Error fetching leave requests:", error);
-      setError("Failed to fetch leave requests. Please try again later.");
+      setError("Failed to fetch leave requests");
     } finally {
       setIsLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchLeaveRequests();
+  }, []);
+
   const handleStatusChange = async (leaveId, newStatus, employeeEmail) => {
     try {
-      const endpoint = newStatus === "Approved" ? "approveleave" : "declineleave";
+      const endpoint = newStatus === "Approved" ? "approveleaves" : "declineleaves";
       
       console.log('Sending request:', {
-        endpoint,
-        leaveId,
+        companyEmail,
         employeeEmail,
-        companyEmail
+        leaveId: parseInt(leaveId)
       });
 
       const response = await axios.post(`${config.apiUrl}/qubinest/${endpoint}`, {
@@ -94,20 +63,22 @@ const Allemployeleaves = () => {
       });
 
       if (response.data.success) {
-        setLeaveRequests(prev => 
-          prev.map(request => 
+        setLeaveRequests(prevRequests => 
+          prevRequests.map(request => 
             request.id === leaveId 
-              ? { ...request, status: newStatus } 
+              ? { 
+                  ...request, 
+                  status: newStatus.toLowerCase()
+                } 
               : request
           )
         );
-        alert(response.data.message);
-      } else {
-        throw new Error(response.data.message);
+        alert(`Leave request ${newStatus.toLowerCase()} successfully`);
+        await fetchLeaveRequests();
       }
     } catch (error) {
       console.error('Error updating status:', error);
-      alert(error.response?.data?.message || error.message);
+      alert(error.response?.data?.message || 'Failed to update leave status');
     }
   };
 
@@ -134,12 +105,12 @@ const Allemployeleaves = () => {
               <table className="w-full text-sm text-left text-gray-500">
                 <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                   <tr>
-                    <th scope="col" className="py-3 px-6">Image</th>
-                    <th scope="col" className="py-3 px-6">Name</th>
+                    <th scope="col" className="py-3 px-6">Employee ID</th>
                     <th scope="col" className="py-3 px-6">Leave Type</th>
                     <th scope="col" className="py-3 px-6">From</th>
                     <th scope="col" className="py-3 px-6">To</th>
                     <th scope="col" className="py-3 px-6">Days</th>
+                    <th scope="col" className="py-3 px-6">Reason</th>
                     <th scope="col" className="py-3 px-6">Status</th>
                     <th scope="col" className="py-3 px-6">Actions</th>
                   </tr>
@@ -147,22 +118,16 @@ const Allemployeleaves = () => {
                 <tbody>
                   {leaveRequests.map((request) => (
                     <tr key={request.id} className="bg-white border-b hover:bg-gray-50">
-                      <td className="py-4 px-6">
-                        <img 
-                          src={request.image} 
-                          alt={request.name} 
-                          className="w-10 h-10 rounded-full"
-                        />
-                      </td>
-                      <td className="py-4 px-6">{request.name}</td>
+                      <td className="py-4 px-6">{request.employee_id}</td>
                       <td className="py-4 px-6">{request.leaveType}</td>
                       <td className="py-4 px-6">{request.leaveFrom}</td>
                       <td className="py-4 px-6">{request.leaveTo}</td>
                       <td className="py-4 px-6">{request.noOfDays}</td>
+                      <td className="py-4 px-6">{request.reason}</td>
                       <td className="py-4 px-6">
                         <span className={`px-2 py-1 rounded-full text-xs ${
-                          request.status === 'Approved' ? 'bg-green-100 text-green-800' :
-                          request.status === 'Rejected' ? 'bg-red-100 text-red-800' :
+                          request.status.toLowerCase() === 'approved' ? 'bg-green-100 text-green-800' :
+                          request.status.toLowerCase() === 'rejected' ? 'bg-red-100 text-red-800' :
                           'bg-yellow-100 text-yellow-800'
                         }`}>
                           {request.status}
@@ -171,18 +136,28 @@ const Allemployeleaves = () => {
                       <td className="py-4 px-6">
                         <div className="flex gap-2">
                           <button 
-                            className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-sm"
+                            className={`px-3 py-1 rounded text-sm ${
+                              request.status.toLowerCase() === 'approved' 
+                                ? 'bg-gray-300 cursor-not-allowed text-gray-600' 
+                                : 'bg-green-500 hover:bg-green-600 text-white'
+                            }`}
                             onClick={() => handleStatusChange(request.id, "Approved", request.employeeEmail)}
-                            disabled={request.status !== 'Pending'}
+                            disabled={request.status.toLowerCase() === 'approved'}
+                            title={request.status.toLowerCase() === 'approved' ? 'Already approved' : ''}
                           >
                             Approve
                           </button>
                           <button 
-                            className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
+                            className={`px-3 py-1 rounded text-sm ${
+                              request.status.toLowerCase() === 'rejected' 
+                                ? 'bg-gray-300 cursor-not-allowed text-gray-600' 
+                                : 'bg-red-500 hover:bg-red-600 text-white'
+                            }`}
                             onClick={() => handleStatusChange(request.id, "Rejected", request.employeeEmail)}
-                            disabled={request.status !== 'Pending'}
+                            disabled={request.status.toLowerCase() === 'rejected'}
+                            title={request.status.toLowerCase() === 'rejected' ? 'Already rejected' : ''}
                           >
-                            Decline
+                            Reject
                           </button>
                         </div>
                       </td>
