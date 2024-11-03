@@ -6,12 +6,13 @@ import config from "../config"; // Import the config file
 import { useUser } from '../context/UserContext';
 import Cookies from 'js-cookie';
 import { Link, useNavigate } from 'react-router-dom';
+import useEmployeeStore from '../../store/employeeStore';
 
 const Header = () => {
+  const { employeeData, isLoading, updateEmployeeData } = useEmployeeStore();
   const { email } = useUser();
   const userEmail = email || Cookies.get('email');
   const navigate = useNavigate();
-  const [employeeInfo, setEmployeeInfo] = useState(null); // Change to null initially
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [isReportSubmitted, setIsReportSubmitted] = useState(false);
   const [clockInTime, setClockInTime] = useState(null);
@@ -19,23 +20,8 @@ const Header = () => {
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
-    const fetchEmployeeInfo = async () => {
-      try {
-        const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${userEmail}`);
-        const data = response.data;
-        localStorage.setItem('employeeInfo', JSON.stringify(data)); // Store data in local storage
-        setEmployeeInfo(data);
-      } catch (error) {
-        console.error('Error fetching employee data:', error);
-      }
-    };
-
-    // Check if employee data is already in local storage
-    const storedEmployeeInfo = localStorage.getItem('employeeInfo');
-    if (storedEmployeeInfo) {
-      setEmployeeInfo(JSON.parse(storedEmployeeInfo));
-    } else if (userEmail) {
-      fetchEmployeeInfo();
+    if (userEmail && !employeeData) {
+      updateEmployeeData(userEmail);
     }
   }, [userEmail]);
 
@@ -149,7 +135,19 @@ const Header = () => {
     }
   };
 
-  if (!employeeInfo) {
+  // Early loading state with skeleton
+  if (isLoading) {
+    return (
+      <nav className="main-header navbar navbar-expand navbar-dark navbar-dark">
+        <div className="animate-pulse flex items-center">
+          <div className="rounded-full bg-gray-300 h-9 w-9"></div>
+          <div className="ml-2 h-4 w-24 bg-gray-300 rounded"></div>
+        </div>
+      </nav>
+    );
+  }
+
+  if (!employeeData) {
     return <div>Loading...</div>; // Show loading state
   }
 
@@ -172,11 +170,16 @@ const Header = () => {
                     <a href="#" className="flex items-center px-4 -mx-2">
                       <img
                         className="object-cover mx-2 rounded-full h-9 w-9"
-                        src={employeeInfo.employeeImg ? employeeInfo.employeeImg : 'https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp'}
-                        alt={`${employeeInfo.firstname} avatar`}
+                        src={employeeData?.employeeImg}
+                        alt={`${employeeData?.firstname || 'User'} avatar`}
+                        onError={(e) => {
+                          console.log('Image failed to load, using fallback');
+                          e.target.onerror = null;
+                          e.target.src = 'https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp';
+                        }}
                       />
                       <button className="w-auto z-10 flex flex-wrap items-center p-2 text-sm ml-auto text-gray-600 bg-white border border-transparent rounded-md focus:border-blue-500 focus:ring-opacity-40 dark:focus:ring-opacity-40 focus:ring-blue-300 dark:focus:ring-blue-400 focus:ring dark:text-white dark:bg-gray-800 focus:outline-none">
-                        <span className="mx-1 hover:text-yellow-500 dark:hover:text-yellow-400 text-xs">{`${employeeInfo.firstname} ${employeeInfo.lastname}`}</span>
+                        <span className="mx-1 hover:text-yellow-500 dark:hover:text-yellow-400 text-xs">{`${employeeData?.firstname || 'User'} ${employeeData?.lastname || 'User'}`}</span>
                         <svg
                           className="w-5 h-5 mx-1"
                           viewBox="0 0 24 24"
@@ -202,11 +205,15 @@ const Header = () => {
                 >
                   <img
                     className="flex-shrink-0 object-cover mx-1 rounded-full w-9 h-9"
-                    src={employeeInfo.employeeImg ? employeeInfo.employeeImg : 'https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp'}
-                    alt={`${employeeInfo.firstname} avatar`}
+                    src={employeeData?.employeeImg || 'https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp'}
+                    alt={`${employeeData?.firstname || 'User'} avatar`}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp';
+                    }}
                   />
                   <div className="mx-1">
-                    <h1 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{`${employeeInfo.firstname} ${employeeInfo.lastname}`}</h1>
+                    <h1 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{`${employeeData?.firstname || 'User'} ${employeeData?.lastname || 'User'}`}</h1>
                     <p className="text-sm text-gray-500 dark:text-gray-400">{userEmail}</p>
                   </div>
                 </a>

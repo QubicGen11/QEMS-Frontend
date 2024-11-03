@@ -1,266 +1,230 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, memo } from 'react';
+import { toast } from 'react-toastify';
+import DOMPurify from 'dompurify';
+import parse from 'html-react-parser';
+import useTimesheetStore from '../../store/timesheetStore';
+import Loading from '../Loading Components/Loading';
 import Cookies from 'js-cookie';
 import Header from '../Homepage Components/Header';
 import Sidemenu from '../Homepage Components/Sidemenu';
 import Footer from '../Homepage Components/Footer';
-import * as XLSX from 'xlsx';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
-import { fetchAttendanceData } from '../Homepage Components/api';
-import Loading from '../Loading Components/Loading';
-import config from '../config';
 
-// Function to deeply compare two arrays of objects
-const deepEqual = (array1, array2) => {
-  if (array1.length !== array2.length) return false;
+// Memoized row component
+const TimesheetRow = memo(({ timesheet }) => (
+  <tr className="hover:bg-gray-50">
+    <td className="px-6 py-4 whitespace-nowrap">
+      {new Date(timesheet.date).toLocaleDateString()}
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      {timesheet.checkin_Time ? new Date(timesheet.checkin_Time).toLocaleTimeString() : 'N/A'}
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      {timesheet.checkout_Time ? new Date(timesheet.checkout_Time).toLocaleTimeString() : 'N/A'}
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <StatusBadge status={timesheet.status} />
+    </td>
+    <td className="px-6 py-4">
+      <div className="max-h-20 overflow-y-auto">
+        {timesheet.reports ? 
+          parse(DOMPurify.sanitize(timesheet.reports, {
+            ALLOWED_TAGS: ['p', 'strong', 'em', 'u', 'ol', 'ul', 'li', 'br', 'blockquote', 'img'],
+            ALLOWED_ATTR: ['class', 'src', 'alt', 'width', 'height', 'style'],
+            ADD_TAGS: ['img'],
+            ADD_ATTR: ['src'],
+            ADD_URI_SAFE_ATTR: ['src']
+          })) 
+          : 'No report'
+        }
+      </div>
+    </td>
+  </tr>
+));
 
-  return array1.every((item, index) => {
-    return JSON.stringify(item) === JSON.stringify(array2[index]);
-  });
-};
+const StatusBadge = memo(({ status }) => {
+  const statusClasses = {
+    approved: 'bg-green-100 text-green-800',
+    pending: 'bg-yellow-100 text-yellow-800',
+    declined: 'bg-red-100 text-red-800'
+  };
+
+  return (
+    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClasses[status] || ''}`}>
+      {status}
+    </span>
+  );
+});
 
 const ViewTimesheets = () => {
-  const [userAttendance, setUserAttendance] = useState([]);
-  const [role, setRole] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedIds, setSelectedIds] = useState([]);
-  const entriesPerPage = 5;
   const email = Cookies.get('email');
+  const { 
+    timesheets,
+    isLoading,
+    error,
+    currentPage,
+    fetchTimesheets,
+    refreshTimesheets,
+    setCurrentPage,
+    getPaginatedData,
+    getTotalPages
+  } = useTimesheetStore();
 
-  const exportToExcel = () => {
-    const table = document.getElementById('example1');
-    const ws = XLSX.utils.table_to_sheet(table);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-    XLSX.writeFile(wb, "table_data.xlsx");
-  };
-
-  const exportToPDF = () => {
-    const input = document.getElementById('example1');
-    html2canvas(input).then((canvas) => {
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: "landscape",
+  useEffect(() => {
+    if (email) {
+      fetchTimesheets(email).catch(err => {
+        console.error('Error in component:', err);
+        toast.error('Failed to load timesheets');
       });
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save("table_data.pdf");
-    });
-  };
-
-  const fetchAttendance = useCallback(async () => {
-    try {
-      const data = await fetchAttendanceData(email);
-      if (!deepEqual(data, userAttendance)) {
-        setUserAttendance(data);
-      }
-    } catch (error) {
-      console.error('Error fetching attendance data:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [email, userAttendance]);
-
-  const authorizeUser = useCallback(async () => {
-    try {
-      const response = await axios.post(`${config.apiUrl}/qubinest/authUser`, { userEmail: email });
-      setRole(response.data.role);
-      console.log(response.data.role);
-    } catch (error) {
-      console.error('Error authorizing user:', error);
     }
   }, [email]);
 
-  const handleApprove = async () => {
+  const handleRefresh = async () => {
     try {
-      const response = await axios.post(`${config.apiUrl}/qubinest/approveSingleAttendance`, {
-        employeeId: email,
-        adminEmail: email,
-        selectedIds
+      const refreshToast = toast.loading('Refreshing timesheets...');
+      await refreshTimesheets(email);
+      toast.update(refreshToast, {
+        render: 'Timesheets refreshed!',
+        type: 'success',
+        isLoading: false,
+        autoClose: 2000
       });
-
-      if (response.status === 200) {
-        console.log('Attendance approved successfully');
-        fetchAttendance();
-      }
     } catch (error) {
-      console.error('Error approving attendance:', error);
+      console.error('Refresh error in component:', error);
+      toast.error('Failed to refresh timesheets');
     }
   };
 
-  const handleDecline = async () => {
-    try {
-      const response = await axios.post(`${config.apiUrl}/qubinest/declineSingleAttendance`, {
-        employeeId: email,
-        adminEmail: email,
-        selectedIds
-      });
-
-      if (response.status === 200) {
-        console.log('Attendance declined successfully');
-        fetchAttendance();
-      }
-    } catch (error) {
-      console.error('Error declining attendance:', error);
-    }
-  };
-
-  useEffect(() => {
-    authorizeUser();
-    fetchAttendance();
-    const intervalId = setInterval(fetchAttendance, 30000);
-
-    return () => clearInterval(intervalId);
-  }, [authorizeUser, fetchAttendance]);
-
-  useEffect(() => {
-    console.log('Role:', role);
-  }, [role]);
-
-  const totalPages = Math.ceil(userAttendance.length / entriesPerPage);
-  const currentEntries = userAttendance.slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage);
-
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
-
-  const handleCheckboxChange = (id) => {
-    if (selectedIds.includes(id)) {
-      setSelectedIds(selectedIds.filter((selectedId) => selectedId !== id));
-    } else {
-      setSelectedIds([...selectedIds, id]);
-    }
-  };
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen">
+        <div className="text-red-500 mb-4">{error}</div>
+        <button 
+          onClick={() => fetchTimesheets(email)}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
 
   return (
     <>
       <Header />
       <Sidemenu />
       <div className="content-wrapper">
-        <div className="card-body">
-          <h1 className="text-3xl px-10">Time Sheets</h1>
-          <div id="example1_wrapper" className="dataTables_wrapper dt-bootstrap4 mt-2" style={{ width: '80vw' }}>
-            <div className="row px-10">
-              <div className="col-sm-12 col-md-6">
-                <div className="btn-group">
-                  <button type="button" className="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Export as
-                  </button>
-                  <div className="dropdown-menu">
-                    <button className="dropdown-item" onClick={exportToExcel}>Excel</button>
-                    <button className="dropdown-item" onClick={exportToPDF}>PDF</button>
-                  </div>
-                </div>
-                <div className="btn-group ml-4">
-                  <button type="button" className="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Filter by
-                  </button>
-                  <div className="dropdown-menu">
-                    <button className="dropdown-item">Month</button>
-                    <button className="dropdown-item">Year</button>
-                  </div>
-                </div>
-                
+        <div className="content-header">
+          <div className="container-fluid">
+            <div className="row mb-2">
+              <div className="col-sm-6">
+                <h1 className="m-0">Timesheets</h1>
               </div>
-              <div className="col-sm-12 col-md-6">
-                <div id="example1_filter" className="dataTables_filter">
-                  <label>
-                    Search:
-                    <input type="search" className="form-control form-control-sm" placeholder aria-controls="example1" />
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div className="row px-10">
-              <div className="col-sm-12">
-                <table id="example1" className="table table-bordered table-striped dataTable dtr-inline" aria-describedby="example1_info">
-                  <thead style={{ overflow: 'scroll' }}>
-                    <tr>
-                      <th>Select</th>
-                      <th>Date</th>
-                      <th>Check in time</th>
-                      <th>Check out</th>
-                      <th>Status</th>
-                      <th>Reports</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loading ? (
-                      <tr>
-                        <td colSpan="6"><Loading /></td>
-                      </tr>
-                    ) : currentEntries.length === 0 ? (
-                      <tr>
-                        <td colSpan="6">No attendance records found</td>
-                      </tr>
-                    ) : (
-                      currentEntries.map((attendance, index) => (
-                        <tr key={attendance.id}>
-                          <td>
-                            <input
-                              type="checkbox"
-                              checked={selectedIds.includes(attendance.id)}
-                              onChange={() => handleCheckboxChange(attendance.id)}
-                            />
-                          </td>
-                          <td>{new Date(attendance.date).toLocaleDateString()}</td>
-                          <td>{attendance.checkin_Time ? new Date(attendance.checkin_Time).toLocaleTimeString() : 'N/A'}</td>
-                          <td>{attendance.checkout_Time ? new Date(attendance.checkout_Time).toLocaleTimeString() : 'N/A'}</td>
-                          <td>
-                            {attendance.status === 'pending' ? (
-                              <span className="text-warning font-bold text-yellow-600">Pending</span>
-                            ) : attendance.status === 'approved' ? (
-                              <span className="text-success font-bold text-green-600">Approved</span>
-                            ) : (
-                              <span className="text-danger font-bold text-red-600">Declined</span>
-                            )}
-                          </td>
-                          <td>{attendance.reports}</td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <div className="row px-10">
-              <div className="col-sm-12 col-md-5">
-                <div className="dataTables_info" id="example1_info" role="status" aria-live="polite">
-                  Showing {(currentPage - 1) * entriesPerPage + 1} to {Math.min(currentPage * entriesPerPage, userAttendance.length)} of {userAttendance.length} entries
-                </div>
-              </div>
-              <div className="col-sm-12 col-md-7">
-                <div className="dataTables_paginate paging_simple_numbers" id="example1_paginate">
-                  <ul className="pagination">
-                    <li className={`paginate_button page-item previous ${currentPage === 1 ? 'disabled' : ''}`} id="example1_previous">
-                      <a href="#" aria-controls="example1" data-dt-idx={0} tabIndex={0} className="page-link" onClick={() => handlePageChange(currentPage - 1)}>
-                        Previous
-                      </a>
-                    </li>
-                    {Array.from({ length: totalPages }, (_, i) => (
-                      <li key={i + 1} className={`paginate_button page-item ${currentPage === i + 1 ? 'active' : ''}`}>
-                        <a href="#" aria-controls="example1" data-dt-idx={i + 1} tabIndex={0} className="page-link" onClick={() => handlePageChange(i + 1)}>
-                          {i + 1}
-                        </a>
-                      </li>
-                    ))}
-                    <li className={`paginate_button page-item next ${currentPage === totalPages ? 'disabled' : ''}`} id="example1_next">
-                      <a href="#" aria-controls="example1" data-dt-idx={7} tabIndex={0} className="page-link" onClick={() => handlePageChange(currentPage + 1)}>
-                        Next
-                      </a>
-                    </li>
-                  </ul>
-                </div>
+              <div className="col-sm-6">
+                <ol className="breadcrumb float-sm-right">
+                  <li className="breadcrumb-item"><a href="#">Home</a></li>
+                  <li className="breadcrumb-item active">Timesheets</li>
+                </ol>
               </div>
             </div>
           </div>
         </div>
+
+        <section className="content">
+          <div className="container-fluid">
+            <div className="row">
+              <div className="col-12">
+                <div className="card">
+                  <div className="card-header">
+                    <h3 className="card-title">Timesheet Records</h3>
+                    <div className="card-tools">
+                      <button
+                        onClick={handleRefresh}
+                        disabled={isLoading}
+                        className="btn btn-tool"
+                      >
+                        <i className="fas fa-sync-alt"></i> Refresh
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="card-body">
+                    {isLoading && timesheets.length === 0 ? (
+                      <div className="d-flex justify-content-center p-4">
+                        <Loading />
+                      </div>
+                    ) : (
+                      <>
+                        <div className="table-responsive">
+                          <table className="table table-bordered table-hover">
+                            <thead>
+                              <tr>
+                                <th>Date</th>
+                                <th>Check In</th>
+                                <th>Check Out</th>
+                                <th>Status</th>
+                                <th>Report</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {getPaginatedData().map(timesheet => (
+                                <TimesheetRow key={timesheet.id} timesheet={timesheet} />
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <div className="row mt-3">
+                          <div className="col-sm-12 col-md-5">
+                            <div className="dataTables_info">
+                              Showing page {currentPage} of {getTotalPages()}
+                            </div>
+                          </div>
+                          <div className="col-sm-12 col-md-7">
+                            <div className="dataTables_paginate paging_simple_numbers">
+                              <ul className="pagination">
+                                <li className={`paginate_button page-item previous ${currentPage === 1 ? 'disabled' : ''}`}>
+                                  <button
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                    className="page-link"
+                                  >
+                                    Previous
+                                  </button>
+                                </li>
+                                {[...Array(getTotalPages())].map((_, i) => (
+                                  <li 
+                                    key={i + 1} 
+                                    className={`paginate_button page-item ${currentPage === i + 1 ? 'active' : ''}`}
+                                  >
+                                    <button
+                                      onClick={() => handlePageChange(i + 1)}
+                                      className="page-link"
+                                    >
+                                      {i + 1}
+                                    </button>
+                                  </li>
+                                ))}
+                                <li className={`paginate_button page-item next ${currentPage === getTotalPages() ? 'disabled' : ''}`}>
+                                  <button
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === getTotalPages()}
+                                    className="page-link"
+                                  >
+                                    Next
+                                  </button>
+                                </li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
       <Footer />
     </>

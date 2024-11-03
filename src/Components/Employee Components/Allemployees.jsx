@@ -3,7 +3,6 @@ import Header from "../Homepage Components/Header";
 import Sidemenu from "../Homepage Components/Sidemenu";
 import Footer from "../Homepage Components/Footer";
 import axios from "axios";
-import imgConfig from "../imgConfig"; // Ensure this is correctly configured
 import config from "../config";
 
 const Allemployees = () => {
@@ -24,6 +23,22 @@ const Allemployees = () => {
     }
   };
 
+  // const getEmployeeImage = (employeeImg) => {
+  //   if (!employeeImg) {
+  //     return `${config.apiUrl}/uploads/default.png`;
+  //   }
+    
+  //   if (employeeImg.startsWith('data:image')) {
+  //     return employeeImg;
+  //   }
+    
+  //   if (employeeImg.startsWith('http')) {
+  //     return employeeImg;
+  //   }
+    
+  //   return `${config.apiUrl}/uploads/${employeeImg}`;
+  // };
+
   const fetchEmployees = async () => {
     try {
       const response = await axios.get(`${config.apiUrl}/qubinest/allusers`);
@@ -40,7 +55,7 @@ const Allemployees = () => {
   const handleSelectAll = () => {
     const newSelectedEmployees = new Set();
     if (!allSelected) {
-      employees.forEach(employee => newSelectedEmployees.add(employee.employeeId));
+      employees.forEach(employee => newSelectedEmployees.add(employee.employee_id));
     }
     setSelectedEmployees(newSelectedEmployees);
     setAllSelected(!allSelected);
@@ -145,33 +160,28 @@ const Allemployees = () => {
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200 text-black:divide-gray-700 text-black:bg-gray-900">
                         {employees.map((employee) => (
-                          <tr key={employee.employeeId || employee.username}>
+                          <tr key={employee.employee_id}>
                             <td className="px-4 py-4 text-sm font-medium text-gray-700 whitespace-nowrap">
                               <div className="inline-flex items-center gap-x-3">
                                 <input
                                   type="checkbox"
                                   className="text-blue-500 border-gray-300 rounded text-black:bg-gray-900 text-black:ring-offset-gray-900 text-black:border-gray-700"
-                                  checked={selectedEmployees.has(employee.employeeId)}
-                                  onChange={() => handleSelectEmployee(employee.employeeId)}
+                                  checked={selectedEmployees.has(employee.employee_id)}
+                                  onChange={() => handleSelectEmployee(employee.employee_id)}
                                 />
                                 <div className="flex items-center gap-x-2">
-                                  <img
-                                    className="object-cover w-10 h-10 rounded-full"
-                                    src={`${imgConfig.apiUrl}/${employee.employeeImg || 'default.png'}`}
-                                    alt=""
-                                  />
                                   <div>
                                     <h2 className="font-medium text-gray-800 text-black:text-white">
-                                      {employee.username}
+                                      {employee.username || `${employee.firstname} ${employee.lastname}`}
                                     </h2>
                                     <p className="text-sm font-normal text-gray-600 text-black:text-gray-400">
-                                      @{employee.username ? employee.username.split(' ').join('') : 'unknown'}
+                                      @{employee.employee_id}
                                     </p>
                                   </div>
                                 </div>
                               </div>
                             </td>
-                            <td className={`relative px-4 py-4 text-sm font-medium text-gray-700 whitespace-nowrap ${getStatusClasses(employee.status)}`}>
+                            <td className={`px-4 py-4 text-sm whitespace-nowrap ${getStatusClasses(employee.status)}`}>
                               {employee.status}
                             </td>
                             <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
@@ -187,10 +197,11 @@ const Allemployees = () => {
                               {employee.mainPosition}
                             </td>
                             <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
-                              {new Date(employee.joiningDate).toLocaleDateString()}
+                              {employee.createdAt ? new Date(employee.createdAt).toLocaleDateString() : 'N/A'}
                             </td>
                             <td className="px-4 py-4 text-sm whitespace-nowrap">
                               <div className="relative">
+                                {/* Add your action buttons here */}
                               </div>
                             </td>
                           </tr>

@@ -8,6 +8,8 @@ import Cookies from 'js-cookie';
 import config from '../config';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import DOMPurify from 'dompurify';
+import './Singleattendace.css'
 
 const SingleEmployeeAttendance = () => {
   const [employee, setEmployee] = useState(null);
@@ -196,6 +198,20 @@ const SingleEmployeeAttendance = () => {
     }
   };
 
+  const renderReport = (reportContent) => {
+    if (!reportContent) return '---';
+    
+    // Sanitize the HTML content
+    const sanitizedContent = DOMPurify.sanitize(reportContent);
+    
+    return (
+      <div 
+        className="report-content max-w-md overflow-auto"
+        dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+      />
+    );
+  };
+
   return (
     <>
       <Header />
@@ -329,7 +345,9 @@ const SingleEmployeeAttendance = () => {
                                   {record.checkout_Time ? new Date(record.checkout_Time).toLocaleTimeString() : '---'}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{record.status}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{record.reports}</td>
+                                <td className="px-6 py-4 whitespace-normal text-sm text-gray-500">
+                                  {renderReport(record.reports)}
+                                </td>
                               </tr>
                             ))
                           ) : (

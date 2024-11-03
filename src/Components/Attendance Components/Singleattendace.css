@@ -1,0 +1,7 @@
+.report-content {
+    max-height: 150px;
+    img {
+      max-width: 100px;
+      height: auto;
+    }
+  }

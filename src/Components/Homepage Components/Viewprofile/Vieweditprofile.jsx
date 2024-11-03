@@ -6,6 +6,8 @@ import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
 import "./Vieweditprofile.css";
 import config from '../../config';
+import useEmployeeStore from '../../../store/employeeStore';
+import debounce from 'lodash/debounce';
 
 const ViewEditProfile = () => {
   const email = Cookies.get('email');
@@ -29,6 +31,7 @@ const ViewEditProfile = () => {
   const [imagePreview, setImagePreview] = useState("https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp");
   const [hover, setHover] = useState(false);
   const fileInputRef = useRef(null);
+  const { updateEmployeeData, forceRefresh } = useEmployeeStore();
 
   useEffect(() => {
     const fetchEmployeeData = async () => {
@@ -72,53 +75,130 @@ const ViewEditProfile = () => {
     }
   }, [email]);
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
+    if (!file) return;
+
+    // Validate file size (e.g., max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size should be less than 5MB');
+      return;
+    }
+
+    try {
+      // Show preview immediately
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
-        setFormData({ ...formData, employeeImg: reader.result });
+        setFormData(prev => ({ ...prev, employeeImg: reader.result }));
       };
       reader.readAsDataURL(file);
+
+    } catch (error) {
+      console.error('Error handling image:', error);
+      toast.error('Error uploading image');
     }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+    // Update UI immediately
+    e.target.value = value;
+    // Debounce the state update
+    debouncedHandleChange(name, value);
   };
 
+  // Add debounced form updates
+  const debouncedHandleChange = debounce((name, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  }, 300);
+
+  // Add cleanup for debounce
+  useEffect(() => {
+    return () => {
+      debouncedHandleChange.cancel();
+    };
+  }, []);
+
+  // Add optimistic update function
+  const optimisticUpdate = (newData) => {
+    // Update local storage immediately
+    localStorage.setItem('employeeData', JSON.stringify(newData));
+    localStorage.setItem('employeeInfo', JSON.stringify(newData));
+    
+    // Dispatch event for other components
+    window.dispatchEvent(new CustomEvent('employeeDataUpdated', { detail: newData }));
+  };
+
+  // Optimized handleSubmit function
   const handleSubmit = async (e) => {
     e.preventDefault();
-    for (const key in formData) {
-      if (formData[key] === '' && key !== 'employeeImg') {
-        toast.error(`${key} is required`);
-        return;
-      }
+    
+    // Define required fields explicitly
+    const requiredFields = [
+      'firstname',
+      'lastname',
+      'dob',
+      'gender',
+      'address',
+      'education',
+      'skills',
+      'phone',
+      'email',
+      'linkedin',
+      'about'
+    ];
+
+    // Check only the defined required fields
+    const emptyFields = requiredFields.filter(field => !formData[field]);
+    
+    if (emptyFields.length > 0) {
+      toast.error(`${emptyFields[0]} is required`);
+      return;
     }
 
+    const loadingToast = toast.loading('Updating profile...');
+    
     try {
-      if (employeeId) {
-        await axios.put(`${config.apiUrl}/qubinest/employees/${employeeId}`, formData);
-        Cookies.set('employee_id', employeeId); // Set employee ID as a cookie after update
-        toast.success('Employee updated successfully');
-      } else {
-        const response = await axios.post(`${config.apiUrl}/qubinest/employees`, formData);
+      // Optimistic update
+      optimisticUpdate(formData);
+      
+      // Make API call
+      const apiCall = employeeId
+        ? axios.put(`${config.apiUrl}/qubinest/employees/${employeeId}`, formData)
+        : axios.post(`${config.apiUrl}/qubinest/employees`, formData);
+
+      const response = await apiCall;
+      
+      if (!employeeId) {
         const newEmployeeId = response.data.employee_id;
         setEmployeeId(newEmployeeId);
-        Cookies.set('employee_id', newEmployeeId); // Set employee ID as a cookie after creation
-        toast.success('Employee created successfully');
+        Cookies.set('employee_id', newEmployeeId);
       }
-      localStorage.setItem('employeeData', JSON.stringify(formData)); // Update local storage
+
+      // Update store
+      await updateEmployeeData(formData.companyEmail);
+      
+      toast.update(loadingToast, {
+        render: "Profile updated successfully",
+        type: "success",
+        isLoading: false,
+        autoClose: 2000
+      });
+
       navigate('/viewprofile/personal-details');
-      window.location.reload();
+
     } catch (error) {
       console.error('Error submitting form:', error);
-      toast.error('Error submitting form');
+      toast.update(loadingToast, {
+        render: "Error updating profile",
+        type: "error",
+        isLoading: false,
+        autoClose: 2000
+      });
     }
   };
 

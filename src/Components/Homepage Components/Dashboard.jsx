@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, memo, useMemo } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -7,12 +7,24 @@ import { Link } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { useUser } from '../context/UserContext';
 import UserDetailModal from './UserDetailModal';
-import { fetchAttendanceData } from '../Homepage Components/api'; // Import the shared function
+import { fetchAttendanceData } from './api';
 import Loading from '../Loading Components/Loading';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import useEmployeeStore from '../../store/employeeStore';
 
-const CACHE_EXPIRY_TIME = 60 * 60 * 1000; // 1 hour
+const CACHE_EXPIRY_TIME = 60 * 60 * 1000;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
+const TIMESHEET_CACHE_KEY = 'dashboard_timesheet';
+
+const apiCache = {
+  clockStatus: new Map(),
+  reports: new Map()
+};
 
 const Dashboard = () => {
+  const { employeeData, isLoading: storeLoading, updateEmployeeData } = useEmployeeStore();
+  
   const [attendance, setAttendance] = useState([]);
   const [userAttendance, setUserAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,7 +34,6 @@ const Dashboard = () => {
   const email = Cookies.get('email');
   const { useremail } = useUser();
   const [isFirstLogin, setIsFirstLogin] = useState(false);
-  const [employeeData, setEmployeeData] = useState(null);
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [reportText, setReportText] = useState('');
@@ -48,60 +59,82 @@ const Dashboard = () => {
   const [message, setMessage] = useState('');
   const [employeeInfo, setEmployeeInfo] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [reportContent, setReportContent] = useState('');
+  const [uploadingMedia, setUploadingMedia] = useState(false);
+  const [employeeInfoLoading, setEmployeeInfoLoading] = useState(true);
+  const headerBackgrounds = useMemo(() => [
+    "https://images.pexels.com/photos/1089438/pexels-photo-1089438.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "https://images.pexels.com/photos/270404/pexels-photo-270404.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "https://images.pexels.com/photos/1181467/pexels-photo-1181467.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "https://images.pexels.com/photos/1181673/pexels-photo-1181673.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "https://images.pexels.com/photos/577585/pexels-photo-577585.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    "https://images.pexels.com/photos/1933900/pexels-photo-1933900.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    "https://images.pexels.com/photos/360591/pexels-photo-360591.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "https://images.pexels.com/photos/89724/pexels-photo-89724.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "https://images.pexels.com/photos/270637/pexels-photo-270637.jpeg?auto=compress&cs=tinysrgb&w=800"
+  ], []);
+  const [currentBgIndex, setCurrentBgIndex] = useState(0);
+
+  const modules = {
+    toolbar: [
+      [{ 'header': [1, 2, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      ['blockquote', 'code-block'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      ['link', 'image', 'video'],
+      ['clean']
+    ],
+  };
+
+  const formats = [
+    'header',
+    'bold', 'italic', 'underline', 'strike',
+    'blockquote', 'code-block',
+    'list', 'bullet',
+    'link', 'image', 'video'
+  ];
 
   useEffect(() => {
-    const fetchEmployeeInfo = async () => {
-      const cachedData = JSON.parse(localStorage.getItem(`employeeInfo_${email}`));
-      const now = new Date().getTime();
-  
-      if (cachedData && now - cachedData.timestamp < CACHE_EXPIRY_TIME) {
-        const data = cachedData.data;
-        const mainPosition = data.users?.[0]?.mainPosition || '';
-        const businessUnit = data.users?.[0]?.businessUnit || '';
-  
-        setEmployeeInfo({
-          ...data,
-          mainPosition,
-          businessUnit
-        });
-        return;
+    if (email && !employeeData) {
+      updateEmployeeData(email);
+    }
+  }, [email]);
+
+  useEffect(() => {
+    const fetchEmployeeData = async () => {
+      if (!email) return;
+
+      const cacheKey = `employeeInfo_${email}`;
+      const cachedData = localStorage.getItem(cacheKey);
+      
+      if (cachedData) {
+        const { data, timestamp } = JSON.parse(cachedData);
+        if (Date.now() - timestamp < CACHE_DURATION) {
+          setEmployeeInfo(data);
+          setEmployeeInfoLoading(false);
+          return;
+        }
       }
-  
+
       try {
         const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
-        const employeeData = response.data;
-  
-        if (!employeeData || Object.keys(employeeData).length === 0) {
-          toast.error("Please fill up the details");
-          setIsModalOpen(true);
-        } else {
-          const mainPosition = employeeData.users?.[0]?.mainPosition || '';
-          const businessUnit = employeeData.users?.[0]?.businessUnit || '';
-  
-          setEmployeeInfo({
-            ...employeeData,
-            mainPosition,
-            businessUnit
-          });
-  
-          // Add employee ID as cookie if it exists
-          if (employeeData.employee_id) {
-            Cookies.set('employee_id', employeeData.employee_id);
-          }
-  
-          // Cache the data in local storage with timestamp
-          localStorage.setItem(`employeeInfo_${email}`, JSON.stringify({ data: employeeData, timestamp: now }));
-        }
-        console.log(employeeData);
+        setEmployeeInfo(response.data);
+        
+        // Cache the response
+        localStorage.setItem(cacheKey, JSON.stringify({
+          data: response.data,
+          timestamp: Date.now()
+        }));
+        
       } catch (error) {
         console.error('Error fetching employee data:', error);
-        setIsModalOpen(true); // Show modal even if there's an error fetching data
+      } finally {
+        setEmployeeInfoLoading(false);
       }
     };
-  
-    fetchEmployeeInfo();
+
+    fetchEmployeeData();
   }, [email]);
-  
 
   const emp = employeeInfo; // Adjusted for single object response
 
@@ -114,52 +147,117 @@ const Dashboard = () => {
     setIsModalOpen(false);
   };
 
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const fetchAttendance = useCallback(async (forceRefresh = false) => {
+    // Don't fetch if already loading
+    if (isRefreshing && !forceRefresh) return;
+
+    try {
+      // Check cache first (unless forcing refresh)
+      if (!forceRefresh) {
+        const cachedData = localStorage.getItem(TIMESHEET_CACHE_KEY);
+        if (cachedData) {
+          const { data, timestamp } = JSON.parse(cachedData);
+          if (Date.now() - timestamp < CACHE_DURATION) {
+            setUserAttendance(data);
+            setLoading(false);
+            setIsInitialLoad(false);
+            return;
+          }
+        }
+      }
+
+      setIsRefreshing(true);
+      
+      // Fetch only last 7 days of data for dashboard
+      const response = await axios.get(
+        `${config.apiUrl}/qubinest/attendance/${email}?limit=7`, 
+        {
+          withCredentials: true,
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      const data = response.data;
+      
+      // Cache the response
+      localStorage.setItem(TIMESHEET_CACHE_KEY, JSON.stringify({
+        data,
+        timestamp: Date.now()
+      }));
+
+      setUserAttendance(data);
+    } catch (error) {
+      console.error('Error fetching attendance:', error);
+      // Show error only on initial load
+      if (isInitialLoad) {
+        toast.error('Failed to load timesheet data');
+      }
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
+      setIsInitialLoad(false);
+    }
+  }, [email, isRefreshing, isInitialLoad]);
+
   useEffect(() => {
-    const fetchAttendance = async () => {
-      const cachedData = JSON.parse(localStorage.getItem(`attendanceData_${email}`));
-      const now = new Date().getTime();
+    let mounted = true;
 
-      if (cachedData && now - cachedData.timestamp < CACHE_EXPIRY_TIME) {
-        setUserAttendance(cachedData.data);
-        setLoading(false);
-        return;
-      }
+    if (email && mounted) {
+      fetchAttendance();
+    }
 
-      try {
-        const data = await fetchAttendanceData(email); // Use the shared function
-        setUserAttendance(data);
-        setLoading(false);
-
-        // Cache the data in local storage with timestamp
-        localStorage.setItem(`attendanceData_${email}`, JSON.stringify({ data, timestamp: now }));
-      } catch (error) {
-        setLoading(false);
-      }
+    return () => {
+      mounted = false;
     };
-
-    fetchAttendance();
   }, [email]);
 
   useEffect(() => {
-    const userClockInKey = `lastClockIn_${email}`;
-    const userClockOutKey = `lastClockOut_${email}`;
-    const now = new Date().getTime();
+    const checkClockStatus = async () => {
+      try {
+        console.log('Making request to:', `${config.apiUrl}/qubinest/clockstatus/${email}`);
+        
+        const response = await axios.get(`${config.apiUrl}/qubinest/clockstatus/${email}`, {
+          withCredentials: true, // Include credentials
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        console.log('Response:', response.data);
+        const { isClockedIn: clockedIn, clockInTime, clockOutTime } = response.data;
+        
+        setIsClockedIn(clockedIn);
+        if (clockInTime) setClockInTime(new Date(clockInTime).toLocaleTimeString());
+        if (clockOutTime) setClockOutTime(new Date(clockOutTime).toLocaleTimeString());
+      } catch (error) {
+        console.error('Error checking clock status:', error);
+        if (error.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          console.error('Error response:', {
+            data: error.response.data,
+            status: error.response.status,
+            headers: error.response.headers
+          });
+        } else if (error.request) {
+          // The request was made but no response was received
+          console.error('No response received:', error.request);
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          console.error('Error setting up request:', error.message);
+        }
+      }
+    };
 
-    const lastClockIn = JSON.parse(localStorage.getItem(userClockInKey));
-    const lastClockOut = JSON.parse(localStorage.getItem(userClockOutKey));
-
-    if (lastClockIn && now - new Date(lastClockIn.timestamp).getTime() > EXPIRATION_HOURS * 3600 * 1000) {
-      localStorage.removeItem(userClockInKey);
-    } else if (lastClockIn && new Date(lastClockIn.date).toLocaleDateString() === new Date().toLocaleDateString()) {
-      setIsClockedIn(true);
-      setClockInTime(lastClockIn.time);
-    }
-
-    if (lastClockOut && now - new Date(lastClockOut.timestamp).getTime() > EXPIRATION_HOURS * 3600 * 1000) {
-      localStorage.removeItem(userClockOutKey);
-    } else if (lastClockOut && new Date(lastClockOut.date).toLocaleDateString() === new Date().toLocaleDateString()) {
-      setIsClockedIn(false);
-      setClockOutTime(lastClockOut.time);
+    if (email) {
+      checkClockStatus();
     }
   }, [email]);
 
@@ -183,63 +281,110 @@ const Dashboard = () => {
     return () => clearInterval(intervalRef.current);
   }, [isClockedIn]);
 
-  const onChangesubmit = (event) => {
-    if (event.target.value.length <= MAX_CHAR_LIMIT) {
-      setReportText(event.target.value);
+  // Function to handle image upload
+  const handleImageUpload = async (file) => {
+    try {
+      setUploadingMedia(true);
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', 'your_cloudinary_upload_preset');
+      
+      const response = await axios.post(
+        'https://api.cloudinary.com/v1_1/your_cloud_name/upload',
+        formData
+      );
+
+      return response.data.secure_url;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Failed to upload image');
+      return null;
+    } finally {
+      setUploadingMedia(false);
     }
   };
 
+  // Replace the existing textarea with ReactQuill
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (reportText.length < MIN_CHAR_LIMIT || reportText.length > MAX_CHAR_LIMIT) {
-      toast.error(`Report must be between ${MIN_CHAR_LIMIT} and ${MAX_CHAR_LIMIT} characters.`);
+    
+    if (!reportContent.trim()) {
+      toast.error('Report cannot be empty');
       return;
     }
 
     try {
+      setLoading(true);
+      
+      // Optimistic update
+      const tempId = Date.now();
+      const optimisticReport = {
+        id: tempId,
+        content: reportContent,
+        timestamp: new Date()
+      };
+      
+      // Update UI immediately
+      setIsReportSubmitted(true);
+      setReportContent('');
+      
+      // Make API call
       const response = await axios.post(`${config.apiUrl}/qubinest/report`, {
         email,
-        reportText
+        reportText: reportContent,
       });
-      setIsReportSubmitted(true);
+      
       toast.success('Daily report submitted successfully!');
-      setReportText("");
-      console.log(response.data);
+      
+      // Update cache
+      const cacheKey = `reports_${email}`;
+      apiCache.reports.set(cacheKey, {
+        data: response.data,
+        timestamp: Date.now()
+      });
+      
     } catch (error) {
-      console.error('Error submitting report:', error);
+      // Rollback optimistic update if needed
+      setIsReportSubmitted(false);
+      setReportContent(reportContent);
       toast.error('Failed to submit report. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const clockIn = async () => {
-    const today = new Date().toLocaleDateString();
-    const currentTime = new Date().toLocaleTimeString();
-    
-    const timestamp = new Date().getTime();
-    const userClockInKey = `lastClockIn_${email}`;
-    const lastClockIn = JSON.parse(localStorage.getItem(userClockInKey));
-
-    if (lastClockIn && lastClockIn.date === today) {
-      toast.error('You have already clocked in today.');
-      return;
-    }
-
     try {
-      console.log('Sending clock-in request...');
+      // Check cache first
+      const cacheKey = `clockIn_${email}`;
+      if (apiCache.clockStatus.has(cacheKey)) {
+        const { data, timestamp } = apiCache.clockStatus.get(cacheKey);
+        if (Date.now() - timestamp < CACHE_DURATION) {
+          return data;
+        }
+      }
+
+      setLoading(true);
       const response = await axios.post(`${config.apiUrl}/qubinest/clockin`, { email });
+      const { isClockedIn: clockedIn, clockInTime } = response.data;
+      
+      // Update cache
+      apiCache.clockStatus.set(cacheKey, {
+        data: response.data,
+        timestamp: Date.now()
+      });
+      
+      // Update UI immediately
+      setIsClockedIn(clockedIn);
+      setClockInTime(new Date(clockInTime).toLocaleTimeString());
       toast.success('Clock-in successful!');
-      setIsClockedIn(true);
-      setClockInTime(currentTime);
-      localStorage.setItem(userClockInKey, JSON.stringify({ date: today, time: currentTime, timestamp }));
+      
       return response.data;
     } catch (error) {
-      if (error.response.status === 500) {
-        setIsModalOpen(true);
-      }
-      const errorMessage = error.response ? error.response.data.message : error.message;
-      toast.error(errorMessage);
-      console.error('Error clocking in:', error);
+      toast.error(error.response?.data?.message || 'Error clocking in');
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -249,46 +394,17 @@ const Dashboard = () => {
       return;
     }
 
-    const today = new Date().toLocaleDateString();
-    const currentTime = new Date().toLocaleTimeString();
-    const timestamp = new Date().getTime();
-    const userClockOutKey = `lastClockOut_${email}`;
-    const lastClockOut = JSON.parse(localStorage.getItem(userClockOutKey));
-
-    if (lastClockOut && lastClockOut.date === today) {
-      toast.error('You have already clocked out today.');
-      return;
-    }
-
-    if (!isReportSubmitted) {
-      toast.error('Please submit your daily report before clocking out.');
-      return;
-    }
-
     try {
-      console.log('Sending clock-out request...');
+      // Update URL to use /qubinest
       const response = await axios.post(`${config.apiUrl}/qubinest/clockout`, { email });
+      const { isClockedIn: clockedIn, clockOutTime } = response.data;
+      
+      setIsClockedIn(clockedIn);
+      setClockOutTime(new Date(clockOutTime).toLocaleTimeString());
       toast.success('Clock-out successful!');
-      setIsClockedIn(false);
-      setClockOutTime(currentTime);
-      localStorage.setItem(userClockOutKey, JSON.stringify({ date: today, time: currentTime, timestamp }));
-      localStorage.setItem('You have worked for : ', JSON.stringify(time));
-      setTime({ hours: 0, minutes: 0, seconds: 0 });
-
-      setTimeout(() => {
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          localStorage.removeItem(key);
-        }
-        toast.success('Data has been successfully reset.');
-      }, 10000);
-
-      return response.data;
     } catch (error) {
-      const errorMessage = error.response ? error.response.data.message : error.message;
+      const errorMessage = error.response?.data?.message || 'Error clocking out';
       toast.error(errorMessage);
-      console.error('Error clocking out:', error);
-      throw error;
     }
   };
 
@@ -406,19 +522,157 @@ const Dashboard = () => {
   }, []);
 
   const refreshAttendance = async () => {
+    if (isRefreshing) return;
+    
+    const refreshToast = toast.loading('Refreshing...');
     try {
-      const data = await fetchAttendanceData(email); // Use the shared function
-      setUserAttendance(data);
-      setLoading(false);
-
-      // Cache the data in local storage with timestamp
-      const now = new Date().getTime();
-      localStorage.setItem(`attendanceData_${email}`, JSON.stringify({ data, timestamp: now }));
-      toast.success('Attendance data refreshed successfully!');
+      await fetchAttendance(true);
+      toast.update(refreshToast, {
+        render: 'Updated successfully',
+        type: 'success',
+        isLoading: false,
+        autoClose: 2000
+      });
     } catch (error) {
-      setLoading(false);
-      toast.error('Failed to refresh attendance data.');
+      toast.update(refreshToast, {
+        render: 'Failed to refresh',
+        type: 'error',
+        isLoading: false,
+        autoClose: 2000
+      });
     }
+  };
+
+  const getGreeting = () => {
+    const hour = currentTime.getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 18) return 'Good Afternoon';
+    return 'Good Evening';
+  };
+
+  const AssociateDetails = () => {
+    if (employeeInfoLoading) {
+      return (
+        <div className="card-body d-flex justify-center align-items-center">
+          <Loading />
+        </div>
+      );
+    }
+
+    const displayData = employeeData || employeeInfo;
+    
+    if (!displayData) {
+      return (
+        <div className="card-body d-flex justify-center align-items-center">
+          <p>No employee details found.</p>
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <div className="card-body pt-0" bis_skin_checked={1}>
+          <div className="row" bis_skin_checked={1}>
+            <div className="col-7" bis_skin_checked={1}>
+              <h2 className="lead"><b>{displayData.firstname} {displayData.lastname}</b></h2>
+              <p className="text-muted text-sm"><b>Role: </b> {displayData.mainPosition} </p>
+              <ul className="ml-4 mb-0 fa-ul text-muted">
+                <li className="small pt-2">
+                  <span className="fa-li"><i className="fas fa-lg fa-id-card" /></span>
+                  <span className='font-bold'> Emp Id :</span>{displayData.employee_id}
+                </li>
+                <li className="small pt-2">
+                  <span className="fa-li"><i className="fas fa-lg fa-envelope" /></span>
+                  <span className='font-bold'> Email :</span>{displayData.companyEmail}
+                </li>
+                <li className="small pt-2">
+                  <span className="fa-li"><i className="fas fa-lg fa-briefcase" /></span>
+                  <span className='font-bold'> Business Unit:</span> {displayData.mainPosition}
+                </li>
+              </ul>
+            </div>
+            <div className="col-5 text-center pt-3" bis_skin_checked={1}>
+              <img
+                className="profile-user-img img-fluid img-circle h-24"
+                src={displayData.employeeImg || 'https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp'}
+                alt={`${displayData.firstname} avatar`}
+              />
+            </div>
+          </div>
+        </div>
+        <div className="card-footer bg-white" bis_skin_checked={1}>
+          <div className="text-right bg-white" bis_skin_checked={1}>
+            {/* Add any action buttons here */}
+          </div>
+        </div>
+      </>
+    );
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentBgIndex((prevIndex) => 
+        prevIndex === headerBackgrounds.length - 1 ? 0 : prevIndex + 1
+      );
+    }, 5000); // Change background every 5 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const TimesheetTable = memo(({ data, isLoading }) => {
+    if (isLoading && isInitialLoad) {
+      return (
+        <tr>
+          <td colSpan="4" className="text-center py-4">
+            <div className="flex justify-center items-center">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+              <span className="ml-2">Loading...</span>
+            </div>
+          </td>
+        </tr>
+      );
+    }
+
+    if (!data?.length) {
+      return (
+        <tr>
+          <td colSpan="4" className="text-center py-4">No records found</td>
+        </tr>
+      );
+    }
+
+    return data.map((attendance) => (
+      <tr key={attendance.id} className="hover:bg-gray-50">
+        <td className="py-2">{new Date(attendance.date).toLocaleDateString()}</td>
+        <td className="py-2">{formatTime(attendance.checkin_Time)}</td>
+        <td className="py-2">{formatTime(attendance.checkout_Time)}</td>
+        <td className="py-2">
+          <StatusBadge status={attendance.status} />
+        </td>
+      </tr>
+    ));
+  });
+
+  const StatusBadge = memo(({ status }) => {
+    const statusStyles = {
+      pending: 'bg-yellow-100 text-yellow-800',
+      approved: 'bg-green-100 text-green-800',
+      declined: 'bg-red-100 text-red-800'
+    };
+
+    return (
+      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusStyles[status] || ''}`}>
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </span>
+    );
+  });
+
+  const formatTime = (timestamp) => {
+    if (!timestamp) return 'N/A';
+    return new Date(timestamp).toLocaleTimeString([], { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
   };
 
   return (
@@ -451,11 +705,31 @@ const Dashboard = () => {
             <div className="col-lg-12 col-12 col-sm-12">
               <div className="card card-widget widget-user-2" bis_skin_checked={1}>
                 <div className="card card-widget widget-user shadow-lg">
-                  <div className="widget-user-header text-white" style={{ background: 'url("https://res.cloudinary.com/defsu5bfc/image/upload/v1717239193/Black_and_Brown_Futuristic_LinkedIn_Banner_1_okjs2i.png")', backgroundSize: 'cover', backgroundRepeat: 'no-repeat', height: "25vh", backgroundPositionY: '50%' }}>
-                    {employeeInfo && (
+                  <div 
+                    className="widget-user-header text-white" 
+                    style={{ 
+                      background: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("${headerBackgrounds[currentBgIndex]}")`,
+                      backgroundSize: 'cover',
+                      backgroundRepeat: 'no-repeat',
+                      height: "25vh",
+                      backgroundPositionY: '50%',
+                      transition: 'background-image 1s ease-in-out'
+                    }}
+                  >
+                    {employeeData && (
                       <>
-                        <h3 className="widget-user-username text-left ml-auto text-base shadow-xl-black" style={{ fontWeight: 'bolder', textShadow: '5px 5px black' }}>{`${greetingMessage}, ${employeeInfo.firstname} ${employeeInfo.lastname}`}</h3>
-                        <h5 className="widget-user-desc text-left ml-auto">{employeeInfo.mainPosition}</h5>
+                        <h3 
+                          className="widget-user-username text-left ml-auto text-base shadow-xl-black" 
+                          style={{ fontWeight: 'bolder', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)' }}
+                        >
+                          {`${getGreeting()}, ${employeeData.firstname} ${employeeData.lastname}`}
+                        </h3>
+                        <h5 
+                          className="widget-user-desc text-left ml-auto"
+                          style={{ textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)' }}
+                        >
+                          {employeeData.mainPosition}
+                        </h5>
                       </>
                     )}
                   </div>
@@ -506,45 +780,7 @@ const Dashboard = () => {
         </Link>
       </div>
     </div>
-
-    {loading ? (
-      <div className="card-body d-flex justify-center align-items-center">
-        <p><Loading/></p>
-      </div>
-    ) : employeeInfo ? (
-      <>
-        <div className="card-body pt-0" bis_skin_checked={1}>
-          <div className="row" bis_skin_checked={1}>
-            <div className="col-7" bis_skin_checked={1}>
-              <h2 className="lead"><b>{employeeInfo.firstname} {employeeInfo.lastname}</b></h2>
-              <p className="text-muted text-sm"><b>Role: </b> {employeeInfo.mainPosition} </p>
-              <ul className="ml-4 mb-0 fa-ul text-muted ">
-                <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-id-card" /></span> <span className='font-bold'> Emp Id :</span>{employeeInfo.employee_id}</li>
-                <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-envelope" /></span> <span className='font-bold'> Email :</span>{employeeInfo.companyEmail}</li>
-                <li className="small pt-2"><span className="fa-li"><i className="fas fa-lg fa-briefcase" /></span> <span className='font-bold'> Business Unit:</span> {employeeInfo.mainPosition}</li>
-              </ul>
-            </div>
-            <div className="col-5 text-center pt-3" bis_skin_checked={1}>
-          <img
-  className="profile-user-img img-fluid img-circle h-24"
-  src={emp.employeeImg ? emp.employeeImg : 'https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp'}
-  alt={`${emp.firstname} avatar`}
-/>              
-            </div>
-            
-          </div>
-        </div>
-        <div className="card-footer bg-white" bis_skin_checked={1}>
-          <div className="text-right bg-white" bis_skin_checked={1}>
-            {/* Add any action buttons here */}
-          </div>
-        </div>
-      </>
-    ) : (
-      <div className="card-body d-flex justify-center align-items-center">
-        {/* <p>No employee details found.</p> */}
-      </div>
-    )}
+    <AssociateDetails />
   </div>
 </div>
 
@@ -570,19 +806,26 @@ const Dashboard = () => {
                                 <div className="card-footer bg-w p-0">
                                   <div className="reports bg-white">
                                     <form onSubmit={handleSubmit}>
-                                      <textarea
-                                        value={reportText}
-                                        onChange={(e) => setReportText(e.target.value)}
-                                        style={{ border: 'solid 1px black' }}
-                                        placeholder='Submit Your Daily Update...!'
-                                        className='text-[12px] px-1 flex mb-2 w-52 h-14 md:w-96 lg:w-96 xl:w-96'
-                                      />
-                                      <div className="flex justify-center">
+                                      <div className="quill-container mb-4">
+                                        <ReactQuill
+                                          value={reportContent}
+                                          onChange={setReportContent}
+                                          modules={modules}
+                                          formats={formats}
+                                          placeholder="Submit Your Daily Update...!"
+                                          className="bg-white"
+                                          style={{ height: '200px', marginBottom: '50px' }}
+                                        />
+                                      </div>
+                                      <div className="flex justify-center mt-16">
                                         <button
                                           type="submit"
-                                          className="inline-flex cursor-pointer h-5 w-16 items-center gap-1 rounded bg-yellow-300 border text-sm px-2 font-bold ml-1 lg:ml-24 transform hover:scale-110 transition duration-400 ease-in-out hover:bg-yellow-500"
+                                          disabled={uploadingMedia}
+                                          className={`inline-flex cursor-pointer items-center gap-1 rounded bg-yellow-300 border px-4 py-2 text-sm font-bold transform hover:scale-110 transition duration-400 ease-in-out hover:bg-yellow-500 ${
+                                            uploadingMedia ? 'opacity-50 cursor-not-allowed' : ''
+                                          }`}
                                         >
-                                          Submit
+                                          {uploadingMedia ? 'Uploading...' : 'Submit Report'}
                                         </button>
                                       </div>
                                     </form>
@@ -596,6 +839,12 @@ const Dashboard = () => {
                         </li>
                       </ul>
                     </div>
+
+
+
+
+
+                    
                   </div>
                 </div>
               </div>
@@ -619,20 +868,7 @@ const Dashboard = () => {
                           >
 
                             View More
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke-width="2"
-                              stroke="currentColor"
-                              class="w-5 h-5 animate-bounce"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"
-                              ></path>
-                            </svg>
+                          
                           </button>
                         </Link>
 
@@ -641,64 +877,36 @@ const Dashboard = () => {
                           onClick={refreshAttendance}
                         >
                           Refresh
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke-width="2"
-                            stroke="currentColor"
-                            className="w-5 h-5 animate-spin"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              d="M4.75 4.75L4.75 19.25M4.75 4.75L19.25 4.75M4.75 19.25L19.25 19.25M4.75 4.75L19.25 19.25"
-                            ></path>
-                          </svg>
+                          
                         </button>
                       </div>
                     </div>
 
-                    <div className="card-body table-responsive p-0" style={{ overflow: 'scroll', height: '30vh' }}>
-          <table className="table table-hover text-nowrap" style={{ overflow: 'scroll' }}>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Check In</th>
-                <th>Check Out</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan="4"><Loading /></td>
-                </tr>
-              ) : userAttendance.length === 0 ? (
-                <tr>
-                  <td colSpan="4">No attendance records found</td>
-                </tr>
-              ) : (
-                userAttendance.map((attendance, index) => (
-                  <tr key={attendance.id || index}> {/* Ensure a unique key for each row */}
-                    <td>{new Date(attendance.date).toLocaleDateString()}</td>
-                    <td>{attendance.checkin_Time ? new Date(attendance.checkin_Time).toLocaleTimeString() : 'N/A'}</td>
-                    <td>{attendance.checkout_Time ? new Date(attendance.checkout_Time).toLocaleTimeString() : 'N/A'}</td>
-                    <td>
-                      {attendance.status === 'pending' ? (
-                        <span className="text-warning font-bold text-yellow-600">Pending</span>
-                      ) : attendance.status === 'approved' ? (
-                        <span className="text-success font-bold text-green-600">Approved</span>
-                      ) : (
-                        <span className="text-danger font-bold text-red-600">Declined</span>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                    <div className="card-body table-responsive p-0" style={{ height: '30vh' }}>
+                      <div className="relative">
+                        {isRefreshing && !isInitialLoad && (
+                          <div className="absolute top-0 left-0 right-0 z-10 bg-blue-50 text-blue-600 text-center py-1 text-sm">
+                            Refreshing...
+                          </div>
+                        )}
+                        <table className="table table-hover text-nowrap">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="py-3">Date</th>
+                              <th className="py-3">Check In</th>
+                              <th className="py-3">Check Out</th>
+                              <th className="py-3">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <TimesheetTable 
+                              data={userAttendance} 
+                              isLoading={loading} 
+                            />
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
 
 
 

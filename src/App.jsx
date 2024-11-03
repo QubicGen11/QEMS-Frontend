@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Login from "./Components/Login/Login";
 import Dashboardmain from "./Components/Dashboard Components/Dashboardmain";
 import Nopage from "./Components/Error Page/Nopage";
@@ -26,37 +26,115 @@ import CreateTeamComponent from "./Components/Team Components/CreateTeamComponen
 import EmployeeLeaves from "./Components/Leave Components/EmployeeLeaves";
 import SingleEmployeeAttendance from "./Components/Attendance Components/SingleEmployeeAttendance";
 
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Login />
+  },
+  {
+    path: "/register",
+    element: <Register />
+  },
+  {
+    path: "/dashboard",
+    element: <Dashboardmain />
+  },
+  {
+    path: "/viewtimesheets",
+    element: <ViewTimesheets />,
+    loader: async ({ request }) => {
+      const url = new URL(request.url);
+      const fromDashboard = url.searchParams.get('fromDashboard');
+      
+      if (fromDashboard) {
+        const cachedData = localStorage.getItem('dashboardState');
+        if (cachedData) {
+          return JSON.parse(cachedData);
+        }
+      }
+      return null;
+    }
+  },
+  {
+    path: "*",
+    element: <Nopage />
+  },
+  {
+    path: "/viewprofile/*",
+    element: <Viewprofile />
+  },
+  {
+    path: "/employeeattendance",
+    element: <AllEmployeeAttendance />
+  },
+  {
+    path: "/singleemployeeattendance/:employeeId",
+    element: <SingleEmployeeAttendance />
+  },
+  {
+    path: "/createTeam",
+    element: <CreateTeamComponent />
+  },
+  {
+    path: "/holiday",
+    element: <Holiday />
+  },
+  {
+    path: "/booktimeoff",
+    element: <Booktimeoff />
+  },
+  {
+    path: "/documents",
+    element: <Documents />
+  },
+  {
+    path: "/loading",
+    element: <Loading />
+  },
+  {
+    path: "/documentsnewone",
+    element: <Documentsnewone />
+  },
+  {
+    path: "/payslips",
+    element: <Payslips />
+  },
+  {
+    path: "/payslipsnewone",
+    element: <Payslipsnewone />
+  },
+  {
+    path: "/profile/*",
+    element: <Profile />
+  },
+  {
+    path: "/allemployees",
+    element: <Allemployees />
+  },
+  {
+    path: "/allemployeleaverequests",
+    element: <Allemployeleaves />
+  },
+  {
+    path: "/allemployeleaves",
+    element: <EmployeeLeaves />
+  },
+  {
+    path: "/leavebalance",
+    element: <Leavebalance />
+  },
+  {
+    path: "/leavetype",
+    element: <Leavetype />
+  }
+]);
+
 const App = () => {
   return (
     <>
       <ToastContainer autoClose={1000} />
       <UserProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={<Dashboardmain />} />
-            <Route path="/viewtimesheets" element={<ViewTimesheets />} />
-            <Route path="*" element={<Nopage />} />
-            <Route path="/viewprofile/*" element={<Viewprofile />} />
-            <Route path="/employeeattendance" element={<AllEmployeeAttendance />} />
-            <Route path="/singleemployeeattendance/:employeeId" element={<SingleEmployeeAttendance />} />
-            <Route path="/createTeam" element={<CreateTeamComponent />} />
-            <Route path="/holiday" element={<Holiday />} />
-            <Route path="/booktimeoff" element={<Booktimeoff />} />
-            <Route path="/documents" element={<Documents />} />
-            <Route path="/loading" element={<Loading />} />
-            <Route path="/documentsnewone" element={<Documentsnewone />} />
-            <Route path="/payslips" element={<Payslips />} />
-            <Route path="/payslipsnewone" element={<Payslipsnewone />} />
-            <Route path="/profile/*" element={<Profile />} />
-            <Route path="/allemployees" element={<Allemployees />} />
-            <Route path="/allemployeleaverequests" element={<Allemployeleaves />} />
-            <Route path="/allemployeleaves" element={<EmployeeLeaves />} />
-            <Route path="/leavebalance" element={<Leavebalance />} />
-            <Route path="/leavetype" element={<Leavetype />} />
-          </Routes>
-        </BrowserRouter>
+        <RouterProvider router={router} />
       </UserProvider>
     </>
   );

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Link, Route, Routes, useLocation, Navigate } from 'react-router-dom';
 import Sidemenu from './Sidemenu';
 import Header from './Header';
@@ -13,32 +13,29 @@ import 'react-toastify/dist/ReactToastify.css';
 import Cookies from 'js-cookie';
 import config from '../config';
 import axios from 'axios';
+import useEmployeeStore from '../../store/employeeStore';
 
 const Viewprofile = () => {
+  const { employeeData, isLoading, updateEmployeeData } = useEmployeeStore();
   const email = Cookies.get('email');
-  const [employeeData, setEmployeeData] = useState([]);
   const location = useLocation();
 
   useEffect(() => {
-    const fetchEmployeeData = async () => {
-      if (!email) {
-        toast.error('No email found in cookies');
-        return;
-      }
-      try {
-        const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
-        if (response.data) {
-          setEmployeeData(response.data);
-        } else {
-          toast.error('Unexpected response format');
-        }
-      } catch (error) {
-        toast.error('Submit Your details to get your data');
-      }
-    };
-
-    fetchEmployeeData();
+    if (email) {
+      updateEmployeeData(email);
+    }
   }, [email]);
+
+  if (isLoading) {
+    return (
+      <div className="content-wrapper">
+        <div className="animate-pulse">
+          <div className="h-32 bg-gray-300 rounded mb-4"></div>
+          <div className="h-64 bg-gray-300 rounded"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
