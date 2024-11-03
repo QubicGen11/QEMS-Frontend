@@ -16,7 +16,7 @@ const Dummy = () => {
       <div className="container flex justify-center h-screen items-center">
         <input type="text" />
         <input type="text" />
-      <button className='p-3 bg-red-400 text-blue-400 ' onClick={handleClick}>Click me</button>
+      <button className='p-3 bg-red-400 text-blue-400 ' onClick={handleClick}>Click mme</button>
       </div>
     </>
   );
