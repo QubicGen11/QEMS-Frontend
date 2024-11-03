@@ -4,3 +4,457 @@
     }
   }
   
+.fc {
+  max-width: 100%;
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+}
+
+.fc .fc-toolbar.fc-header-toolbar {
+  margin-bottom: 1.5em;
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.fc .fc-toolbar-title {
+  font-size: 1.75em;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.fc .fc-button-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  text-transform: capitalize;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+}
+
+.fc .fc-button-primary:hover {
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
+}
+
+.fc .fc-day-today {
+  background-color: rgba(13, 110, 253, 0.1) !important;
+}
+
+.fc-event {
+  background-color: #0d6efd;
+  border: none;
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin: 2px 0;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.fc-event:hover {
+  transform: scale(1.02);
+}
+
+.fc-event.holiday-event {
+  background-color: #ff9f89;
+  border-color: #ff7c6b;
+  color: #d63384;
+}
+
+.fc-event-title {
+  font-weight: 500;
+}
+
+.fc-event-time {
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+
+/* Calendar container styles */
+#divmain {
+  padding: 20px;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .fc .fc-toolbar {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .fc .fc-toolbar-title {
+    font-size: 1.25em;
+  }
+}
+  
+.content.wrapper {
+  padding: 2rem;
+  background-color: #f5f5f5;
+}
+
+.MuiPaper-root {
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+.MuiPaper-root:hover {
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+
+.MuiTypography-h4 {
+  color: #1976d2;
+  font-weight: 600;
+}
+
+.MuiChip-root {
+  font-weight: 500;
+}
+
+@media (max-width: 960px) {
+  .content.wrapper {
+    padding: 1rem;
+  }
+}
+  
+.custom-calendar {
+  width: 100%;
+  border: none !important;
+  background: transparent !important;
+}
+
+.react-calendar__navigation {
+  margin-bottom: 20px;
+}
+
+.react-calendar__navigation button {
+  min-width: 44px;
+  background: none;
+  font-size: 16px;
+  padding: 8px;
+  border-radius: 8px;
+  color: #1976d2;
+}
+
+.react-calendar__navigation button:enabled:hover,
+.react-calendar__navigation button:enabled:focus {
+  background-color: #e6f0ff !important;
+}
+
+.react-calendar__month-view__weekdays {
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: 0.8em;
+  color: #666;
+}
+
+.react-calendar__month-view__days__day {
+  padding: 8px;
+  position: relative;
+  height: 60px;
+}
+
+.react-calendar__tile {
+  max-width: 100%;
+  text-align: center;
+  padding: 0.75em 0.5em;
+  background: none;
+  border-radius: 8px;
+}
+
+.react-calendar__tile:enabled:hover,
+.react-calendar__tile:enabled:focus {
+  background-color: #e6f0ff;
+}
+
+.react-calendar__tile--now {
+  background: #fff3e0 !important;
+  color: #f57c00;
+}
+
+.react-calendar__tile--active {
+  background: #1976d2 !important;
+  color: white;
+}
+
+.dot {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 6px;
+  width: 6px;
+  border-radius: 50%;
+  z-index: 1;
+}
+
+.dot.event {
+  background-color: #1976d2;
+}
+
+.dot.holiday {
+  background-color: #f44336;
+}
+
+/* Custom scrollbar for holiday list */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+  
+.content-wrapper {
+  padding: 2rem;
+  background-color: #f4f6f9;
+  min-height: calc(100vh - 120px); /* Adjust based on your header/footer height */
+}
+
+.container-fluid {
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -15px;
+  margin-left: -15px;
+}
+
+.custom-calendar {
+  width: 100%;
+  height: 100%;
+  border: none !important;
+  background: transparent !important;
+}
+
+/* Make calendar responsive */
+@media (max-width: 1200px) {
+  .content-wrapper {
+    padding: 1rem;
+  }
+  
+  .col-xl-8,
+  .col-xl-4 {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Enhance calendar appearance */
+.react-calendar__tile {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.react-calendar__month-view__days {
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.react-calendar__navigation button {
+  font-size: 1.2rem;
+  padding: 1rem;
+}
+
+/* Holiday list enhancements */
+.MuiChip-root {
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+  
+/* Add these new styles */
+.highlight-range {
+  background-color: rgba(25, 118, 210, 0.1) !important;
+  color: #1976d2 !important;
+  position: relative;
+}
+
+.highlight-range:hover {
+  background-color: rgba(25, 118, 210, 0.2) !important;
+}
+
+.highlight-range::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid #1976d2;
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+/* First date in range */
+.highlight-range:first-of-type::after {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+/* Last date in range */
+.highlight-range:last-of-type::after {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+/* Add styles for the date inputs */
+.MuiTextField-root input[type="date"] {
+  padding: 8px 12px;
+  color: #2c3e50;
+}
+
+.MuiTextField-root input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.MuiTextField-root input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+  
+/* Calendar tile styling */
+.react-calendar__tile {
+  position: relative;
+  height: 80px !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 8px 4px !important;
+}
+
+/* Highlight range styling */
+.highlight-range {
+  background-color: rgba(25, 118, 210, 0.1) !important;
+  color: #1976d2 !important;
+}
+
+.highlight-range:hover {
+  background-color: rgba(25, 118, 210, 0.2) !important;
+}
+
+/* Event indicator styling */
+.leave-indicator {
+  position: absolute;
+  bottom: 4px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.leave-type {
+  font-size: 8px;
+  color: #666;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90%;
+  text-align: center;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.dot.event {
+  background-color: #1976d2;
+}
+
+.dot.event.pending {
+  background-color: #ff9800;
+}
+
+.dot.event.approved {
+  background-color: #4caf50;
+}
+
+.dot.event.rejected {
+  background-color: #f44336;
+}
+
+.dot.holiday {
+  background-color: #e91e63;
+}
+
+/* Has event styling */
+.has-event {
+  font-weight: bold;
+}
+
+/* Today's date styling */
+.react-calendar__tile--now {
+  background-color: #fff3e0 !important;
+}
+
+.react-calendar__tile--now:enabled:hover,
+.react-calendar__tile--now:enabled:focus {
+  background-color: #ffe0b2 !important;
+}
+
+/* Hover effects */
+.react-calendar__tile:enabled:hover,
+.react-calendar__tile:enabled:focus {
+  background-color: rgba(25, 118, 210, 0.1) !important;
+}
+
+/* Navigation buttons */
+.react-calendar__navigation button {
+  min-width: 44px;
+  background: none;
+  font-size: 16px;
+  padding: 8px;
+  border-radius: 8px;
+  color: #1976d2;
+}
+
+.react-calendar__navigation button:disabled {
+  background-color: #f5f5f5;
+}
+
+.react-calendar__navigation button:enabled:hover,
+.react-calendar__navigation button:enabled:focus {
+  background-color: #e3f2fd;
+}
+
+/* Weekend styling */
+.react-calendar__month-view__days__day--weekend {
+  color: #f44336;
+}
+
+/* Disabled dates */
+.react-calendar__tile:disabled {
+  background-color: #f5f5f5;
+  color: #bdbdbd;
+}
+  
