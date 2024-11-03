@@ -102,13 +102,17 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchEmployeeData = async () => {
-      if (!email) return;
+      if (!email) {
+        console.log('No email provided');
+        return;
+      }
 
       const cacheKey = `employeeInfo_${email}`;
       const cachedData = localStorage.getItem(cacheKey);
       
       if (cachedData) {
         const { data, timestamp } = JSON.parse(cachedData);
+        console.log('Found cached employee data:', data);
         if (Date.now() - timestamp < CACHE_DURATION) {
           setEmployeeInfo(data);
           setEmployeeInfoLoading(false);
@@ -117,7 +121,13 @@ const Dashboard = () => {
       }
 
       try {
+        console.log('Fetching employee data for email:', email);
+        console.log('API URL:', `${config.apiUrl}/qubinest/getemployees/${email}`);
+        
         const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
+        console.log('API Response:', response);
+        console.log('Employee Data:', response.data);
+        
         setEmployeeInfo(response.data);
         
         // Cache the response
@@ -128,6 +138,11 @@ const Dashboard = () => {
         
       } catch (error) {
         console.error('Error fetching employee data:', error);
+        console.error('Error details:', {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status
+        });
       } finally {
         setEmployeeInfoLoading(false);
       }
@@ -560,8 +575,9 @@ const Dashboard = () => {
     }
 
     const displayData = employeeData || employeeInfo;
+    const userData = displayData?.users?.[0];
     
-    if (!displayData) {
+    if (!displayData || !userData) {
       return (
         <div className="card-body d-flex justify-center align-items-center">
           <p>No employee details found.</p>
@@ -575,19 +591,31 @@ const Dashboard = () => {
           <div className="row" bis_skin_checked={1}>
             <div className="col-7" bis_skin_checked={1}>
               <h2 className="lead"><b>{displayData.firstname} {displayData.lastname}</b></h2>
-              <p className="text-muted text-sm"><b>Role: </b> {displayData.mainPosition} </p>
+              <p className="text-muted text-sm"><b>Role: </b> {userData.role} </p>
               <ul className="ml-4 mb-0 fa-ul text-muted">
                 <li className="small pt-2">
                   <span className="fa-li"><i className="fas fa-lg fa-id-card" /></span>
-                  <span className='font-bold'> Emp Id :</span>{displayData.employee_id}
+                  <span className='font-bold'> Emp Id :</span> {userData.employeeId}
                 </li>
                 <li className="small pt-2">
                   <span className="fa-li"><i className="fas fa-lg fa-envelope" /></span>
-                  <span className='font-bold'> Email :</span>{displayData.companyEmail}
+                  <span className='font-bold'> Email :</span> {userData.email}
                 </li>
                 <li className="small pt-2">
                   <span className="fa-li"><i className="fas fa-lg fa-briefcase" /></span>
-                  <span className='font-bold'> Business Unit:</span> {displayData.mainPosition}
+                  <span className='font-bold'> Position:</span> {userData.mainPosition}
+                </li>
+                <li className="small pt-2">
+                  <span className="fa-li"><i className="fas fa-lg fa-calendar" /></span>
+                  <span className='font-bold'> Joining Date:</span> {new Date(userData.joiningDate).toLocaleDateString()}
+                </li>
+                <li className="small pt-2">
+                  <span className="fa-li"><i className="fas fa-lg fa-user-check" /></span>
+                  <span className='font-bold'> Status:</span> {userData.status}
+                </li>
+                <li className="small pt-2">
+                  <span className="fa-li"><i className="fas fa-lg fa-building" /></span>
+                  <span className='font-bold'> Company:</span> QubicGen Software Solutions
                 </li>
               </ul>
             </div>
