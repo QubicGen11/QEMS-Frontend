@@ -94,68 +94,76 @@ const Dashboard = () => {
     'link', 'image', 'video'
   ];
 
+  const employeeDataRef = useRef(null);
+  const fetchAttempted = useRef(false);
+
   useEffect(() => {
     if (email && !employeeData) {
       updateEmployeeData(email);
     }
-  }, [email]);
+  }, [email, employeeData, updateEmployeeData]);
 
+  // Consolidate employee data fetching
   useEffect(() => {
-    const fetchEmployeeData = async () => {
-      if (!email) {
-        console.log('No email provided');
-        return;
-      }
-
-      const cacheKey = `employeeInfo_${email}`;
-      const cachedData = localStorage.getItem(cacheKey);
-      
-      if (cachedData) {
-        const { data, timestamp } = JSON.parse(cachedData);
-        console.log('Found cached employee data:', data);
-        if (Date.now() - timestamp < CACHE_DURATION) {
-          setEmployeeInfo(data);
-          setEmployeeInfoLoading(false);
-          return;
-        }
-      }
+    const fetchData = async () => {
+      if (fetchAttempted.current || !email) return;
+      fetchAttempted.current = true;
 
       try {
-        console.log('Fetching employee data for email:', email);
-        console.log('API URL:', `${config.apiUrl}/qubinest/getemployees/${email}`);
+        setEmployeeInfoLoading(true);
         
-        const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
-        console.log('API Response:', response);
-        console.log('Employee Data:', response.data);
+        // Try to get cached data first
+        const cachedData = localStorage.getItem(`employeeInfo_${email}`);
+        if (cachedData) {
+          const { data, timestamp } = JSON.parse(cachedData);
+          if (Date.now() - timestamp < CACHE_EXPIRY_TIME) {
+            setEmployeeInfo(data);
+            employeeDataRef.current = data;
+            return;
+          }
+        }
+
+        // Fetch fresh data
+        const [employeeResponse] = await Promise.all([
+          axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`),
+          updateEmployeeData(email)
+        ]);
+
+        const newEmployeeData = employeeResponse.data;
         
-        setEmployeeInfo(response.data);
-        
-        // Cache the response
-        localStorage.setItem(cacheKey, JSON.stringify({
-          data: response.data,
-          timestamp: Date.now()
-        }));
-        
+        if (!newEmployeeData || Object.keys(newEmployeeData).length === 0) {
+          toast.error("Please fill up the details");
+          setIsModalOpen(true);
+        } else {
+          setEmployeeInfo(newEmployeeData);
+          employeeDataRef.current = newEmployeeData;
+          localStorage.setItem(`employeeInfo_${email}`, JSON.stringify({
+            data: newEmployeeData,
+            timestamp: Date.now()
+          }));
+        }
       } catch (error) {
         console.error('Error fetching employee data:', error);
-        console.error('Error details:', {
-          message: error.message,
-          response: error.response?.data,
-          status: error.response?.status
-        });
+        toast.error("Error fetching data. Please complete your profile.");
+        setIsModalOpen(true);
       } finally {
         setEmployeeInfoLoading(false);
       }
     };
 
-    fetchEmployeeData();
-  }, [email]);
+    fetchData();
+
+    return () => {
+      fetchAttempted.current = false;
+    };
+  }, [email, updateEmployeeData]);
 
   const emp = employeeInfo; // Adjusted for single object response
 
   const handleCompleteDetails = () => {
-    // Logic to handle completing details (e.g., redirecting to a profile completion page)
     setIsModalOpen(false);
+    // Redirect to profile completion page
+    window.location.href = '/complete-profile'; // Adjust this path as needed
   };
 
   const handleCloseModal = () => {
@@ -565,77 +573,71 @@ const Dashboard = () => {
     return 'Good Evening';
   };
 
-  const AssociateDetails = () => {
-    if (employeeInfoLoading) {
+  const AssociateDetails = memo(() => {
+    const displayData = useMemo(() => {
+      return employeeData || employeeInfo || employeeDataRef.current;
+    }, [employeeData, employeeInfo]);
+
+    if (employeeInfoLoading && !displayData) {
       return (
-        <div className="card-body d-flex justify-center align-items-center">
+        <div className="card-body d-flex justify-center align-items-center h-64">
           <Loading />
         </div>
       );
     }
 
-    const displayData = employeeData || employeeInfo;
-    const userData = displayData?.users?.[0];
-    
-    if (!displayData || !userData) {
+    if (!displayData) {
       return (
-        <div className="card-body d-flex justify-center align-items-center">
+        <div className="card-body d-flex justify-center align-items-center h-64">
           <p>No employee details found.</p>
         </div>
       );
     }
 
     return (
-      <>
-        <div className="card-body pt-0" bis_skin_checked={1}>
-          <div className="row" bis_skin_checked={1}>
-            <div className="col-7" bis_skin_checked={1}>
-              <h2 className="lead"><b>{displayData.firstname} {displayData.lastname}</b></h2>
-              <p className="text-muted text-sm"><b>Role: </b> {userData.role} </p>
-              <ul className="ml-4 mb-0 fa-ul text-muted">
-                <li className="small pt-2">
-                  <span className="fa-li"><i className="fas fa-lg fa-id-card" /></span>
-                  <span className='font-bold'> Emp Id :</span> {userData.employeeId}
-                </li>
-                <li className="small pt-2">
-                  <span className="fa-li"><i className="fas fa-lg fa-envelope" /></span>
-                  <span className='font-bold'> Email :</span> {userData.email}
-                </li>
-                <li className="small pt-2">
-                  <span className="fa-li"><i className="fas fa-lg fa-briefcase" /></span>
-                  <span className='font-bold'> Position:</span> {userData.mainPosition}
-                </li>
-                <li className="small pt-2">
-                  <span className="fa-li"><i className="fas fa-lg fa-calendar" /></span>
-                  <span className='font-bold'> Joining Date:</span> {new Date(userData.joiningDate).toLocaleDateString()}
-                </li>
-                <li className="small pt-2">
-                  <span className="fa-li"><i className="fas fa-lg fa-user-check" /></span>
-                  <span className='font-bold'> Status:</span> {userData.status}
-                </li>
-                <li className="small pt-2">
-                  <span className="fa-li"><i className="fas fa-lg fa-building" /></span>
-                  <span className='font-bold'> Company:</span> QubicGen Software Solutions
-                </li>
-              </ul>
-            </div>
-            <div className="col-5 text-center pt-3" bis_skin_checked={1}>
-              <img
-                className="profile-user-img img-fluid img-circle h-24"
-                src={displayData.employeeImg || 'https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp'}
-                alt={`${displayData.firstname} avatar`}
-              />
-            </div>
+      <div className="card-body pt-0" bis_skin_checked={1}>
+        <div className="row" bis_skin_checked={1}>
+          <div className="col-7" bis_skin_checked={1}>
+            <h2 className="lead"><b>{displayData.firstname} {displayData.lastname}</b></h2>
+            <p className="text-muted text-sm"><b>Role: </b> {displayData.position || 'Intern'} </p>
+            <ul className="ml-4 mb-0 fa-ul text-muted">
+              <li className="small pt-2">
+                <span className="fa-li"><i className="fas fa-lg fa-id-card" /></span>
+                <span className='font-bold'> Emp Id :</span> {displayData.employee_id}
+              </li>
+              <li className="small pt-2">
+                <span className="fa-li"><i className="fas fa-lg fa-envelope" /></span>
+                <span className='font-bold'> Email :</span> {displayData.companyEmail}
+              </li>
+              <li className="small pt-2">
+                <span className="fa-li"><i className="fas fa-lg fa-briefcase" /></span>
+                <span className='font-bold'> Position:</span> {displayData.position || 'Mern Stack Developer'}
+              </li>
+              <li className="small pt-2">
+                <span className="fa-li"><i className="fas fa-lg fa-calendar" /></span>
+                <span className='font-bold'> Joining Date:</span> {new Date(displayData.hireDate).toLocaleDateString()}
+              </li>
+              <li className="small pt-2">
+                <span className="fa-li"><i className="fas fa-lg fa-user-check" /></span>
+                <span className='font-bold'> Status:</span> Active
+              </li>
+              <li className="small pt-2">
+                <span className="fa-li"><i className="fas fa-lg fa-building" /></span>
+                <span className='font-bold'> Company:</span> QubicGen Software Solutions
+              </li>
+            </ul>
+          </div>
+          <div className="col-5 text-center pt-3" bis_skin_checked={1}>
+            <img
+              className="profile-user-img img-fluid img-circle h-24"
+              src={displayData.employeeImg || 'https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp'}
+              alt={`${displayData.firstname} avatar`}
+            />
           </div>
         </div>
-        <div className="card-footer bg-white" bis_skin_checked={1}>
-          <div className="text-right bg-white" bis_skin_checked={1}>
-            {/* Add any action buttons here */}
-          </div>
-        </div>
-      </>
+      </div>
     );
-  };
+  });
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -702,6 +704,16 @@ const Dashboard = () => {
       minute: '2-digit' 
     });
   };
+
+  // Add debugging logs
+  useEffect(() => {
+    console.log('State updates:', {
+      employeeData,
+      employeeInfo,
+      refData: employeeDataRef.current,
+      loading: employeeInfoLoading
+    });
+  }, [employeeData, employeeInfo, employeeInfoLoading]);
 
   return (
     <>
