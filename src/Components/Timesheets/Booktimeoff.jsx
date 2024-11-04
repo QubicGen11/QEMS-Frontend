@@ -234,7 +234,12 @@ const Booktimeoff = () => {
           setEvents(formattedEvents);
         }
       } catch (error) {
-        console.error('Error fetching leave requests:', error.response?.data);
+        console.error('Error fetching leave requests:', {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status
+        });
+        setError(`Failed to fetch leave requests: ${error.message}`);
       }
     };
 
