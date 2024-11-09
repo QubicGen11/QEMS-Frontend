@@ -1,5 +1,27 @@
-import axios from 'axios';
 import React, { useState, useEffect } from 'react';
+import {
+  AppBar,
+  Toolbar,
+  IconButton,
+  Typography,
+  Badge,
+  Menu,
+  MenuItem,
+  Avatar,
+  Box,
+  Divider,
+  Modal,
+  ListItemIcon
+} from '@mui/material';
+import {
+  Notifications as NotificationsIcon,
+  Settings as SettingsIcon,
+  Person as PersonIcon,
+  Logout as LogoutIcon,
+  Close as CloseIcon
+} from '@mui/icons-material';
+import { styled } from '@mui/material/styles';
+import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import config from "../config"; // Import the config file
@@ -7,6 +29,78 @@ import { useUser } from '../context/UserContext';
 import Cookies from 'js-cookie';
 import { Link, useNavigate } from 'react-router-dom';
 import useEmployeeStore from '../../store/employeeStore';
+
+// Styled components
+const StyledAppBar = styled(AppBar)(({ theme }) => ({
+  backgroundColor: '#343a40',
+  boxShadow: 'none',
+  position: 'relative',
+  marginLeft: '250px',
+  width: 'calc(100% - 250px)',
+  '@media (max-width: 768px)': {
+    marginLeft: 0,
+    width: '100%'
+  }
+}));
+
+const StyledBadge = styled(Badge)(({ theme }) => ({
+  '& .MuiBadge-badge': {
+    backgroundColor: '#FF4444',
+    color: 'white'
+  }
+}));
+
+const NotificationModal = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: '80px',
+  right: '20px',
+  width: 400,
+  maxHeight: '80vh',
+  backgroundColor: theme.palette.background.paper,
+  boxShadow: theme.shadows[5],
+  borderRadius: theme.shape.borderRadius,
+  overflow: 'hidden'
+}));
+
+const NotificationItem = ({ notification, onRead }) => {
+  const getBorderColor = (type) => {
+    switch (type) {
+      case 'LEAVE_APPROVED':
+      case 'ATTENDANCE_APPROVED':
+        return 'success.main';
+      case 'LEAVE_REJECTED':
+      case 'ATTENDANCE_REJECTED':
+        return 'error.main';
+      case 'REPORT_PENDING':
+        return 'warning.main';
+      default:
+        return 'primary.main';
+    }
+  };
+
+  return (
+    <Box
+      onClick={() => onRead(notification.id)}
+      sx={{
+        p: 2,
+        cursor: 'pointer',
+        borderLeft: 3,
+        borderColor: getBorderColor(notification.type),
+        '&:hover': {
+          bgcolor: 'action.hover',
+        },
+        bgcolor: notification.isRead ? 'transparent' : 'action.selected',
+      }}
+    >
+      <Typography variant="body2" sx={{ color: 'text.primary' }}>
+        {notification.message}
+      </Typography>
+      <Typography variant="caption" sx={{ color: 'text.secondary', mt: 0.5, display: 'block' }}>
+        {new Date(notification.createdAt).toLocaleString()}
+      </Typography>
+    </Box>
+  );
+};
 
 const Header = () => {
   const { employeeData, isLoading, updateEmployeeData } = useEmployeeStore();
@@ -18,6 +112,11 @@ const Header = () => {
   const [clockInTime, setClockInTime] = useState(null);
   const [clockOutTime, setClockOutTime] = useState(null);
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [openNotifications, setOpenNotifications] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
 
   useEffect(() => {
     if (userEmail && !employeeData) {
@@ -135,6 +234,58 @@ const Header = () => {
     }
   };
 
+  // Fetch notifications
+  const fetchNotifications = async () => {
+    if (!employeeData?.employee_id) return;
+    
+    try {
+        const response = await axios.get(`${config.apiUrl}/qubinest/notifications/${employeeData.employee_id}`);
+        setNotifications(response.data);
+        setUnreadCount(response.data.filter(notif => !notif.isRead).length);
+    } catch (error) {
+        console.error('Error fetching notifications:', error);
+        // Don't show error toast for 404s as they're expected when no notifications exist
+        if (error.response?.status !== 404) {
+            toast.error('Failed to fetch notifications');
+        }
+    }
+  };
+
+  // Mark notification as read
+  const markAsRead = async (notificationId) => {
+    try {
+        await axios.put(`${config.apiUrl}/qubinest/notifications/${notificationId}/read`);
+        setNotifications(notifications.map(notif => 
+            notif.id === notificationId ? { ...notif, isRead: true } : notif
+        ));
+        setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+        console.error('Error marking notification as read:', error);
+        toast.error('Failed to mark notification as read');
+    }
+  };
+
+  // Add function to mark all as read
+  const markAllAsRead = async () => {
+    if (!employeeData?.employee_id) return;
+    
+    try {
+        await axios.put(`${config.apiUrl}/qubinest/notifications/markAllRead/${employeeData.employee_id}`);
+        setNotifications(notifications.map(notif => ({ ...notif, isRead: true })));
+        setUnreadCount(0);
+    } catch (error) {
+        console.error('Error marking all notifications as read:', error);
+        toast.error('Failed to mark all notifications as read');
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+    // Poll for new notifications every minute
+    const interval = setInterval(fetchNotifications, 60000);
+    return () => clearInterval(interval);
+  }, [employeeData?.employee_id]);
+
   // Early loading state with skeleton
   if (isLoading) {
     return (
@@ -151,99 +302,177 @@ const Header = () => {
     return <div>Loading...</div>; // Show loading state
   }
 
+  // Profile menu handlers
+  const handleProfileClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleProfileClose = () => {
+    setAnchorEl(null);
+  };
+
   return (
-    <>
-      <nav className="main-header navbar navbar-expand navbar-dark navbar-dark">
-        <ul className="navbar-nav w-auto">
-          <li className="nav-item xl:hidden lg:hidden">
-            <a className="nav-link" data-widget="pushmenu" href="#" role="button">
-              <i className="fas fa-bars" />
-            </a>
-          </li>
-        </ul>
-        <ul className="navbar-nav ml-auto mr-4">
-          <li className="nav-item dropdown">
-            <a className="nav-link" data-toggle="dropdown" href="#">
-              <li className="nav-item">
-                <div className="inset-x-0 z-20 w-full px-6 transition-all duration-300 ease-in-out md:mt-0 md:p-0 md:top-0 md:relative md:bg-transparent md:w-auto md:opacity-100 md:translate-x-0 md:flex md:items-center">
-                  <div className="flex flex-col md:flex-row md:mx-6 lg:relative lg:left-10 md:relative md:left-10 relative left-10">
-                    <a href="#" className="flex items-center px-4 -mx-2">
-                      <img
-                        className="object-cover mx-2 rounded-full h-9 w-9"
-                        src={employeeData?.employeeImg}
-                        alt={`${employeeData?.firstname || 'User'} avatar`}
-                        onError={(e) => {
-                          console.log('Image failed to load, using fallback');
-                          e.target.onerror = null;
-                          e.target.src = 'https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp';
-                        }}
-                      />
-                      <button className="w-auto z-10 flex flex-wrap items-center p-2 text-sm ml-auto text-gray-600 bg-white border border-transparent rounded-md focus:border-blue-500 focus:ring-opacity-40 dark:focus:ring-opacity-40 focus:ring-blue-300 dark:focus:ring-blue-400 focus:ring dark:text-white dark:bg-gray-800 focus:outline-none">
-                        <span className="mx-1 hover:text-yellow-500 dark:hover:text-yellow-400 text-xs">{`${employeeData?.firstname || 'User'} ${employeeData?.lastname || 'User'}`}</span>
-                        <svg
-                          className="w-5 h-5 mx-1"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M12 15.713L18.01 9.70299L16.597 8.28799L12 12.888L7.40399 8.28799L5.98999 9.70199L12 15.713Z"
-                            fill="currentColor"
-                          />
-                        </svg>
-                      </button>
-                    </a>
-                  </div>
-                </div>
-              </li>
-            </a>
-            <div className="dropdown-menu dropdown-menu-lg dropdown-menu-right mt-2 relative right-30 bg-gray-600 transition-all duration-300 ease-in-out w-[30vw]">
-              <div className="bg-gray-800 rounded-md shadow-xl dark:bg-gray-800">
-                <a
-                  href="#"
-                  className="flex items-center p-3 -mt-2 text-sm text-gray-600 transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
+    <StyledAppBar>
+      <Toolbar sx={{ minHeight: '56px !important' }}>
+        {/* Mobile menu icon */}
+        <IconButton
+          edge="start"
+          color="inherit"
+          aria-label="menu"
+          sx={{ 
+            display: { sm: 'none' },
+            marginRight: 2
+          }}
+        >
+          <i className="fas fa-bars" />
+        </IconButton>
+
+        {/* Page Title */}
+        <Typography 
+          variant="h6" 
+          component="div" 
+          sx={{ 
+            flexGrow: 1,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1
+          }}
+        >
+         
+        </Typography>
+
+        {/* Notifications */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <IconButton
+            color="inherit"
+            onClick={() => setOpenNotifications(true)}
+            sx={{ position: 'relative' }}
+          >
+            <StyledBadge badgeContent={unreadCount} color="error">
+              <NotificationsIcon />
+            </StyledBadge>
+          </IconButton>
+
+          {/* Profile Avatar */}
+          <IconButton
+            onClick={handleProfileClick}
+            size="small"
+            aria-controls={open ? 'account-menu' : undefined}
+            aria-haspopup="true"
+            aria-expanded={open ? 'true' : undefined}
+          >
+            <Avatar
+              src={employeeData?.employeeImg}
+              alt={`${employeeData?.firstname || 'User'}`}
+              sx={{ width: 32, height: 32 }}
+            />
+          </IconButton>
+        </Box>
+
+        {/* Notification Modal */}
+        <Modal
+          open={openNotifications}
+          onClose={() => setOpenNotifications(false)}
+          BackdropProps={{ invisible: true }}
+        >
+          <NotificationModal>
+            <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'grey.100' }}>
+              <Typography variant="h6">Notifications</Typography>
+              <Box>
+                {notifications.length > 0 && (
+                  <IconButton
+                    size="small"
+                    onClick={markAllAsRead}
+                    sx={{ mr: 1, color: 'primary.main', fontSize: '0.875rem' }}
+                  >
+                    Mark all as read
+                  </IconButton>
+                )}
+                <IconButton
+                  size="small"
+                  onClick={() => setOpenNotifications(false)}
                 >
-                  <img
-                    className="flex-shrink-0 object-cover mx-1 rounded-full w-9 h-9"
-                    src={employeeData?.employeeImg || 'https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp'}
-                    alt={`${employeeData?.firstname || 'User'} avatar`}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp';
-                    }}
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            </Box>
+            <Divider />
+            <Box sx={{ maxHeight: 'calc(80vh - 100px)', overflow: 'auto' }}>
+              {notifications.length === 0 ? (
+                <Box sx={{ p: 2, textAlign: 'center', color: 'text.secondary' }}>
+                  No notifications
+                </Box>
+              ) : (
+                notifications.map(notification => (
+                  <NotificationItem
+                    key={notification.id}
+                    notification={notification}
+                    onRead={markAsRead}
                   />
-                  <div className="mx-1">
-                    <h1 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{`${employeeData?.firstname || 'User'} ${employeeData?.lastname || 'User'}`}</h1>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{userEmail}</p>
-                  </div>
-                </a>
-                <hr className="border-gray-200 dark:border-gray-700" />
-                <Link
-                  to={'/viewprofile'}
-                  className="block px-4 py-3 text-sm text-gray-600 capitalize transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  View Profile
-                </Link>
-                <a
-                  href="#"
-                  className="block px-4 py-3 text-sm text-gray-600 capitalize transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  Settings
-                </a>
-                <hr className="border-gray-200 dark:border-gray-700" />
-                <a
-                  href="#"
-                  className="block px-4 py-3 text-sm text-gray-600 capitalize transition-colors duration-300 transform dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white"
-                  onClick={handleLogout}
-                >
-                  Logout
-                </a>
-              </div>
-            </div>
-          </li>
-        </ul>
-      </nav>
-    </>
+                ))
+              )}
+            </Box>
+          </NotificationModal>
+        </Modal>
+
+        {/* Profile Menu */}
+        <Menu
+          anchorEl={anchorEl}
+          id="account-menu"
+          open={open}
+          onClose={handleProfileClose}
+          onClick={handleProfileClose}
+          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+          PaperProps={{
+            elevation: 0,
+            sx: {
+              overflow: 'visible',
+              filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+              mt: 1.5,
+              '& .MuiAvatar-root': {
+                width: 32,
+                height: 32,
+                ml: -0.5,
+                mr: 1,
+              },
+              '&:before': {
+                content: '""',
+                display: 'block',
+                position: 'absolute',
+                top: 0,
+                right: 14,
+                width: 10,
+                height: 10,
+                bgcolor: 'background.paper',
+                transform: 'translateY(-50%) rotate(45deg)',
+                zIndex: 0,
+              },
+            },
+          }}
+        >
+          <MenuItem onClick={() => navigate('/viewprofile')}>
+            <ListItemIcon>
+              <PersonIcon fontSize="small" />
+            </ListItemIcon>
+            View Profile
+          </MenuItem>
+          <MenuItem>
+            <ListItemIcon>
+              <SettingsIcon fontSize="small" />
+            </ListItemIcon>
+            Settings
+          </MenuItem>
+          <Divider />
+          <MenuItem onClick={handleLogout}>
+            <ListItemIcon>
+              <LogoutIcon fontSize="small" />
+            </ListItemIcon>
+            Logout
+          </MenuItem>
+        </Menu>
+      </Toolbar>
+    </StyledAppBar>
   );
 };
 

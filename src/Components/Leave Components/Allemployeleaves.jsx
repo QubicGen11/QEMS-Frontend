@@ -56,6 +56,7 @@ const Allemployeleaves = () => {
         leaveId: parseInt(leaveId)
       });
 
+      // First, update the leave status
       const response = await axios.post(`${config.apiUrl}/qubinest/${endpoint}`, {
         companyEmail,
         employeeEmail,
@@ -63,6 +64,24 @@ const Allemployeleaves = () => {
       });
 
       if (response.data.success) {
+        // Find the leave request details
+        const leaveRequest = leaveRequests.find(req => req.id === leaveId);
+        
+        // Create notification using the test endpoint that we know works
+        try {
+          await axios.post(`${config.apiUrl}/qubinest/notifications/create`, {
+            employeeId: leaveRequest.employee_id,
+            message: `Your leave request from ${leaveRequest.leaveFrom} to ${leaveRequest.leaveTo} has been ${newStatus.toLowerCase()}`,
+            type: newStatus === "Approved" ? "LEAVE_APPROVED" : "LEAVE_REJECTED",
+            isRead: false
+          });
+          
+          console.log('Notification created successfully');
+        } catch (notifError) {
+          console.error('Error creating notification:', notifError);
+        }
+
+        // Update UI
         setLeaveRequests(prevRequests => 
           prevRequests.map(request => 
             request.id === leaveId 
@@ -73,6 +92,7 @@ const Allemployeleaves = () => {
               : request
           )
         );
+        
         alert(`Leave request ${newStatus.toLowerCase()} successfully`);
         await fetchLeaveRequests();
       }

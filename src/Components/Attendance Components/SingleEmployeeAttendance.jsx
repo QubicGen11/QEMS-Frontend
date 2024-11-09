@@ -137,6 +137,25 @@ const SingleEmployeeAttendance = () => {
       if (response.status === 200) {
         toast.success("Attendance approved successfully");
         
+        // Create notification for approved attendance
+        try {
+          const dates = selectedRecords.map(record => 
+            new Date(record.date).toLocaleDateString()
+          ).join(', ');
+
+          await axios.post(`${config.apiUrl}/qubinest/notifications/create`, {
+            employeeId: employeeId.split(':')[1],
+            message: `Your attendance for dates: ${dates} has been approved`,
+            type: 'ATTENDANCE_APPROVED',
+            isRead: false
+          });
+          
+          console.log('Attendance approval notification created successfully');
+        } catch (notifError) {
+          console.error('Error creating attendance approval notification:', notifError);
+        }
+
+        // Update UI
         const updatedAttendance = filteredAttendance.map(record => ({
           ...record,
           status: selectedIds.includes(record.id) ? 'approved' : record.status
@@ -154,13 +173,20 @@ const SingleEmployeeAttendance = () => {
       }
     } catch (error) {
       console.error('Error approving attendance:', error);
+      toast.error('Failed to approve attendance');
     } finally {
       setIsApproving(false);
     }
   };
 
   const handleDecline = async () => {
+    if (selectedRecords.length === 0) {
+      toast.warning("Please select records to decline");
+      return;
+    }
+
     try {
+      setIsDeclining(true);
       const selectedIds = selectedRecords.map(record => record.id);
       const response = await axios.post(`${config.apiUrl}/qubinest/declineAttendance`, {
         employeeId: employeeId.split(':')[1],
@@ -171,9 +197,27 @@ const SingleEmployeeAttendance = () => {
       });
 
       if (response.status === 200) {
-        console.log('Attendance declined successfully');
-        toast.success("Declined Successfully")
+        toast.success("Attendance declined successfully");
 
+        // Create notification for declined attendance
+        try {
+          const dates = selectedRecords.map(record => 
+            new Date(record.date).toLocaleDateString()
+          ).join(', ');
+
+          await axios.post(`${config.apiUrl}/qubinest/notifications/create`, {
+            employeeId: employeeId.split(':')[1],
+            message: `Your attendance for dates: ${dates} has been declined`,
+            type: 'ATTENDANCE_REJECTED',
+            isRead: false
+          });
+          
+          console.log('Attendance rejection notification created successfully');
+        } catch (notifError) {
+          console.error('Error creating attendance rejection notification:', notifError);
+        }
+
+        // Update UI
         const updatedAttendance = filteredAttendance.map(record => ({
           ...record,
           status: selectedIds.includes(record.id) ? 'declined' : record.status
@@ -191,6 +235,9 @@ const SingleEmployeeAttendance = () => {
       }
     } catch (error) {
       console.error('Error declining attendance:', error);
+      toast.error('Failed to decline attendance');
+    } finally {
+      setIsDeclining(false);
     }
   };
 
@@ -307,11 +354,23 @@ const SingleEmployeeAttendance = () => {
                     </select>
                   </div>
                   <div className="btns flex gap-3">
-                    <button className="font-semibold text-green-500" onClick={handleApprove}>
-                      Approve
+                    <button 
+                      className={`font-semibold ${
+                        isApproving ? 'text-gray-400' : 'text-green-500'
+                      }`} 
+                      onClick={handleApprove}
+                      disabled={isApproving || selectedRecords.length === 0}
+                    >
+                      {isApproving ? 'Approving...' : 'Approve'}
                     </button>
-                    <button className="font-semibold text-red-500" onClick={handleDecline}>
-                      Decline
+                    <button 
+                      className={`font-semibold ${
+                        isDeclining ? 'text-gray-400' : 'text-red-500'
+                      }`} 
+                      onClick={handleDecline}
+                      disabled={isDeclining || selectedRecords.length === 0}
+                    >
+                      {isDeclining ? 'Declining...' : 'Decline'}
                     </button>
                   </div>
                 </div>

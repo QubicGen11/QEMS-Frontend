@@ -27,6 +27,7 @@ import EmployeeLeaves from "./Components/Leave Components/EmployeeLeaves";
 import SingleEmployeeAttendance from "./Components/Attendance Components/SingleEmployeeAttendance";
 import EmployeeProfile from './Components/Employee Components/EmployeeProfile';
 import AttendanceSheet from "./Components/Attendance Components/AttendanceSheet";
+import TodaysAttendance from "./Components/Attendance Components/TodaysAttendance";
 
 const router = createBrowserRouter([
   {
@@ -116,6 +117,10 @@ const router = createBrowserRouter([
   {
     path: "/allemployeleaverequests",
     element: <Allemployeleaves />
+  },
+  {
+    path: "/todaysattendance",
+    element: <TodaysAttendance />
   },
   {
     path: "/allemployeleaves",

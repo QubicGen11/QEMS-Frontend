@@ -22,7 +22,7 @@ const AttendanceSheet = () => {
 
   useEffect(() => {
     fetchAttendanceData();
-    fetchDepartments();
+    // fetchDepartments();
   }, [year, month]);
 
   const fetchAttendanceData = async () => {
@@ -112,15 +112,15 @@ const AttendanceSheet = () => {
     }
   };
 
-  const fetchDepartments = async () => {
-    try {
-      const response = await axios.get(`${config.apiUrl}/qubinest/departments`);
-      setDepartments(response.data);
-    } catch (error) {
-      console.error('Failed to fetch departments:', error);
-      toast.error('Failed to load departments');
-    }
-  };
+//   const fetchDepartments = async () => {
+//     try {
+//       const response = await axios.get(`${config.apiUrl}/qubinest/departments`);
+//       setDepartments(response.data);
+//     } catch (error) {
+//       console.error('Failed to fetch departments:', error);
+//       toast.error('Failed to load departments');
+//     }
+//   };
 
   const handleDepartmentFilter = (dept) => {
     setSelectedDepartment(dept);
@@ -167,92 +167,116 @@ const AttendanceSheet = () => {
   };
 
   // Update the table row to show total days and percentages
-  const renderAttendanceRow = (record) => (
-    <tr key={record.employeeId}>
-      <td className="px-6 py-4 whitespace-nowrap">
-        <div className="flex items-center">
-          <div className="flex-shrink-0 h-10 w-10">
-            {record.profileImage ? (
-              <img
-                className="h-10 w-10 rounded-full"
-                src={record.profileImage}
-                alt={record.employeeName || 'Employee'}
-              />
-            ) : (
-              <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                {(record.employeeName || 'N/A').charAt(0)}
+  const renderAttendanceRow = (record) => {
+    // Split the full name into first and last name
+    const nameParts = (record.employeeName || 'N/A').split(' ');
+    const firstName = nameParts[0];
+    const lastName = nameParts.slice(1).join(' ');
+
+    return (
+      <tr key={record.employeeId}>
+        <td className="px-6 py-4 whitespace-nowrap">
+          <div className="flex items-center">
+            <div className="flex-shrink-0 h-10 w-10">
+              {record.profileImage ? (
+                <img
+                  className="h-10 w-10 rounded-full object-cover"
+                  src={record.profileImage}
+                  alt={record.employeeName || 'Employee'}
+                />
+              ) : (
+                <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
+                  {firstName.charAt(0)}
+                  {lastName ? lastName.charAt(0) : ''}
+                </div>
+              )}
+            </div>
+            <div className="ml-4">
+              <div className="text-sm font-medium">
+                <span className="text-blue-600">{firstName}</span>
+                {lastName && (
+                  <span className="text-gray-900">{' '}{lastName}</span>
+                )}
               </div>
-            )}
-          </div>
-          <div className="ml-4">
-            <div className="text-sm font-medium text-gray-900">
-              {record.employeeName || 'N/A'}
-            </div>
-            <div className="text-sm text-gray-500">
-              {record.companyEmail || 'N/A'}
+              <div className="text-sm text-gray-500">
+                {record.companyEmail || 'N/A'}
+              </div>
             </div>
           </div>
-        </div>
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-        {record.department || 'N/A'}
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap">
-        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-          {record.presentDays} / {record.totalDays} 
-          ({((record.presentDays / record.totalDays) * 100).toFixed(1)}%)
-        </span>
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap">
-        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-          {record.absentDays} / {record.totalDays}
-          ({((record.absentDays / record.totalDays) * 100).toFixed(1)}%)
-        </span>
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap">
-        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-          {record.lateDays} / {record.totalDays}
-          ({((record.lateDays / record.totalDays) * 100).toFixed(1)}%)
-        </span>
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-        {record.averageCheckin}
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-        <button
-          onClick={() => handleViewDetails(record.employeeId, record.companyEmail)}
-          className="inline-flex items-center px-3 py-1.5 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 transition-colors"
-        >
-          <span className="mr-2">View Details</span>
-          <svg 
-            className="w-4 h-4" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          <span className="px-2 py-1 text-sm rounded-full bg-purple-100 text-purple-800">
+            {record.department || 'N/A'}
+          </span>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+            {record.presentDays} / {record.totalDays}
+            <span className="ml-1">
+              ({((record.presentDays / record.totalDays) * 100).toFixed(1)}%)
+            </span>
+          </span>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+            {record.absentDays} / {record.totalDays}
+            <span className="ml-1">
+              ({((record.absentDays / record.totalDays) * 100).toFixed(1)}%)
+            </span>
+          </span>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+            {record.lateDays} / {record.totalDays}
+            <span className="ml-1">
+              ({((record.lateDays / record.totalDays) * 100).toFixed(1)}%)
+            </span>
+          </span>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+            ${record.averageCheckin === 'N/A' ? 'bg-gray-100 text-gray-800' :
+            new Date(`2000-01-01 ${record.averageCheckin}`).getHours() >= 9.5 ? 
+            'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+            {record.averageCheckin}
+          </span>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+          <button
+            onClick={() => handleViewDetails(record.employeeId, record.companyEmail)}
+            className="inline-flex items-center px-3 py-1.5 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 transition-colors"
           >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M9 5l7 7-7 7" 
-            />
-          </svg>
-        </button>
-      </td>
-    </tr>
-  );
+            <span className="mr-2">View Details</span>
+            <svg 
+              className="w-4 h-4" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M9 5l7 7-7 7" 
+              />
+            </svg>
+          </button>
+        </td>
+      </tr>
+    );
+  };
 
   // Add a useEffect to restore filters when coming back from single view
-  useEffect(() => {
-    const savedFilters = localStorage.getItem('attendanceFilters');
-    if (savedFilters) {
-      const { year: savedYear, month: savedMonth, selectedDepartment: savedDept } = JSON.parse(savedFilters);
-      setYear(savedYear);
-      setMonth(savedMonth);
-      setSelectedDepartment(savedDept);
-      localStorage.removeItem('attendanceFilters'); // Clear after restoring
-    }
-  }, []);
+//   useEffect(() => {
+//     const savedFilters = localStorage.getItem('attendanceFilters');
+//     if (savedFilters) {
+//       const { year: savedYear, month: savedMonth, selectedDepartment: savedDept } = JSON.parse(savedFilters);
+//       setYear(savedYear);
+//       setMonth(savedMonth);
+//       setSelectedDepartment(savedDept);
+//       localStorage.removeItem('attendanceFilters'); // Clear after restoring
+//     }
+//   }, []);
 
   return (
     <>
