@@ -10,6 +10,8 @@ import { HiDownload } from 'react-icons/hi';
 import { ThreeDots } from 'react-loader-spinner';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import SendNotificationModal from "./SendNotificationModal";
+
 
 const Allemployees = () => {
   const [employees, setEmployees] = useState([]);
@@ -20,6 +22,7 @@ const Allemployees = () => {
   const [selectedEmployees, setSelectedEmployees] = useState(new Set());
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const navigate = useNavigate();
 
   // Get unique roles
@@ -231,6 +234,19 @@ const Allemployees = () => {
     navigate(`/employee-profile/${email}`);
   };
 
+  const renderSendNotificationButton = () => {
+    if (selectedEmployees.size === 0) return null;
+
+    return (
+      <button
+        onClick={() => setIsNotificationModalOpen(true)}
+        className="flex items-center justify-center px-5 py-2 text-sm text-white transition-colors duration-200 bg-blue-600 rounded-lg gap-x-2 hover:bg-blue-700"
+      >
+        <span>Send Notification ({selectedEmployees.size})</span>
+      </button>
+    );
+  };
+
   return (
     <>
       <div>
@@ -250,6 +266,7 @@ const Allemployees = () => {
               </div>
 
               <div className="flex items-center mt-4 gap-x-3">
+                {renderSendNotificationButton()}
                 <button 
                   onClick={exportToExcel}
                   className="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 transition-colors duration-200 bg-white border rounded-lg gap-x-2 sm:w-auto hover:bg-gray-100"
@@ -486,6 +503,16 @@ const Allemployees = () => {
           </div>
         </div>
       )}
+
+      <SendNotificationModal
+        open={isNotificationModalOpen}
+        onClose={() => setIsNotificationModalOpen(false)}
+        selectedEmployees={selectedEmployees}
+        onSuccess={() => {
+          setSelectedEmployees(new Set());
+          setAllSelected(false);
+        }}
+      />
     </>
   );
 };

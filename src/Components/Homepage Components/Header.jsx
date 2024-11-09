@@ -29,6 +29,7 @@ import { useUser } from '../context/UserContext';
 import Cookies from 'js-cookie';
 import { Link, useNavigate } from 'react-router-dom';
 import useEmployeeStore from '../../store/employeeStore';
+import DOMPurify from 'dompurify';
 
 // Styled components
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
@@ -92,10 +93,22 @@ const NotificationItem = ({ notification, onRead }) => {
         bgcolor: notification.isRead ? 'transparent' : 'action.selected',
       }}
     >
-      <Typography variant="body2" sx={{ color: 'text.primary' }}>
-        {notification.message}
-      </Typography>
-      <Typography variant="caption" sx={{ color: 'text.secondary', mt: 0.5, display: 'block' }}>
+      <Typography 
+        variant="body2" 
+        sx={{ color: 'text.primary' }}
+        component="div"
+        dangerouslySetInnerHTML={{ 
+          __html: DOMPurify.sanitize(notification.message) 
+        }}
+      />
+      <Typography 
+        variant="caption" 
+        sx={{ 
+          color: 'text.secondary', 
+          mt: 0.5, 
+          display: 'block' 
+        }}
+      >
         {new Date(notification.createdAt).toLocaleString()}
       </Typography>
     </Box>
