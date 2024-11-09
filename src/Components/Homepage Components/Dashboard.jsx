@@ -23,7 +23,7 @@ const apiCache = {
 };
 
 const Dashboard = () => {
-  const { employeeData, isLoading: storeLoading, updateEmployeeData } = useEmployeeStore();
+  const { employeeData, isLoading, updateEmployeeData } = useEmployeeStore();
   
   const [attendance, setAttendance] = useState([]);
   const [userAttendance, setUserAttendance] = useState([]);
@@ -106,42 +106,30 @@ const Dashboard = () => {
   // Consolidate employee data fetching
   useEffect(() => {
     const fetchData = async () => {
-      if (fetchAttempted.current || !email) return;
-      fetchAttempted.current = true;
-
+      if (!email || fetchAttempted.current) return;
+      
       try {
         setEmployeeInfoLoading(true);
         
-        // Try to get cached data first
-        const cachedData = localStorage.getItem(`employeeInfo_${email}`);
-        if (cachedData) {
-          const { data, timestamp } = JSON.parse(cachedData);
-          if (Date.now() - timestamp < CACHE_EXPIRY_TIME) {
-            setEmployeeInfo(data);
-            employeeDataRef.current = data;
-            return;
-          }
+        // Clear any cached data for other users
+        const storedEmail = localStorage.getItem('currentUserEmail');
+        if (storedEmail !== email) {
+          localStorage.clear();
+          localStorage.setItem('currentUserEmail', email);
         }
 
         // Fetch fresh data
-        const [employeeResponse] = await Promise.all([
-          axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`),
-          updateEmployeeData(email)
-        ]);
-
-        const newEmployeeData = employeeResponse.data;
+        const data = await updateEmployeeData(email);
         
-        if (!newEmployeeData || Object.keys(newEmployeeData).length === 0) {
+        if (!data || Object.keys(data).length === 0) {
           toast.error("Please fill up the details");
           setIsModalOpen(true);
-        } else {
-          setEmployeeInfo(newEmployeeData);
-          employeeDataRef.current = newEmployeeData;
-          localStorage.setItem(`employeeInfo_${email}`, JSON.stringify({
-            data: newEmployeeData,
-            timestamp: Date.now()
-          }));
+          return;
         }
+
+        setEmployeeInfo(data);
+        employeeDataRef.current = data;
+
       } catch (error) {
         console.error('Error fetching employee data:', error);
         toast.error("Error fetching data. Please complete your profile.");
@@ -152,11 +140,12 @@ const Dashboard = () => {
     };
 
     fetchData();
+    fetchAttempted.current = true;
 
     return () => {
       fetchAttempted.current = false;
     };
-  }, [email, updateEmployeeData]);
+  }, [email]);
 
   const emp = employeeInfo; // Adjusted for single object response
 
@@ -339,35 +328,17 @@ const Dashboard = () => {
     try {
       setLoading(true);
       
-      // Optimistic update
-      const tempId = Date.now();
-      const optimisticReport = {
-        id: tempId,
-        content: reportContent,
-        timestamp: new Date()
-      };
-      
-      // Update UI immediately
-      setIsReportSubmitted(true);
-      setReportContent('');
-      
-      // Make API call
       const response = await axios.post(`${config.apiUrl}/qubinest/report`, {
         email,
         reportText: reportContent,
       });
       
+      setIsReportSubmitted(true);
+      setHasSubmittedReport(true); // Update the submission status
+      setReportContent('');
       toast.success('Daily report submitted successfully!');
       
-      // Update cache
-      const cacheKey = `reports_${email}`;
-      apiCache.reports.set(cacheKey, {
-        data: response.data,
-        timestamp: Date.now()
-      });
-      
     } catch (error) {
-      // Rollback optimistic update if needed
       setIsReportSubmitted(false);
       setReportContent(reportContent);
       toast.error('Failed to submit report. Please try again.');
@@ -376,31 +347,45 @@ const Dashboard = () => {
     }
   };
 
+  // Add these functions to handle daily clock status 
+  const checkDailyClockStatus = async (email) => {
+    try {
+      const response = await axios.get(`${config.apiUrl}/qubinest/daily-clock-status/${email}`, {
+        withCredentials: true
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error checking daily clock status:', error);
+      throw error;
+    }
+  };
+
+  // Modify the clockIn function
   const clockIn = async () => {
     try {
-      // Check cache first
-      const cacheKey = `clockIn_${email}`;
-      if (apiCache.clockStatus.has(cacheKey)) {
-        const { data, timestamp } = apiCache.clockStatus.get(cacheKey);
-        if (Date.now() - timestamp < CACHE_DURATION) {
-          return data;
-        }
+      // Check if already clocked in today
+      const dailyStatus = await checkDailyClockStatus(email);
+      
+      if (dailyStatus.hasClockedInToday) {
+        toast.warning('You have already clocked in today. Only one clock-in per day is allowed.');
+        return;
       }
 
       setLoading(true);
-      const response = await axios.post(`${config.apiUrl}/qubinest/clockin`, { email });
-      const { isClockedIn: clockedIn, clockInTime } = response.data;
-      
-      // Update cache
-      apiCache.clockStatus.set(cacheKey, {
-        data: response.data,
-        timestamp: Date.now()
+      const response = await axios.post(`${config.apiUrl}/qubinest/clockin`, { 
+        email,
+        date: new Date().toISOString()
       });
       
-      // Update UI immediately
+      const { isClockedIn: clockedIn, clockInTime } = response.data;
+      
       setIsClockedIn(clockedIn);
       setClockInTime(new Date(clockInTime).toLocaleTimeString());
+      setHasSubmittedReport(false);
       toast.success('Clock-in successful!');
+      
+      // Store clock-in status in localStorage
+      localStorage.setItem(`lastClockIn_${email}`, new Date().toISOString());
       
       return response.data;
     } catch (error) {
@@ -411,6 +396,7 @@ const Dashboard = () => {
     }
   };
 
+  // Modify the clockOut function
   const clockOut = async () => {
     if (!isClockedIn) {
       toast.error('You need to clock in first.');
@@ -418,13 +404,32 @@ const Dashboard = () => {
     }
 
     try {
-      // Update URL to use /qubinest
-      const response = await axios.post(`${config.apiUrl}/qubinest/clockout`, { email });
+      const dailyStatus = await checkDailyClockStatus(email);
+      
+      if (dailyStatus.hasClockedOutToday) {
+        toast.warning('You have already clocked out today. Only one clock-out per day is allowed.');
+        return;
+      }
+
+      // Check if report has been submitted
+      if (!hasSubmittedReport) {
+        toast.error('Please submit your daily report before clocking out.');
+        return;
+      }
+
+      const response = await axios.post(`${config.apiUrl}/qubinest/clockout`, { 
+        email,
+        date: new Date().toISOString()
+      });
+      
       const { isClockedIn: clockedIn, clockOutTime } = response.data;
       
       setIsClockedIn(clockedIn);
       setClockOutTime(new Date(clockOutTime).toLocaleTimeString());
       toast.success('Clock-out successful!');
+      
+      // Store clock-out status in localStorage
+      localStorage.setItem(`lastClockOut_${email}`, new Date().toISOString());
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Error clocking out';
       toast.error(errorMessage);
@@ -575,9 +580,18 @@ const Dashboard = () => {
 
   const AssociateDetails = memo(() => {
     const displayData = useMemo(() => {
-      return employeeData || employeeInfo || employeeDataRef.current;
+      const data = employeeData || employeeInfo || employeeDataRef.current;
+      if (!data) return null;
+      
+      // Combine user data with employee data
+      return {
+        ...data,
+        mainPosition: data.users?.[0]?.mainPosition || 'Not Specified',
+        salary: data.users?.[0]?.salary || 'Not Specified',
+        joiningDate: data.users?.[0]?.joiningDate || data.hireDate
+      };
     }, [employeeData, employeeInfo]);
-
+  
     if (employeeInfoLoading && !displayData) {
       return (
         <div className="card-body d-flex justify-center align-items-center h-64">
@@ -585,7 +599,7 @@ const Dashboard = () => {
         </div>
       );
     }
-
+  
     if (!displayData) {
       return (
         <div className="card-body d-flex justify-center align-items-center h-64">
@@ -593,45 +607,58 @@ const Dashboard = () => {
         </div>
       );
     }
-
+  
     return (
       <div className="card-body pt-0" bis_skin_checked={1}>
         <div className="row" bis_skin_checked={1}>
           <div className="col-7" bis_skin_checked={1}>
             <h2 className="lead"><b>{displayData.firstname} {displayData.lastname}</b></h2>
-            <p className="text-muted text-sm"><b>Role: </b> {displayData.position || 'Intern'} </p>
+            <p className="text-muted text-sm">
+              <b>Role: </b> {displayData.users?.[0]?.role || 'Not Specified'}
+            </p>
             <ul className="ml-4 mb-0 fa-ul text-muted">
               <li className="small pt-2">
                 <span className="fa-li"><i className="fas fa-lg fa-id-card" /></span>
-                <span className='font-bold'> Emp Id :</span> {displayData.employee_id}
+                <span className='font-bold'> Emp Id:</span> {displayData.employee_id}
               </li>
               <li className="small pt-2">
                 <span className="fa-li"><i className="fas fa-lg fa-envelope" /></span>
-                <span className='font-bold'> Email :</span> {displayData.companyEmail}
+                <span className='font-bold'> Company Email:</span> {displayData.companyEmail}
               </li>
               <li className="small pt-2">
                 <span className="fa-li"><i className="fas fa-lg fa-briefcase" /></span>
-                <span className='font-bold'> Position:</span> {displayData.position || 'Mern Stack Developer'}
+                <span className='font-bold'> Position:</span> {displayData.mainPosition || 'Not Specified'}
               </li>
               <li className="small pt-2">
                 <span className="fa-li"><i className="fas fa-lg fa-calendar" /></span>
-                <span className='font-bold'> Joining Date:</span> {new Date(displayData.hireDate).toLocaleDateString()}
+                <span className='font-bold'> Joining Date:</span> {new Date(displayData.joiningDate).toLocaleDateString()}
+              </li>
+              <li className="small pt-2">
+                <span className="fa-li"><i className="fas fa-lg fa-graduation-cap" /></span>
+                <span className='font-bold'> Education:</span> {displayData.education || 'Not Specified'}
+              </li>
+              <li className="small pt-2">
+                <span className="fa-li"><i className="fas fa-lg fa-code" /></span>
+                <span className='font-bold'> Skills:</span> {displayData.skills || 'Not Specified'}
               </li>
               <li className="small pt-2">
                 <span className="fa-li"><i className="fas fa-lg fa-user-check" /></span>
-                <span className='font-bold'> Status:</span> Active
+                <span className='font-bold'> Status:</span> {displayData.users?.[0]?.status || 'Active'}
               </li>
               <li className="small pt-2">
                 <span className="fa-li"><i className="fas fa-lg fa-building" /></span>
-                <span className='font-bold'> Company:</span> QubicGen Software Solutions
+                <span className='font-bold'> Company:</span> QubicGen Software Solutions Pvt Ltd
               </li>
             </ul>
           </div>
           <div className="col-5 text-center pt-3" bis_skin_checked={1}>
             <img
               className="profile-user-img img-fluid img-circle h-24"
-              src={displayData.employeeImg || 'https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp'}
+              src={displayData.employeeImg}
               alt={`${displayData.firstname} avatar`}
+              onError={(e) => {
+                e.target.src = 'https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp';
+              }}
             />
           </div>
         </div>
@@ -715,6 +742,51 @@ const Dashboard = () => {
     });
   }, [employeeData, employeeInfo, employeeInfoLoading]);
 
+  // Add this state to track if report is submitted for the day
+  const [hasSubmittedReport, setHasSubmittedReport] = useState(false);
+
+  // Add this effect to check report submission status on component mount
+  useEffect(() => {
+    const checkReportStatus = async () => {
+      try {
+        const response = await axios.get(`${config.apiUrl}/qubinest/report-status/${email}`);
+        setHasSubmittedReport(response.data.hasSubmitted);
+      } catch (error) {
+        console.error('Error checking report status:', error);
+      }
+    };
+
+    if (isClockedIn) {
+      checkReportStatus();
+    }
+  }, [isClockedIn, email]);
+
+  // Add this effect to check initial clock status
+  useEffect(() => {
+    const checkInitialClockStatus = async () => {
+      if (!email) return;
+
+      try {
+        const dailyStatus = await checkDailyClockStatus(email);
+        setIsClockedIn(dailyStatus.hasClockedInToday && !dailyStatus.hasClockedOutToday);
+        
+        if (dailyStatus.clockInTime) {
+          setClockInTime(new Date(dailyStatus.clockInTime).toLocaleTimeString());
+        }
+        
+        if (dailyStatus.clockOutTime) {
+          setClockOutTime(new Date(dailyStatus.clockOutTime).toLocaleTimeString());
+        }
+        
+        setHasSubmittedReport(dailyStatus.hasSubmittedReport || false);
+      } catch (error) {
+        console.error('Error checking initial clock status:', error);
+      }
+    };
+
+    checkInitialClockStatus();
+  }, [email]);
+
   return (
     <>
       <div className="content-wrapper">
@@ -796,12 +868,7 @@ const Dashboard = () => {
                       >
                         Clock Out
                       </button>
-                      <button
-                        className={`w-20 bg-red-400 text-xs text-white font-semibold py-2 px-1 rounded-full shadow-lg transform hover:scale-105 transition duration-300 ease-in-out ml-4`}
-                        onClick={resetClockInStatus}
-                      >
-                        Reset
-                      </button>
+                     
                     </div>
                   </div>
                 </div>

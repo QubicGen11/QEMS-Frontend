@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { useUser } from "../context/UserContext";
 import config from "../config";
+import useEmployeeStore from "../../store/employeeStore";
 
 const Login = ({name}) => {
   const [email, setEmail] = useState('');
@@ -14,10 +15,14 @@ const Login = ({name}) => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { setEmail: setUserEmail } = useUser();
+  const { clearStore } = useEmployeeStore();
 
   const onSubmit = async (event) => {
     event.preventDefault();
     try {
+      clearStore();
+      localStorage.clear();
+
       const response = await axios.post(`${config.apiUrl}/qubinest/login`, { email, password });
       console.log(response);
       Cookies.set('email', email, { secure: true, sameSite: 'Strict' });
@@ -29,6 +34,10 @@ const Login = ({name}) => {
         existingEmails.push(email);
       }
       localStorage.setItem('userEmails', JSON.stringify(existingEmails)); // Save emails in local storage
+
+      // Store email in localStorage with timestamp
+      localStorage.setItem('currentUserEmail', email);
+      localStorage.setItem('loginTimestamp', Date.now().toString());
 
       setEmail('');
       setPassword('');

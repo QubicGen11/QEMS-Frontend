@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -12,7 +12,7 @@ import debounce from 'lodash/debounce';
 const ViewEditProfile = () => {
   const email = Cookies.get('email');
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
+  const [localFormData, setLocalFormData] = useState({
     firstname: '',
     lastname: '',
     dob: '',
@@ -27,53 +27,64 @@ const ViewEditProfile = () => {
     companyEmail: email,
     employeeImg: null
   });
+  
+  const { employeeData, loading, updateEmployeeData } = useEmployeeStore();
   const [employeeId, setEmployeeId] = useState(null);
   const [imagePreview, setImagePreview] = useState("https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp");
   const [hover, setHover] = useState(false);
   const fileInputRef = useRef(null);
-  const { updateEmployeeData, forceRefresh } = useEmployeeStore();
 
+  // Handle form changes with debounce
+  const debouncedUpdate = useCallback(
+    debounce((newData) => {
+      setLocalFormData(newData);
+    }, 300),
+    []
+  );
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    e.persist();
+    
+    // Update UI immediately
+    setLocalFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Debounce the actual state update
+    debouncedUpdate({
+      ...localFormData,
+      [name]: value
+    });
+  };
+
+  // Load data on mount
   useEffect(() => {
-    const fetchEmployeeData = async () => {
-      if (!email) {
-        toast.error('No email found in cookies');
-        return;
-      }
-      try {
-        const response = await axios.get(`${config.apiUrl}/qubinest/getemployees/${email}`);
-        if (response.data) {
-          const employee = response.data;
-          setFormData({
-            ...employee,
-            dob: employee.dob.split('T')[0],
-            companyEmail: email
-          });
-          setEmployeeId(employee.employee_id);
-          setImagePreview(employee.employeeImg || "https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp");
-          localStorage.setItem('employeeData', JSON.stringify(employee)); // Store data in local storage
-        } else {
-          toast.error('No employee data found');
-        }
-      } catch (error) {
-        console.error('Error fetching employee data:', error);
-      }
-    };
-
-    // Check if employee data is already in local storage
-    const storedEmployeeData = localStorage.getItem('employeeData');
-    if (storedEmployeeData) {
-      const employee = JSON.parse(storedEmployeeData);
-      setFormData({
-        ...employee,
-        dob: employee.dob.split('T')[0],
-        companyEmail: email
-      });
-      setEmployeeId(employee.employee_id);
-      setImagePreview(employee.employeeImg || "https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp");
-    } else {
-      fetchEmployeeData();
+    if (email && !loading) {
+      updateEmployeeData(email);
     }
   }, [email]);
+
+  // Update local form when employee data changes
+  useEffect(() => {
+    if (employeeData) {
+      setLocalFormData(prev => ({
+        ...prev,
+        ...employeeData,
+        dob: employeeData.dob?.split('T')[0] || '',
+      }));
+      setEmployeeId(employeeData.employee_id);
+      setImagePreview(employeeData.employeeImg || "https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp");
+    }
+  }, [employeeData]);
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      debouncedUpdate.cancel();
+    };
+  }, [debouncedUpdate]);
 
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
@@ -90,7 +101,7 @@ const ViewEditProfile = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
-        setFormData(prev => ({ ...prev, employeeImg: reader.result }));
+        setLocalFormData(prev => ({ ...prev, employeeImg: reader.result }));
       };
       reader.readAsDataURL(file);
 
@@ -99,29 +110,6 @@ const ViewEditProfile = () => {
       toast.error('Error uploading image');
     }
   };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    // Update UI immediately
-    e.target.value = value;
-    // Debounce the state update
-    debouncedHandleChange(name, value);
-  };
-
-  // Add debounced form updates
-  const debouncedHandleChange = debounce((name, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  }, 300);
-
-  // Add cleanup for debounce
-  useEffect(() => {
-    return () => {
-      debouncedHandleChange.cancel();
-    };
-  }, []);
 
   // Add optimistic update function
   const optimisticUpdate = (newData) => {
@@ -153,7 +141,7 @@ const ViewEditProfile = () => {
     ];
 
     // Check only the defined required fields
-    const emptyFields = requiredFields.filter(field => !formData[field]);
+    const emptyFields = requiredFields.filter(field => !localFormData[field]);
     
     if (emptyFields.length > 0) {
       toast.error(`${emptyFields[0]} is required`);
@@ -164,12 +152,12 @@ const ViewEditProfile = () => {
     
     try {
       // Optimistic update
-      optimisticUpdate(formData);
+      optimisticUpdate(localFormData);
       
       // Make API call
       const apiCall = employeeId
-        ? axios.put(`${config.apiUrl}/qubinest/employees/${employeeId}`, formData)
-        : axios.post(`${config.apiUrl}/qubinest/employees`, formData);
+        ? axios.put(`${config.apiUrl}/qubinest/employees/${employeeId}`, localFormData)
+        : axios.post(`${config.apiUrl}/qubinest/employees`, localFormData);
 
       const response = await apiCall;
       
@@ -180,7 +168,7 @@ const ViewEditProfile = () => {
       }
 
       // Update store
-      await updateEmployeeData(formData.companyEmail);
+      await updateEmployeeData(localFormData.companyEmail);
       
       toast.update(loadingToast, {
         render: "Profile updated successfully",
@@ -243,15 +231,15 @@ const ViewEditProfile = () => {
         </div>
         <div className="col-12 col-md-6">
           <label htmlFor="inputFirstName" className="form-label">First Name <span>*</span></label>
-          <input type="text" className="form-control" id="inputFirstName" name="firstname" value={formData.firstname} onChange={handleChange} />
+          <input type="text" className="form-control" id="inputFirstName" name="firstname" value={localFormData.firstname} onChange={handleChange} />
         </div>
         <div className="col-12 col-md-6">
           <label htmlFor="inputLastName" className="form-label">Last Name<span>*</span></label>
-          <input type="text" className="form-control" id="inputLastName" name="lastname" value={formData.lastname} onChange={handleChange} />
+          <input type="text" className="form-control" id="inputLastName" name="lastname" value={localFormData.lastname} onChange={handleChange} />
         </div>
         <div className="col-12 col-md-6">
           <label htmlFor="inputDob" className="form-label">Date of Birth<span>*</span></label>
-          <input type="date" className="form-control" id="inputDob" name="dob" value={formData.dob} onChange={handleChange} />
+          <input type="date" className="form-control" id="inputDob" name="dob" value={localFormData.dob} onChange={handleChange} />
         </div>
         <div className="col-12 col-md-6">
           <label className="form-label">Gender<span>*</span></label>
@@ -261,7 +249,7 @@ const ViewEditProfile = () => {
                 type="radio"
                 name="gender"
                 value="male"
-                checked={formData.gender === "male"}
+                checked={localFormData.gender === "male"}
                 onChange={handleChange}
                 className='mx-2'
               />
@@ -272,7 +260,7 @@ const ViewEditProfile = () => {
                 type="radio"
                 name="gender"
                 value="female"
-                checked={formData.gender === "female"}
+                checked={localFormData.gender === "female"}
                 onChange={handleChange}
                 className='mx-2'
               />
@@ -283,7 +271,7 @@ const ViewEditProfile = () => {
                 type="radio"
                 name="gender"
                 value="other"
-                checked={formData.gender === "other"}
+                checked={localFormData.gender === "other"}
                 onChange={handleChange}
                 className='mx-2'
               />
@@ -293,31 +281,31 @@ const ViewEditProfile = () => {
         </div>
         <div className="col-12">
           <label htmlFor="inputAddress" className="form-label">Address<span>*</span></label>
-          <input type="text" className="form-control" id="inputAddress" name="address" value={formData.address} onChange={handleChange} />
+          <input type="text" className="form-control" id="inputAddress" name="address" value={localFormData.address} onChange={handleChange} />
         </div>
         <div className="col-12">
           <label htmlFor="inputEducation" className="form-label">Education<span>*</span></label>
-          <input type="text" className="form-control" id="inputEducation" name="education" value={formData.education} onChange={handleChange} />
+          <input type="text" className="form-control" id="inputEducation" name="education" value={localFormData.education} onChange={handleChange} />
         </div>
         <div className="col-12">
           <label htmlFor="inputSkill" className="form-label">Skills<span>*</span></label>
-          <input type="text" className="form-control" id="inputSkill" name="skills" value={formData.skills} onChange={handleChange} />
+          <input type="text" className="form-control" id="inputSkill" name="skills" value={localFormData.skills} onChange={handleChange} />
         </div>
         <div className="col-12 col-md-6">
           <label htmlFor="inputPhone" className="form-label">Phone<span>*</span></label>
-          <input type="text" className="form-control" id="inputPhone" name="phone" value={formData.phone} onChange={handleChange} />
+          <input type="text" className="form-control" id="inputPhone" name="phone" value={localFormData.phone} onChange={handleChange} />
         </div>
         <div className="col-12 col-md-6">
           <label htmlFor="inputEmail" className="form-label">Personal Email<span>*</span></label>
-          <input type="email" className="form-control" id="inputEmail" name="email" value={formData.email} onChange={handleChange} />
+          <input type="email" className="form-control" id="inputEmail" name="email" value={localFormData.email} onChange={handleChange} />
         </div>
         <div className="col-12 col-md-12">
           <label htmlFor="inputLinkedin" className="form-label">LinkedIn<span>*</span></label>
-          <input type="text" className="form-control" id="inputLinkedin" name="linkedin" value={formData.linkedin} onChange={handleChange} />
+          <input type="text" className="form-control" id="inputLinkedin" name="linkedin" value={localFormData.linkedin} onChange={handleChange} />
         </div>
         <div className="col-12">
           <label htmlFor="inputAbout" className="form-label">About<span>*</span></label>
-          <textarea className="form-control" id="inputAbout" name="about" value={formData.about} onChange={handleChange}></textarea>
+          <textarea className="form-control" id="inputAbout" name="about" value={localFormData.about} onChange={handleChange}></textarea>
         </div>
         <div className="col-12">
           <button type="submit" className="btn btn-primary">Submit</button>

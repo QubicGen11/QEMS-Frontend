@@ -21,10 +21,10 @@ const Viewprofile = () => {
   const location = useLocation();
 
   useEffect(() => {
-    if (email) {
+    if (email && !employeeData) {
       updateEmployeeData(email);
     }
-  }, [email]);
+  }, [email, employeeData]);
 
   if (isLoading) {
     return (

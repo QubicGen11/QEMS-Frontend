@@ -9,11 +9,65 @@ import imgConfig from "../imgConfig"; // Ensure this is correctly configured
 import { CiMenuKebab } from "react-icons/ci";
 import { Link } from "react-router-dom";
 import config from "../config";
+import { ThreeDots } from 'react-loader-spinner';
+import { toast } from 'react-toastify';
+import * as XLSX from 'xlsx';
+import { FiFilter } from 'react-icons/fi';
+import { HiDownload } from 'react-icons/hi';
+
+const getInitials = (name) => {
+  if (!name) return '';
+  const names = name.split(' ');
+  if (names.length >= 2) {
+    return `${names[0].charAt(0)}${names[1].charAt(0)}`.toUpperCase();
+  }
+  return name.charAt(0).toUpperCase();
+};
+
+const colors = [
+  'bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-yellow-500', 
+  'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-teal-500',
+  'bg-orange-500', 'bg-cyan-500', 'bg-rose-500', 'bg-emerald-500',
+  'bg-violet-500', 'bg-fuchsia-500', 'bg-lime-500', 'bg-amber-500'
+];
+
+const getRandomColor = (email) => {
+  // Use email as a seed to always get the same color for the same user
+  const index = email.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return colors[index % colors.length];
+};
+
+const gradientColors = [
+  'bg-gradient-to-r from-blue-500 to-blue-600',
+  'bg-gradient-to-r from-red-500 to-red-600',
+  'bg-gradient-to-r from-green-500 to-green-600',
+  'bg-gradient-to-r from-yellow-500 to-yellow-600',
+  'bg-gradient-to-r from-purple-500 to-purple-600',
+  'bg-gradient-to-r from-pink-500 to-pink-600',
+  'bg-gradient-to-r from-indigo-500 to-indigo-600',
+  'bg-gradient-to-r from-teal-500 to-teal-600',
+  'bg-gradient-to-r from-orange-500 to-orange-600',
+  'bg-gradient-to-r from-cyan-500 to-cyan-600',
+  'bg-gradient-to-r from-rose-500 to-rose-600',
+  'bg-gradient-to-r from-emerald-500 to-emerald-600',
+  'bg-gradient-to-r from-violet-500 to-violet-600',
+  'bg-gradient-to-r from-fuchsia-500 to-fuchsia-600',
+  'bg-gradient-to-r from-lime-500 to-lime-600',
+  'bg-gradient-to-r from-amber-500 to-amber-600'
+];
+
+const getRandomGradient = (email) => {
+  const index = email.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return gradientColors[index % gradientColors.length];
+};
 
 const AllEmployeeAttendance = () => {
   const [employees, setEmployees] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState('');
 
   const getStatusClasses = (status) => {
     switch (status) {
@@ -30,42 +84,27 @@ const AllEmployeeAttendance = () => {
 
   const fetchEmployees = async () => {
     try {
-      const [usersResponse, employeesResponse] = await Promise.all([
-        axios.get(`${config.apiUrl}/qubinest/allusers`),
-        axios.get(`${config.apiUrl}/qubinest/employees`)
-      ]);
-  
-      const users = usersResponse.data;
-      const employees = employeesResponse.data;
-  
-      // Log the data to check structure
-      console.log("Users Data:", users);
-      console.log("Employees Data:", employees);
-  
-      // Merge the data based on email
-      const combinedData = employees.map(employee => {
-        const user = users.find(u => u.email === employee.companyEmail);
-  
-        if (user) {
-          console.log(`Match found for ${employee.email}:`, user);
-        } else {
-          console.log(`No match found for ${employee.email}`);
-        }
-  
-        return {
-          ...employee,
-          username: user?.username || `${employee.firstname} ${employee.lastname}`,
-          role: user?.role || "N/A",
-          salary: user?.salary || "N/A",
-          mainPosition: user?.mainPosition || "N/A",
-          status: user?.status || "N/A",
-        };
-      });
-  
-      console.log("Combined Data:", combinedData);
-      setEmployees(combinedData);
+      setIsLoading(true);
+      const response = await axios.get(`${config.apiUrl}/qubinest/allusers`);
+      
+      // Filter users with valid employeeId and remove duplicates
+      const filteredUsers = response.data
+        .filter(user => user.employeeId && user.employeeId.startsWith('QG'))
+        .reduce((acc, current) => {
+          const x = acc.find(item => item.email === current.email);
+          if (!x) {
+            return acc.concat([current]);
+          } else {
+            return acc;
+          }
+        }, []);
+
+      setEmployees(filteredUsers);
     } catch (error) {
       console.error('Error fetching employees:', error);
+      toast.error('Failed to load employees data. Please try again later.');
+    } finally {
+      setIsLoading(false);
     }
   };
   
@@ -92,6 +131,42 @@ const AllEmployeeAttendance = () => {
     }
   };
 
+  const uniqueRoles = [...new Set(employees.map(emp => emp.role))].filter(Boolean);
+
+  const filteredEmployees = employees.filter(user => {
+    const searchString = searchTerm.toLowerCase();
+    const matchesSearch = (
+      user.username?.toLowerCase().includes(searchString) ||
+      user.email?.toLowerCase().includes(searchString) ||
+      user.employeeId?.toLowerCase().includes(searchString) ||
+      user.mainPosition?.toLowerCase().includes(searchString)
+    );
+    
+    const matchesRole = !roleFilter || user.role === roleFilter;
+    
+    return matchesSearch && matchesRole;
+  });
+
+  const exportToExcel = () => {
+    const dataToExport = filteredEmployees.map(user => ({
+      'Employee Name': user.username,
+      'Employee ID': user.employeeId,
+      'Email': user.email,
+      'Role': user.role,
+      'Position': user.mainPosition,
+      'Status': user.status,
+      'Salary': user.salary
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(dataToExport);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Employees");
+    
+    // Generate & Download Excel file
+    XLSX.writeFile(wb, "Employees_List.xlsx");
+    toast.success('Successfully exported to Excel!');
+  };
+
   return (
     <>
       <div>
@@ -107,94 +182,163 @@ const AllEmployeeAttendance = () => {
                 {employees.length} users
               </span>
             </div>
-            <div className="flex flex-col mt-6">
-              <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-                  <div className="overflow-hidden border border-gray-200 text-black:border-gray-700 md:rounded-lg">
-                    <table className="min-w-full divide-y divide-gray-200 text-black:divide-gray-700">
-                      <thead className="bg-gray-50 text-black:bg-gray-800">
-                        <tr>
-                          <th className="py-3.5 px-4 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
-                            <div className="flex items-center gap-x-3">
-                              <input
-                                type="checkbox"
-                                className="text-blue-500 border-gray-300 rounded text-black:bg-gray-900 text-black:ring-offset-gray-900 text-black:border-gray-700"
-                              />
-                              <span>Name</span>
+            
+            {isLoading ? (
+              <div className="flex justify-center items-center h-[50vh]">
+                <ThreeDots
+                  height="80"
+                  width="80"
+                  radius="9"
+                  color="#4338ca"
+                  ariaLabel="loading"
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col mt-6">
+                <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                  <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+                    <div className="overflow-hidden border border-gray-200 text-black:border-gray-700 md:rounded-lg">
+                      <div className="mt-4 mb-6">
+                        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                          <div className="relative w-full md:w-64">
+                            <input
+                              type="text"
+                              className="w-full px-4 py-2 border rounded-lg text-gray-700 focus:outline-none focus:border-blue-500"
+                              placeholder="Search by name, email, ID..."
+                              value={searchTerm}
+                              onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                            <span className="absolute right-3 top-2.5 text-gray-400">
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                              </svg>
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <div className="relative">
+                              <select
+                                className="appearance-none px-4 py-2 border rounded-lg text-gray-700 focus:outline-none focus:border-blue-500 pr-8"
+                                value={roleFilter}
+                                onChange={(e) => setRoleFilter(e.target.value)}
+                              >
+                                <option value="">All Roles</option>
+                                {uniqueRoles.map(role => (
+                                  <option key={role} value={role}>{role}</option>
+                                ))}
+                              </select>
+                              <FiFilter className="absolute right-2 top-3 text-gray-400" />
                             </div>
-                          </th>
-                          <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
-                            Status
-                          </th>
-                          <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
-                            Email address
-                          </th>
-                          <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
-                            Role
-                          </th>
-                          <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
-                            Salary
-                          </th>
-                          <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
-                            Position
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200 text-black:divide-gray-700 text-black:bg-gray-900">
-  {employees.map((employee) => (
-    <tr key={employee.employee_id || employee.email}>
-      <td className="px-4 py-4 text-sm font-medium text-gray-700 whitespace-nowrap">
-        <div className="inline-flex items-center gap-x-3">
-          <input
-            type="checkbox"
-            className="text-blue-500 border-gray-300 rounded text-black:bg-gray-900 text-black:ring-offset-gray-900 text-black:border-gray-700"
-          />
-          <div className="flex items-center gap-x-2">
-            <img
-              className="object-cover w-10 h-10 rounded-full"
-              src={employee.employeeImg ? employee.employeeImg : 'https://res.cloudinary.com/defsu5bfc/image/upload/v1717093278/facebook_images_f7am6j.webp'}
-              alt={`${employee.firstname} avatar`}
-            />
-            <div>
-              <h2 className="font-medium text-gray-800 text-black:text-white">
-                {employee.username}
-              </h2>
-            </div>
-          </div>
-        </div>
-      </td>
-      <td className={`relative px-4 py-4 text-sm font-medium text-gray-700 whitespace-nowrap ${getStatusClasses(employee.status)}`}>
-        {employee.status}
-      </td>
-      <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
-        {employee.email}
-      </td>
-      <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
-        {employee.mainPosition}
-      </td>
-      <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
-        {employee.salary}
-      </td>
-      <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
-        {employee.mainPosition}
-      </td>
-      <td className="px-4 py-4 text-sm whitespace-nowrap">
-        <div className="flex items-center gap-x-6">
-          <Link to={`/singleemployeeattendance/:${employee.employee_id}`} 
-            className="text-gray-500 transition-colors duration-200 text-black:hover:text-yellow-500 text-black:text-gray-300 text-xs hover:text-red-500 focus:outline-none">
-            View Attendance
-          </Link>
-        </div>
-      </td>
-    </tr>
-  ))}
-</tbody>
-
-                    </table>
+                            <button
+                              onClick={exportToExcel}
+                              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                            >
+                              <HiDownload className="text-lg" />
+                              Export to Excel
+                            </button>
+                            <span className="px-3 py-1 text-xs text-blue-600 bg-blue-100 rounded-full">
+                              {filteredEmployees.length} users
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      {filteredEmployees.length === 0 ? (
+                        <div className="text-center py-4">
+                          <p className="text-gray-500">No employees found</p>
+                        </div>
+                      ) : (
+                        <table className="min-w-full divide-y divide-gray-200 text-black:divide-gray-700">
+                          <thead className="bg-gray-50 text-black:bg-gray-800">
+                            <tr>
+                              <th className="py-3.5 px-4 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
+                                <div className="flex items-center gap-x-3">
+                                  <input
+                                    type="checkbox"
+                                    className="text-blue-500 border-gray-300 rounded text-black:bg-gray-900 text-black:ring-offset-gray-900 text-black:border-gray-700"
+                                  />
+                                  <span>Name</span>
+                                </div>
+                              </th>
+                              <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
+                                Employee ID
+                              </th>
+                              <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
+                                Status
+                              </th>
+                              <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
+                                Email address
+                              </th>
+                              <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
+                                Role
+                              </th>
+                              <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
+                                Salary
+                              </th>
+                              <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
+                                Position
+                              </th>
+                              <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
+                                Actions
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200 text-black:divide-gray-700 text-black:bg-gray-900">
+                            {filteredEmployees.map((user) => (
+                              <tr key={user.id || user.email}>
+                                <td className="px-4 py-4 text-sm font-medium text-gray-700 whitespace-nowrap">
+                                  <div className="inline-flex items-center gap-x-3">
+                                    <input
+                                      type="checkbox"
+                                      className="text-blue-500 border-gray-300 rounded text-black:bg-gray-900 text-black:ring-offset-gray-900 text-black:border-gray-700"
+                                    />
+                                    <div className="flex items-center gap-x-2">
+                                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-medium shadow-lg transform transition-all duration-300 hover:scale-110 ${getRandomGradient(user.email)}`}>
+                                        {getInitials(user.username)}
+                                      </div>
+                                      <div>
+                                        <h2 className="font-medium text-gray-800 text-black:text-white">
+                                          {user.username}
+                                        </h2>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
+                                  {user.employeeId}
+                                </td>
+                                <td className={`relative px-4 py-4 text-sm font-medium text-gray-700 whitespace-nowrap ${getStatusClasses(user.status)}`}>
+                                  {user.status}
+                                </td>
+                                <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
+                                  {user.email}
+                                </td>
+                                <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
+                                  {user.role}
+                                </td>
+                                <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
+                                  {user.salary}
+                                </td>
+                                <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
+                                  {user.mainPosition}
+                                </td>
+                                <td className="px-4 py-4 text-sm whitespace-nowrap">
+                                  <div className="flex items-center gap-x-6">
+                                    <Link to={`/singleemployeeattendance/:${user.employeeId}`} 
+                                      className="text-gray-500 transition-colors duration-200 text-black:hover:text-yellow-500 text-black:text-gray-300 text-xs hover:text-red-500 focus:outline-none">
+                                      View Attendance
+                                    </Link>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
+
             <div className="flex items-center justify-between mt-6">
               <a
                 href="#"
