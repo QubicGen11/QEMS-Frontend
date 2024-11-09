@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import DOMPurify from 'dompurify';
 import './Singleattendace.css'
+import LoadingSkeleton from './LoadingSkeleton';
 
 const SingleEmployeeAttendance = () => {
   const [employee, setEmployee] = useState(null);
@@ -24,6 +25,8 @@ const SingleEmployeeAttendance = () => {
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const adminEmail = Cookies.get('email');
+  const [isApproving, setIsApproving] = useState(false);
+  const [isDeclining, setIsDeclining] = useState(false);
 
   useEffect(() => {
     const email = Cookies.get('email');
@@ -53,44 +56,48 @@ const SingleEmployeeAttendance = () => {
   }, []);
 
   useEffect(() => {
-    const fetchEmployeeDetails = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get(`${config.apiUrl}/qubinest/allusers`);
-        const employeeData = response.data.find(emp => emp.employeeId === employeeId.split(':')[1]);
-        if (employeeData) {
-          setEmployee(employeeData);
-        }
-      } catch (error) {
-        setError('Error fetching employee details');
-      }
-    };
-
-    const fetchAttendance = async () => {
-      try {
-        const response = await axios.get(`${config.apiUrl}/qubinest/singleUserAttendance/${employeeId.split(':')[1]}`);
-        setAttendance(response.data);
-        setFilteredAttendance(response.data);
-        setLoading(false);
-      } catch (error) {
-        setError('Error fetching attendance');
-        setLoading(false);
-      }
-    };
-
-    const fetchAvgTimings = async () => {
-      try {
-        const response = await axios.get(`${config.apiUrl}/qubinest/allAttendance/${employeeId.split(':')[1]}`);
-        setAvgTimings(response.data);
-      } catch (error) {
-        setError('Error fetching average timings');
-      }
-    };
-
-    fetchEmployeeDetails();
     fetchAttendance();
-    fetchAvgTimings();
-  }, [employeeId]);
+    fetchEmployeeDetails();
+  }, [employeeId, year, month]);
+
+  const fetchEmployeeDetails = async () => {
+    try {
+      const cleanEmployeeId = employeeId.replace(':', '');
+      const response = await axios.get(`${config.apiUrl}/qubinest/employee/${cleanEmployeeId}`);
+      setEmployee(response.data);
+    } catch (error) {
+      console.error('Error fetching employee details:', error);
+    }
+  };
+
+  const fetchAttendance = async () => {
+    try {
+      setLoading(true);
+      const cleanEmployeeId = employeeId.replace(':', '');
+      const response = await axios.get(
+        `${config.apiUrl}/qubinest/singleUserAttendance/${cleanEmployeeId}`
+      );
+
+      if (response.data) {
+        const processedData = response.data.map(record => ({
+          ...record,
+          date: new Date(record.date),
+          checkin_Time: record.checkin_Time,
+          checkout_Time: record.checkout_Time,
+          status: record.status || 'pending'
+        }));
+
+        setAttendance(processedData);
+        setFilteredAttendance(processedData);
+      }
+    } catch (error) {
+      console.error('Error fetching attendance:', error);
+      setError('Failed to fetch attendance data');
+      toast.error('Failed to load attendance data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     handleFilter();
@@ -111,7 +118,13 @@ const SingleEmployeeAttendance = () => {
   };
 
   const handleApprove = async () => {
+    if (selectedRecords.length === 0) {
+      toast.warning("Please select records to approve");
+      return;
+    }
+
     try {
+      setIsApproving(true);
       const selectedIds = selectedRecords.map(record => record.id);
       const response = await axios.post(`${config.apiUrl}/qubinest/approveAttendance`, {
         employeeId: employeeId.split(':')[1],
@@ -122,9 +135,8 @@ const SingleEmployeeAttendance = () => {
       });
 
       if (response.status === 200) {
-        console.log('Attendance approved successfully');
-        toast.success("Approved Successfully")
-
+        toast.success("Attendance approved successfully");
+        
         const updatedAttendance = filteredAttendance.map(record => ({
           ...record,
           status: selectedIds.includes(record.id) ? 'approved' : record.status
@@ -142,6 +154,8 @@ const SingleEmployeeAttendance = () => {
       }
     } catch (error) {
       console.error('Error approving attendance:', error);
+    } finally {
+      setIsApproving(false);
     }
   };
 
@@ -219,9 +233,18 @@ const SingleEmployeeAttendance = () => {
       <div className="content-wrapper">
         <section className="container px-4 mx-auto">
           {loading ? (
-            <p>Loading...</p>
+            <div className="mt-8">
+              <h2 className="text-xl font-medium text-gray-800 text-center mb-6">
+                Loading Employee Attendance...
+              </h2>
+              <div className="bg-white p-8 rounded-lg shadow">
+                <LoadingSkeleton />
+              </div>
+            </div>
           ) : error ? (
-            <p>{error}</p>
+            <div className="text-center mt-8 text-red-600">
+              <p>{error}</p>
+            </div>
           ) : (
             <>
               {employee && (

@@ -322,9 +322,45 @@ const AllEmployeeAttendance = () => {
                                 </td>
                                 <td className="px-4 py-4 text-sm whitespace-nowrap">
                                   <div className="flex items-center gap-x-6">
-                                    <Link to={`/singleemployeeattendance/:${user.employeeId}`} 
-                                      className="text-gray-500 transition-colors duration-200 text-black:hover:text-yellow-500 text-black:text-gray-300 text-xs hover:text-red-500 focus:outline-none">
-                                      View Attendance
+                                    <Link 
+                                      to={`/singleemployeeattendance/:${user.employeeId}`} 
+                                      className="inline-flex items-center px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors duration-200 group"
+                                    >
+                                      <svg 
+                                        xmlns="http://www.w3.org/2000/svg" 
+                                        className="h-4 w-4 mr-2" 
+                                        fill="none" 
+                                        viewBox="0 0 24 24" 
+                                        stroke="currentColor"
+                                      >
+                                        <path 
+                                          strokeLinecap="round" 
+                                          strokeLinejoin="round" 
+                                          strokeWidth={2} 
+                                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" 
+                                        />
+                                        <path 
+                                          strokeLinecap="round" 
+                                          strokeLinejoin="round" 
+                                          strokeWidth={2} 
+                                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" 
+                                        />
+                                      </svg>
+                                      <span className="font-medium">View Attendance</span>
+                                      <svg 
+                                        xmlns="http://www.w3.org/2000/svg" 
+                                        className="h-4 w-4 ml-2 transform transition-transform group-hover:translate-x-1" 
+                                        fill="none" 
+                                        viewBox="0 0 24 24" 
+                                        stroke="currentColor"
+                                      >
+                                        <path 
+                                          strokeLinecap="round" 
+                                          strokeLinejoin="round" 
+                                          strokeWidth={2} 
+                                          d="M9 5l7 7-7 7" 
+                                        />
+                                      </svg>
                                     </Link>
                                   </div>
                                 </td>

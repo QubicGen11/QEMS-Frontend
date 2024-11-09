@@ -25,6 +25,8 @@ import AllEmployeeAttendance from "./Components/Attendance Components/AllEmploye
 import CreateTeamComponent from "./Components/Team Components/CreateTeamComponent";
 import EmployeeLeaves from "./Components/Leave Components/EmployeeLeaves";
 import SingleEmployeeAttendance from "./Components/Attendance Components/SingleEmployeeAttendance";
+import EmployeeProfile from './Components/Employee Components/EmployeeProfile';
+import AttendanceSheet from "./Components/Attendance Components/AttendanceSheet";
 
 const router = createBrowserRouter([
   {
@@ -126,6 +128,14 @@ const router = createBrowserRouter([
   {
     path: "/leavetype",
     element: <Leavetype />
+  },
+  {
+    path: "/employee-profile/:email",
+    element: <EmployeeProfile />
+  },
+  {
+    path: "/attendancesheet",
+    element: <AttendanceSheet />
   }
 ]);
 
