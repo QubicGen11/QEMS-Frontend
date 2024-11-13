@@ -20,21 +20,9 @@ const Viewprofile = () => {
   const email = Cookies.get('email');
   const location = useLocation();
 
-  useEffect(() => {
-    if (email && !employeeData) {
-      updateEmployeeData(email);
-    }
-  }, [email, employeeData]);
-
-  if (isLoading) {
-    return (
-      <div className="content-wrapper">
-        <div className="animate-pulse">
-          <div className="h-32 bg-gray-300 rounded mb-4"></div>
-          <div className="h-64 bg-gray-300 rounded"></div>
-        </div>
-      </div>
-    );
+  // For first-time users, show edit profile directly
+  if (!employeeData && location.pathname === '/viewprofile/personal-details') {
+    return <Navigate to="/viewprofile/edit-profile" replace />;
   }
 
   return (
@@ -76,9 +64,17 @@ const Viewprofile = () => {
                     </ul>
                     <div className="tab-content pt-4" id="profileTabContent">
                       <Routes>
-                        <Route path="/" element={<Navigate to="/viewprofile/personal-details" />} />
-                        <Route path="personal-details" element={<Viewpersonaldetails data={employeeData} />} />
-                        <Route path="project-details" element={<Viewprojectdetails data={employeeData} />} />
+                        <Route path="/" element={<Navigate to="/viewprofile/edit-profile" />} />
+                        <Route path="personal-details" element={
+                          employeeData ? 
+                            <Viewpersonaldetails data={employeeData} /> : 
+                            <Navigate to="/viewprofile/edit-profile" replace />
+                        } />
+                        <Route path="project-details" element={
+                          employeeData ? 
+                            <Viewprojectdetails data={employeeData} /> : 
+                            <Navigate to="/viewprofile/edit-profile" replace />
+                        } />
                         <Route path="password" element={<Viewpassword />} />
                         <Route path="edit-profile" element={<VieweditProfile data={employeeData} />} />
                       </Routes>
