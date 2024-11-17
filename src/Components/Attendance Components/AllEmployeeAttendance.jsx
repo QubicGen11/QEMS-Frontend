@@ -14,6 +14,8 @@ import { toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
 import { FiFilter } from 'react-icons/fi';
 import { HiDownload } from 'react-icons/hi';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const getInitials = (name) => {
   if (!name) return '';
@@ -147,24 +149,220 @@ const AllEmployeeAttendance = () => {
     return matchesSearch && matchesRole;
   });
 
-  const exportToExcel = () => {
-    const dataToExport = filteredEmployees.map(user => ({
-      'Employee Name': user.username,
-      'Employee ID': user.employeeId,
-      'Email': user.email,
-      'Role': user.role,
-      'Position': user.mainPosition,
-      'Status': user.status,
-      'Salary': user.salary
-    }));
+  const exportToExcel = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Fetch all users first
+      const usersResponse = await axios.get(`${config.apiUrl}/qubinest/allusers`);
+      const users = usersResponse.data.filter(user => user.employeeId && user.employeeId.startsWith('QG'));
 
-    const ws = XLSX.utils.json_to_sheet(dataToExport);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Employees");
-    
-    // Generate & Download Excel file
-    XLSX.writeFile(wb, "Employees_List.xlsx");
-    toast.success('Successfully exported to Excel!');
+      // Fetch attendance data for each user
+      const attendancePromises = users.map(user => 
+        axios.get(`${config.apiUrl}/qubinest/singleUserAttendance/${user.employeeId}`)
+          .then(response => ({
+            user,
+            attendance: response.data
+          }))
+          .catch(error => ({
+            user,
+            attendance: []
+          }))
+      );
+
+      const allData = await Promise.all(attendancePromises);
+
+      // Prepare data for Excel
+      let excelData = [];
+      allData.forEach(({ user, attendance }) => {
+        if (attendance && attendance.length > 0) {
+          attendance.forEach(record => {
+            excelData.push({
+              'Employee ID': user.employeeId,
+              'Employee Name': user.username,
+              'Position': user.mainPosition || 'N/A',
+              'Email': user.email,
+              'Department': user.department || 'N/A',
+              'Date': new Date(record.date).toLocaleDateString(),
+              'Check In': record.checkin_Time ? new Date(record.checkin_Time).toLocaleTimeString() : '---',
+              'Check Out': record.checkout_Time ? new Date(record.checkout_Time).toLocaleTimeString() : '---',
+              'Status': record.status?.toUpperCase() || 'PENDING',
+              'Reports': record.reports ? 'Submitted' : 'Not Submitted'
+            });
+          });
+        } else {
+          // Add user even if no attendance records
+          excelData.push({
+            'Employee ID': user.employeeId,
+            'Employee Name': user.username,
+            'Position': user.mainPosition || 'N/A',
+            'Email': user.email,
+            'Department': user.department || 'N/A',
+            'Date': '---',
+            'Check In': '---',
+            'Check Out': '---',
+            'Status': 'NO RECORDS',
+            'Reports': 'No report'
+          });
+        }
+      });
+
+      // Create workbook and worksheet
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+      // Add column widths
+      const colWidths = [
+        { wch: 15 }, // Employee ID
+        { wch: 25 }, // Employee Name
+        { wch: 20 }, // Position
+        { wch: 30 }, // Email
+        { wch: 20 }, // Department
+        { wch: 15 }, // Date
+        { wch: 15 }, // Check In
+        { wch: 15 }, // Check Out
+        { wch: 15 }, // Status
+        { wch: 15 }  // Reports
+      ];
+      worksheet['!cols'] = colWidths;
+
+      // Add the worksheet to workbook
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance Records');
+
+      // Generate Excel file
+      XLSX.writeFile(workbook, `all-employees-attendance-${new Date().toISOString().split('T')[0]}.xlsx`);
+      
+      toast.success('Attendance data exported to Excel successfully');
+    } catch (error) {
+      console.error('Error exporting to Excel:', error);
+      toast.error('Failed to export attendance data to Excel');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const exportAttendanceToPDF = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Fetch all users first
+      const usersResponse = await axios.get(`${config.apiUrl}/qubinest/allusers`);
+      const users = usersResponse.data.filter(user => user.employeeId && user.employeeId.startsWith('QG'));
+
+      // Fetch attendance data for each user
+      const attendancePromises = users.map(user => 
+        axios.get(`${config.apiUrl}/qubinest/singleUserAttendance/${user.employeeId}`)
+          .then(response => ({
+            user,
+            attendance: response.data
+          }))
+          .catch(error => ({
+            user,
+            attendance: []
+          }))
+      );
+
+      const allData = await Promise.all(attendancePromises);
+
+      // Create PDF
+      const doc = new jsPDF();
+      doc.setFontSize(16);
+      doc.text('All Employees Attendance Report', 14, 15);
+      doc.setFontSize(11);
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 25);
+
+      // Prepare data for PDF
+      let allAttendanceRecords = [];
+      allData.forEach(({ user, attendance }) => {
+        if (attendance && attendance.length > 0) {
+          attendance.forEach(record => {
+            allAttendanceRecords.push({
+              empId: user.employeeId,
+              name: user.username || 'N/A',
+              position: user.mainPosition || 'N/A',
+              email: user.email,
+              date: new Date(record.date).toLocaleDateString(),
+              checkin: record.checkin_Time ? new Date(record.checkin_Time).toLocaleTimeString() : '---',
+              checkout: record.checkout_Time ? new Date(record.checkout_Time).toLocaleTimeString() : '---',
+              status: record.status?.toUpperCase() || 'PENDING',
+              reports: record.reports || 'No report'
+            });
+          });
+        } else {
+          // Add user even if no attendance records
+          allAttendanceRecords.push({
+            empId: user.employeeId,
+            name: user.username || 'N/A',
+            position: user.mainPosition || 'N/A',
+            email: user.email,
+            date: '---',
+            checkin: '---',
+            checkout: '---',
+            status: 'NO RECORDS',
+            reports: 'No report'
+          });
+        }
+      });
+
+      // Sort by name and date
+      allAttendanceRecords.sort((a, b) => {
+        if (a.name === b.name) {
+          return new Date(b.date) - new Date(a.date);
+        }
+        return a.name.localeCompare(b.name);
+      });
+
+      const columns = [
+        { header: 'Employee ID', dataKey: 'empId' },
+        { header: 'Name', dataKey: 'name' },
+        { header: 'Position', dataKey: 'position' },
+        { header: 'Date', dataKey: 'date' },
+        { header: 'Check In', dataKey: 'checkin' },
+        { header: 'Check Out', dataKey: 'checkout' },
+        { header: 'Status', dataKey: 'status' }
+      ];
+
+      doc.autoTable({
+        columns,
+        body: allAttendanceRecords,
+        startY: 35,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [71, 85, 105] },
+        alternateRowStyles: { fillColor: [245, 247, 250] },
+        didDrawPage: (data) => {
+          doc.setFontSize(8);
+          doc.text(
+            `Page ${data.pageNumber} of ${doc.internal.getNumberOfPages()}`,
+            doc.internal.pageSize.width - 20,
+            doc.internal.pageSize.height - 10
+          );
+        }
+      });
+
+      // Add summary
+      const summary = {
+        totalEmployees: users.length,
+        totalAttendanceRecords: allAttendanceRecords.length,
+        employeesWithAttendance: new Set(allAttendanceRecords.map(r => r.empId)).size
+      };
+
+      const lastY = doc.lastAutoTable.finalY || 70;
+      
+      doc.setFontSize(10);
+      doc.text('Summary:', 14, lastY + 10);
+      doc.text(`Total Employees: ${summary.totalEmployees}`, 14, lastY + 20);
+      doc.text(`Total Attendance Records: ${summary.totalAttendanceRecords}`, 14, lastY + 30);
+      doc.text(`Employees with Attendance: ${summary.employeesWithAttendance}`, 14, lastY + 40);
+
+      doc.save(`all-employees-attendance-${new Date().toISOString().split('T')[0]}.pdf`);
+      toast.success('Attendance report downloaded successfully');
+
+    } catch (error) {
+      console.error('Error exporting to PDF:', error);
+      toast.error('Failed to export attendance data to PDF');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -228,13 +426,27 @@ const AllEmployeeAttendance = () => {
                               </select>
                               <FiFilter className="absolute right-2 top-3 text-gray-400" />
                             </div>
-                            <button
-                              onClick={exportToExcel}
-                              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                            >
-                              <HiDownload className="text-lg" />
-                              Export to Excel
-                            </button>
+                            
+                            <div className="flex items-center gap-4">
+                              <button
+                                onClick={exportToExcel}
+                                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                                disabled={isLoading}
+                              >
+                                <HiDownload className="text-lg" />
+                                Export to Excel
+                              </button>
+
+                              <button
+                                onClick={exportAttendanceToPDF}
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                disabled={isLoading}
+                              >
+                                <HiDownload className="text-lg" />
+                                Export to PDF
+                              </button>
+                            </div>
+
                             <span className="px-3 py-1 text-xs text-blue-600 bg-blue-100 rounded-full">
                               {filteredEmployees.length} users
                             </span>

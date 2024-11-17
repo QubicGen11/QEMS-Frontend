@@ -85,7 +85,7 @@ const TodaysAttendance = () => {
     
     const checkin = new Date(checkinTime);
     const threshold = new Date(checkin);
-    threshold.setHours(9, 30, 0); // 9:30 AM threshold
+    threshold.setHours(10, 30, 0); // 10:30 AM threshold
     
     return checkin > threshold ? 'late' : 'ontime';
   };

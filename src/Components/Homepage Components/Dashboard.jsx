@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, memo, useMemo } from 'react';
-import axios from 'axios';
+import axios from 'axios';  
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import config from "../config";
@@ -12,6 +12,8 @@ import Loading from '../Loading Components/Loading';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import useEmployeeStore from '../../store/employeeStore';
+import { FiBriefcase, FiHash, FiLogIn, FiLogOut } from 'react-icons/fi';
+import { ToastContainer } from 'react-toastify';
 
 const CACHE_EXPIRY_TIME = 60 * 60 * 1000;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
@@ -20,6 +22,164 @@ const TIMESHEET_CACHE_KEY = 'dashboard_timesheet';
 const apiCache = {
   clockStatus: new Map(),
   reports: new Map()
+};
+
+const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmittedReport, clockIn, clockOut }) => {
+  const [currentBgIndex, setCurrentBgIndex] = useState(0);
+  const [greetingMessage, setGreetingMessage] = useState('');
+  const [showReportTooltip, setShowReportTooltip] = useState(false);
+
+  const backgroundImages = [
+    'https://images.pexels.com/photos/577585/pexels-photo-577585.jpeg?auto=compress&cs=tinysrgb&w=800',
+    'https://images.pexels.com/photos/270366/pexels-photo-270366.jpeg?auto=compress&cs=tinysrgb&w=800',
+    'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
+    'https://images.unsplash.com/photo-1607706189992-eae578626c86?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
+    'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
+    'https://images.pexels.com/photos/1933900/pexels-photo-1933900.jpeg?auto=compress&cs=tinysrgb&w=600',
+    'https://images.pexels.com/photos/3861958/pexels-photo-3861958.jpeg?auto=compress&cs=tinysrgb&w=600',
+    'https://images.pexels.com/photos/4974912/pexels-photo-4974912.jpeg?auto=compress&cs=tinysrgb&w=600',
+    'https://images.pexels.com/photos/4974920/pexels-photo-4974920.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
+
+  ];
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) setGreetingMessage('Good Morning');
+    else if (hour < 18) setGreetingMessage('Good Afternoon');
+    else setGreetingMessage('Good Evening');
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentBgIndex(prev => (prev + 1) % backgroundImages.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="relative w-full bg-black text-white rounded-lg overflow-hidden mb-6">
+      {/* Background with overlay */}
+      <div 
+        className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/40"
+        style={{
+          backgroundImage: `url(${backgroundImages[currentBgIndex]})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: 'brightness(0.7)'
+        }}
+      />
+
+      {/* Content */}
+      <div className="relative z-10 p-6 flex justify-between items-center">
+        {/* Greeting and Name */}
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            {greetingMessage}, {employeeData?.firstname} {employeeData?.lastname}
+          </h1>
+          <div className="flex items-center gap-4 text-white/80">
+            <span className="flex items-center gap-2">
+              <FiBriefcase className="w-4 h-4" />
+              {employeeData?.users?.[0]?.mainPosition || 'Web Developer'}
+            </span>
+            <span className="flex items-center gap-2">
+              <FiHash className="w-4 h-4" />
+              {employeeData?.employee_id}
+            </span>
+          </div>
+        </div>
+
+        {/* Logo */}
+        <div className="flex-shrink-0">
+          <img 
+            src="https://res.cloudinary.com/defsu5bfc/image/upload/v1714828410/logo_3_jizb6b.png" 
+            alt="Company Logo" 
+            className="w-16 h-16 object-contain"
+          />
+        </div>
+      </div>
+
+      {/* Clock In/Out Buttons */}
+      <div className="relative z-10 grid grid-cols-2 border-t border-white/10">
+        <button
+          onClick={clockIn}
+          disabled={isClockedIn}
+          className={`flex items-center justify-center gap-2 py-4 px-6 transition-colors ${
+            isClockedIn 
+              ? 'bg-gray-800/50 text-gray-400 cursor-not-allowed'
+              : 'bg-black/50 text-white hover:bg-green-500/20'
+          }`}
+        >
+          <FiLogIn className="w-5 h-5" />
+          Clock In
+          {clockInTime && <span className="text-sm opacity-75">({clockInTime})</span>}
+        </button>
+
+        <div className="relative">
+          <button 
+            onClick={() => {
+              if (!hasSubmittedReport && isClockedIn) {
+                setShowReportTooltip(true);
+                setTimeout(() => setShowReportTooltip(false), 3000);
+                toast.warning('Please submit your daily report before clocking out');
+              } else {
+                clockOut();
+              }
+            }}
+            onMouseEnter={() => !hasSubmittedReport && isClockedIn && setShowReportTooltip(true)}
+            onMouseLeave={() => setShowReportTooltip(false)}
+            disabled={!isClockedIn}
+            className={`flex items-center justify-center gap-2 py-4 px-6 transition-colors relative ${
+              !isClockedIn
+                ? 'bg-gray-800/50 text-gray-400 cursor-not-allowed'
+                : !hasSubmittedReport
+                ? 'bg-black/50 text-white hover:bg-yellow-500/20'
+                : 'bg-black/50 text-white hover:bg-red-500/20'
+            } border-l border-white/10`}
+          >
+            <FiLogOut className="w-5 h-5" />
+            Clock Out
+            {clockOutTime && <span className="text-sm opacity-75">({clockOutTime})</span>}
+          </button>
+
+          {/* Tooltip/Message for Report Submission */}
+          {showReportTooltip && isClockedIn && !hasSubmittedReport && (
+            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max">
+              <div className="bg-black text-white text-sm py-2 px-4 rounded-lg shadow-lg">
+                <div className="flex items-center gap-2">
+                  <svg 
+                    className="w-4 h-4 text-yellow-400" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2} 
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" 
+                    />
+                  </svg>
+                  <span>Please submit your daily report first</span>
+                </div>
+              </div>
+              {/* Arrow */}
+              <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-1">
+                <div className="border-8 border-transparent border-t-black"></div>
+              </div>
+            </div>
+          )}
+
+          {/* Visual Indicator for Report Status */}
+          {isClockedIn && (
+            <div className={`absolute -top-2 -right-2 w-4 h-4 rounded-full ${
+              hasSubmittedReport ? 'bg-green-500' : 'bg-yellow-500'
+            }`}>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 };
 
 const Dashboard = () => {
@@ -132,7 +292,7 @@ const Dashboard = () => {
 
       } catch (error) {
         console.error('Error fetching employee data:', error);
-        toast.error("Error fetching data. Please complete your profile.");
+        toast.error(" Please complete your profile.");
         setIsModalOpen(true);
       } finally {
         setEmployeeInfoLoading(false);
@@ -787,109 +947,51 @@ const Dashboard = () => {
     checkInitialClockStatus();
   }, [email]);
 
+  // Add this state for tooltip
+  const [showReportTooltip, setShowReportTooltip] = useState(false);
+
   return (
     <>
       <div className="content-wrapper">
-      <UserDetailModal
-        isOpen={isModalOpen}
-        onRequestClose={handleCloseModal}
-        onCompleteDetails={handleCompleteDetails}
-      />
-      <div className="content-header">
-        <div className="container-fluid">
-          <div className="row mb-2">
-            <div className="col-sm-6">
-              {/* <h1 className="m-0">Console</h1> */}
-            </div>
-            <div className="col-sm-6">
-              {/* <ol className="breadcrumb float-sm-right">
-                <li className="breadcrumb-item"><a href="#">Home</a></li>
-                <li className="breadcrumb-item active">Console</li>
-              </ol> */}
-            </div>
+        <UserDetailModal
+          isOpen={isModalOpen}
+          onRequestClose={handleCloseModal}
+          onCompleteDetails={handleCompleteDetails}
+        />
+        <div className="content-header">
+          <div className="container-fluid">
+            <Header 
+              employeeData={employeeData}
+              isClockedIn={isClockedIn}
+              clockInTime={clockInTime}
+              clockOutTime={clockOutTime}
+              hasSubmittedReport={hasSubmittedReport}
+              clockIn={clockIn}
+              clockOut={clockOut}
+            />
           </div>
         </div>
-      </div>
 
-      <section className="content">
-        <div className="container-fluid">
-          <div className="row">
-            <div className="col-lg-12 col-12 col-sm-12">
-              <div className="card card-widget widget-user-2" bis_skin_checked={1}>
-                <div className="card card-widget widget-user shadow-lg">
-                  <div 
-                    className="widget-user-header text-white" 
-                    style={{ 
-                      background: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("${headerBackgrounds[currentBgIndex]}")`,
-                      backgroundSize: 'cover',
-                      backgroundRepeat: 'no-repeat',
-                      height: "25vh",
-                      backgroundPositionY: '50%',
-                      transition: 'background-image 1s ease-in-out'
-                    }}
-                  >
-                    {employeeData && (
-                      <>
-                        <h3 
-                          className="widget-user-username text-left ml-auto text-base shadow-xl-black" 
-                          style={{ fontWeight: 'bolder', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)' }}
-                        >
-                          {`${getGreeting()}, ${employeeData.firstname} ${employeeData.lastname}`}
-                        </h3>
-                        <h5 
-                          className="widget-user-desc text-left ml-auto"
-                          style={{ textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)' }}
-                        >
-                          {employeeData.mainPosition}
-                        </h5>
-                      </>
-                    )}
-                  </div>
-                  <div className="widget-user-image">
-                    <img className="" src="https://res.cloudinary.com/defsu5bfc/image/upload/v1714828410/logo_3_jizb6b.png" alt="User Avatar" style={{ border: "none" }} />
-                  </div>
-                </div>
-                <div className="row h-20">
-                  <div className="col-sm-6 col-6 border-right">
-                    <div className="description-block">
-                      <button
-                        onClick={clockIn}
-                        className="w-20 bg-green-600 text-xs text-white font-semibold py-2 px-1 rounded-full shadow-lg transform hover:scale-105 transition duration-300 ease-in-out hover:bg-yellow-500"
-                      >
-                        Clock In
-                      </button>
-                    </div>
-                  </div>
-                  <div className="col-sm-6 col-6 border-right">
-                    <div className="description-block">
-                      <button
-                        onClick={clockOut}
-                        className={`w-20 bg-red-400 text-xs text-white font-semibold py-2 px-1 rounded-full shadow-lg transform hover:scale-105 transition duration-300 ease-in-out ml-4 ${isClockedIn ? 'hover:bg-yellow-500' : 'hover:cursor-not-allowed'}`}
-                      >
-                        Clock Out
-                      </button>
-                     
-                    </div>
-                  </div>
-                </div>
-              </div>
+        <section className="content">
+          <div className="container-fluid">
+            <div className="row">
+      
+
+              <div className="col-12 col-sm-12 col-md-12 col-lg-6 d-flex align-items-stretch flex-column " bis_skin_checked={1} style={{ height: 'auto' }}>
+        <div className="card bg-light d-flex flex-fill bg-white" bis_skin_checked={1}>
+          <div className='flex justify-between bg-white'>
+            <div className="card-header text-muted border-bottom-0 bg-white" bis_skin_checked={1}>
+              Associate Details
             </div>
-
-            <div className="col-12 col-sm-12 col-md-12 col-lg-6 d-flex align-items-stretch flex-column " bis_skin_checked={1} style={{ height: 'auto' }}>
-  <div className="card bg-light d-flex flex-fill bg-white" bis_skin_checked={1}>
-    <div className='flex justify-between bg-white'>
-      <div className="card-header text-muted border-bottom-0 bg-white" bis_skin_checked={1}>
-        Associate Details
+            <div className="card-header text-muted border-bottom-0 bg-white" bis_skin_checked={1}>
+              <Link to="/viewprofile" className="btn btn-sm btn-primary text-white" cursorshover="true">
+                <i className="fas fa-user text-white" /> View Profile
+              </Link>
+            </div>
+          </div>
+          <AssociateDetails />
+        </div>
       </div>
-      <div className="card-header text-muted border-bottom-0 bg-white" bis_skin_checked={1}>
-        <Link to="/viewprofile" className="btn btn-sm btn-primary text-white" cursorshover="true">
-          <i className="fas fa-user text-white" /> View Profile
-        </Link>
-      </div>
-    </div>
-    <AssociateDetails />
-  </div>
-</div>
 
               <div className="col-12 col-lg-6">
                 <div className="small-box bg-white">
@@ -1109,6 +1211,19 @@ const Dashboard = () => {
           </div>
         </section>
       </div>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        limit={3}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </>
   );
 };

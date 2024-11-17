@@ -11,6 +11,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import DOMPurify from 'dompurify';
 import './Singleattendace.css'
 import LoadingSkeleton from './LoadingSkeleton';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import { FaFileDownload, FaCheck, FaTimes, FaUsers } from 'react-icons/fa';
 
 const SingleEmployeeAttendance = () => {
   const [employee, setEmployee] = useState(null);
@@ -273,6 +276,142 @@ const SingleEmployeeAttendance = () => {
     );
   };
 
+  const getCheckinStatus = (checkinTime, checkoutTime) => {
+    if (!checkinTime) return 'absent';
+    
+    const checkin = new Date(checkinTime);
+    const startThreshold = new Date(checkin);
+    startThreshold.setHours(10, 30, 0); // 10:30 AM start threshold
+    
+    // Check for late arrival
+    if (checkin > startThreshold) {
+      return 'late';
+    }
+
+    // If checkout time exists, check for early departure
+    if (checkoutTime) {
+      const checkout = new Date(checkoutTime);
+      const endThreshold = new Date(checkout);
+      endThreshold.setHours(17, 30, 0); // 5:30 PM end threshold
+
+      if (checkout < endThreshold) {
+        return 'early departure';
+      }
+    }
+    
+    return 'ontime';
+  };
+
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    
+    // Add title with employee name and title
+    doc.setFontSize(16);
+    doc.text(`Attendance Report - ${employeeTitle} ${employee?.username}`, 14, 15);
+    doc.setFontSize(11);
+    doc.text(`Period: ${month}/${year}`, 14, 25);
+
+    // Define the columns including approval status
+    const columns = [
+      { header: 'Date', dataKey: 'date' },
+      { header: 'Check-in', dataKey: 'checkin' },
+      { header: 'Check-out', dataKey: 'checkout' },
+      { header: 'Status', dataKey: 'status' },
+      { header: 'Approval', dataKey: 'approval' }
+    ];
+
+    // Prepare the data
+    const data = filteredAttendance.map(record => ({
+      date: new Date(record.date).toLocaleDateString(),
+      checkin: new Date(record.checkin_Time).toLocaleTimeString(),
+      checkout: record.checkout_Time ? new Date(record.checkout_Time).toLocaleTimeString() : '---',
+      status: getCheckinStatus(record.checkin_Time, record.checkout_Time),
+      approval: record.status?.toUpperCase() || 'PENDING'
+    }));
+
+    // Generate the table
+    doc.autoTable({
+      columns,
+      body: data,
+      startY: 35,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [71, 85, 105] }
+    });
+
+    // Save the PDF
+    doc.save(`attendance-report-${employee?.username}-${month}-${year}.pdf`);
+  };
+
+  const fetchAllEmployeesAttendance = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${config.apiUrl}/qubinest/allEmployeesAttendance`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching all attendance:', error);
+      toast.error('Failed to fetch all employees attendance');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const exportAllEmployeesAttendance = async () => {
+    const allAttendance = await fetchAllEmployeesAttendance();
+    if (!allAttendance) return;
+
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text(`All Employees Attendance Report`, 14, 15);
+    doc.setFontSize(11);
+    doc.text(`Period: ${month}/${year}`, 14, 25);
+
+    // Define columns
+    const columns = [
+      { header: 'Employee Name', dataKey: 'name' },
+      { header: 'Employee ID', dataKey: 'empId' },
+      { header: 'Position', dataKey: 'position' },
+      { header: 'Date', dataKey: 'date' },
+      { header: 'Check-in', dataKey: 'checkin' },
+      { header: 'Check-out', dataKey: 'checkout' },
+      { header: 'Status', dataKey: 'status' },
+      { header: 'Approval', dataKey: 'approval' }
+    ];
+
+    // Process data
+    const data = allAttendance.map(record => ({
+      name: record.username || 'N/A',
+      empId: record.employeeId || 'N/A',
+      position: record.mainPosition || 'N/A',
+      date: new Date(record.date).toLocaleDateString(),
+      checkin: record.checkin_Time ? new Date(record.checkin_Time).toLocaleTimeString() : '---',
+      checkout: record.checkout_Time ? new Date(record.checkout_Time).toLocaleTimeString() : '---',
+      status: getCheckinStatus(record.checkin_Time, record.checkout_Time),
+      approval: record.status?.toUpperCase() || 'PENDING'
+    }));
+
+    // Generate table
+    doc.autoTable({
+      columns,
+      body: data,
+      startY: 35,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [71, 85, 105] },
+      didDrawPage: function(data) {
+        // Add page number
+        doc.setFontSize(8);
+        doc.text(
+          `Page ${data.pageNumber} of ${doc.internal.getNumberOfPages()}`,
+          doc.internal.pageSize.width - 20, 
+          doc.internal.pageSize.height - 10
+        );
+      }
+    });
+
+    // Save the PDF
+    doc.save(`all-employees-attendance-${month}-${year}.pdf`);
+  };
+
   return (
     <>
       <Header />
@@ -295,44 +434,21 @@ const SingleEmployeeAttendance = () => {
           ) : (
             <>
               {employee && (
-                <h2 className="text-xl font-medium text-gray-800 text-center">
-                  Employee Attendance of {employeeTitle} {employee.username}
-                </h2>
-              )}
-              {/* <section className="text-gray-600 body-font">
-                <div className="container px-5 py-24 mx-auto">
-                  <div className="flow-root rounded-lg border border-gray-100 py-3 shadow-sm">
-                    <dl className="-my-3 divide-y divide-gray-100 text-sm">
-                      <div className="grid grid-cols-1 gap-1 p-3 sm:grid-cols-3 sm:gap-4">
-                        <dt className="font-medium text-gray-900">Title</dt>
-                        <dd className="text-gray-700 sm:col-span-2">{employeeTitle || 'N/A'}</dd>
-                      </div>
-                      <div className="grid grid-cols-1 gap-1 p-3 sm:grid-cols-3 sm:gap-4">
-                        <dt className="font-medium text-gray-900">Name</dt>
-                        <dd className="text-gray-700 sm:col-span-2">{employee?.username || 'N/A'}</dd>
-                      </div>
-                      <div className="grid grid-cols-1 gap-1 p-3 sm:grid-cols-3 sm:gap-4">
-                        <dt className="font-medium text-gray-900">Occupation</dt>
-                        <dd className="text-gray-700 sm:col-span-2">{employee?.mainPosition || 'N/A'}</dd>
-                      </div>
-                      <div className="grid grid-cols-1 gap-1 p-3 sm:grid-cols-3 sm:gap-4">
-                        <dt className="font-medium text-gray-900">Salary</dt>
-                        <dd className="text-gray-700 sm:col-span-2">{employee?.salary || 'N/A'}</dd>
-                      </div>
-                      <div className="grid grid-cols-1 gap-1 p-3 sm:grid-cols-3 sm:gap-4">
-                        <dt className="font-medium text-gray-900">Bio</dt>
-                        <dd className="text-gray-700 sm:col-span-2">{employee?.bio || 'N/A'}</dd>
-                      </div>
-                    </dl>
-                  </div>
+                <div className="mb-6 text-center">
+                  <h2 className="text-2xl font-medium text-gray-800">
+                    Employee Attendance of {employeeTitle} {employee.username}
+                  </h2>
+                  <p className="text-gray-600 mt-2">
+                    {employee.mainPosition || 'Position Not Set'}
+                  </p>
                 </div>
-              </section> */}
+              )}
               <div className="flex flex-col mt-6">
-                <div className="topbar-table flex justify-between p-3">
+                <div className="topbar-table flex justify-between items-center p-3 bg-gray-50 rounded-t-lg">
                   <div className="dropdowns flex gap-3">
                     <select
                       value={year}
-                      className="p-2 rounded-md font-semibold bg-gray-200"
+                      className="px-4 py-2 rounded-md font-semibold bg-white border border-gray-300 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       onChange={(e) => setYear(parseInt(e.target.value, 10))}
                     >
                       {[...Array(5)].map((_, index) => (
@@ -342,7 +458,7 @@ const SingleEmployeeAttendance = () => {
                       ))}
                     </select>
                     <select
-                      className="p-2 bg-gray-200 ml-1 font-semibold rounded-md"
+                      className="px-4 py-2 rounded-md font-semibold bg-white border border-gray-300 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={month}
                       onChange={(e) => setMonth(parseInt(e.target.value, 10))}
                     >
@@ -353,23 +469,47 @@ const SingleEmployeeAttendance = () => {
                       ))}
                     </select>
                   </div>
-                  <div className="btns flex gap-3">
+                  
+                  <div className="actions flex items-center gap-3">
+                    <button
+                      onClick={exportToPDF}
+                      className="px-4 py-2 flex items-center gap-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <FaFileDownload className="text-gray-600" />
+                      Export Individual PDF
+                    </button>
+
+                    <button
+                      onClick={exportAllEmployeesAttendance}
+                      className="px-4 py-2 flex items-center gap-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <FaUsers className="text-gray-600" />
+                      Export All Employees
+                    </button>
+                    
                     <button 
-                      className={`font-semibold ${
-                        isApproving ? 'text-gray-400' : 'text-green-500'
-                      }`} 
+                      className={`px-4 py-2 flex items-center gap-2 rounded-md text-sm font-medium transition-colors
+                        ${isApproving || selectedRecords.length === 0
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'bg-green-50 text-green-700 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-500'
+                        }`}
                       onClick={handleApprove}
                       disabled={isApproving || selectedRecords.length === 0}
                     >
+                      <FaCheck className={isApproving || selectedRecords.length === 0 ? 'text-gray-400' : 'text-green-600'} />
                       {isApproving ? 'Approving...' : 'Approve'}
                     </button>
+                    
                     <button 
-                      className={`font-semibold ${
-                        isDeclining ? 'text-gray-400' : 'text-red-500'
-                      }`} 
+                      className={`px-4 py-2 flex items-center gap-2 rounded-md text-sm font-medium transition-colors
+                        ${isDeclining || selectedRecords.length === 0
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'bg-red-50 text-red-700 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500'
+                        }`}
                       onClick={handleDecline}
                       disabled={isDeclining || selectedRecords.length === 0}
                     >
+                      <FaTimes className={isDeclining || selectedRecords.length === 0 ? 'text-gray-400' : 'text-red-600'} />
                       {isDeclining ? 'Declining...' : 'Decline'}
                     </button>
                   </div>
@@ -401,6 +541,9 @@ const SingleEmployeeAttendance = () => {
                               Status
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Approval Status
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Reports
                             </th>
                           </tr>
@@ -426,7 +569,20 @@ const SingleEmployeeAttendance = () => {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                   {record.checkout_Time ? new Date(record.checkout_Time).toLocaleTimeString() : '---'}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{record.status}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  {getCheckinStatus(record.checkin_Time, record.checkout_Time)}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className={`px-2 py-1 text-xs rounded-full ${
+                                    record.status === 'approved' 
+                                      ? 'bg-green-100 text-green-800'
+                                      : record.status === 'declined'
+                                      ? 'bg-red-100 text-red-800'
+                                      : 'bg-yellow-100 text-yellow-800'
+                                  }`}>
+                                    {record.status?.toUpperCase() || 'PENDING'}
+                                  </span>
+                                </td>
                                 <td className="px-6 py-4 whitespace-normal text-sm text-gray-500">
                                   {renderReport(record.reports)}
                                 </td>
@@ -434,7 +590,7 @@ const SingleEmployeeAttendance = () => {
                             ))
                           ) : (
                             <tr>
-                              <td colSpan="6" className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                              <td colSpan="7" className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                 No data available for the selected period.
                               </td>
                             </tr>
