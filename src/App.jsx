@@ -146,12 +146,26 @@ const router = createBrowserRouter([
 
 const App = () => {
   return (
-    <>
-      <ToastContainer autoClose={1000} />
+    <div className="App">
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        limit={3}
+        enableMultiContainer={false}
+        containerId="default"
+      />
       <UserProvider>
         <RouterProvider router={router} />
       </UserProvider>
-    </>
+    </div>
   );
 };
 
