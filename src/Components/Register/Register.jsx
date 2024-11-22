@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./Register.css";
 import axios from 'axios';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 import config from "../config";
@@ -17,29 +17,37 @@ const Register = () => {
   const [mainPosition, setMainPosition] = useState('');
   const [joiningDate, setJoiningDate] = useState('');
   const [department, setDepartment] = useState(''); // New state for department
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const onSubmit = async (event) => {
     event.preventDefault();
+    setIsLoading(true); // Start loading
+
+    toast.info("Form submission started...");
 
     if (!username || !email || !password || !confirmPassword || !role || !salary || !mainPosition || !joiningDate || !department) {
       toast.error('Please fill all the details');
+      setIsLoading(false); // Stop loading
       return;
     }
 
     if (password !== confirmPassword) {
       toast.error('Passwords do not match');
+      setIsLoading(false); // Stop loading
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       toast.error('Please enter a valid email address.');
+      setIsLoading(false); // Stop loading
       return;
     }
 
     if (!email.endsWith('@qubicgen.com')) {
       toast.error('Please use an email address with @qubicgen.com domain.');
+      setIsLoading(false); // Stop loading
       return;
     }
 
@@ -54,7 +62,10 @@ const Register = () => {
         joiningDate,
         department
       });
-      console.log(response);
+
+      console.log('Response:', response.data);
+      toast.success(response.data.message || 'Registration successful!');
+      
       setUsername('');
       setEmail('');
       setPassword('');
@@ -64,16 +75,31 @@ const Register = () => {
       setMainPosition('');
       setJoiningDate('');
       setDepartment('');
-      toast.success('Registration successful');
-      // Navigate to login or another page after successful registration
+      
+
+      
     } catch (error) {
-      console.error('Registration failed:', error.response ? error.response.data : error.message);
-      toast.error('User already exists. Please login.');
+      console.error('Error:', error);
+      toast.error(error.response?.data?.message || 'Registration failed!');
+    } finally {
+      setIsLoading(false); // Stop loading regardless of success/failure
     }
   };
 
   return (
     <div className="Careersmain">
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <div className="logo">
         <img
           className="w-6/12"
@@ -236,9 +262,27 @@ const Register = () => {
               </div>
               <button
                 type="submit"
-                className="  w-full mt-3 text-center rounded h-14 flex bg-yellow-400 text-black text-sm font-bold transform transition-all duration-500 ease-in-out hover:scale-110 hover:brightness-110 hover:animate-pulse active:animate-bounce"
+                disabled={isLoading}
+                className="w-full mt-3 text-center rounded h-14 flex items-center justify-center bg-yellow-400 text-black text-sm font-bold transform transition-all duration-500 ease-in-out hover:scale-110 hover:brightness-110 hover:animate-pulse active:animate-bounce disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Register
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <svg className="animate-spin h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Registering...
+                  </div>
+                ) : (
+                  'Register'
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => toast.success('Test notification!')}
+                className="text-sm text-blue-500"
+              >
+                Test Toast
               </button>
             </form>
           </div>
