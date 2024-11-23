@@ -124,7 +124,7 @@ const AllEmployeeAttendance = () => {
 
   const handleDeleteConfirm = async () => {
     try {
-      await axios.delete(`http://localhost:3000/qubinest/employees/${selectedEmployee.employee_id}`);
+      await axios.delete(`${config.apiUrl}/qubinest/employees/${selectedEmployee.employee_id}`);
       setEmployees(employees.filter(emp => emp.employee_id !== selectedEmployee.employee_id));
       setModalOpen(false);
       setSelectedEmployee(null);

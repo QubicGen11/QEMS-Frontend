@@ -3,6 +3,7 @@ import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Cookies from 'js-cookie';
+import config from '../../config';
 
 const Viewpassword = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -31,7 +32,7 @@ const Viewpassword = () => {
         }
 
         try {
-            const response = await axios.put('http://localhost:3000/qubinest/changepassword', {
+            const response = await axios.put(`${config.apiUrl}/qubinest/changepassword`, {
                 email,
                 currentPassword,
                 newPassword
