@@ -61,33 +61,66 @@ const Booktimeoff = () => {
     startDate: null,
     endDate: null
   });
+  const [loading, setLoading] = useState(true);
 
-  const API_KEY = 'AIzaSyATDBo4fInPRHA6uwq__gdi1eIoM6AcVFQ';
-  const CALENDAR_ID = 'en.indian#holiday@group.v.calendar.google.com';
+  // Define holidays directly in the component
+  const predefinedHolidays = [
+    {
+      id: 1,
+      title: "New Year's Day",
+      date: new Date('2024-01-01')
+    },
+    {
+      id: 2,
+      title: 'Republic Day',
+      date: new Date('2024-01-26')
+    },
+    {
+      id: 3,
+      title: 'Holi',
+      date: new Date('2024-03-25')
+    },
+    {
+      id: 4,
+      title: 'Ugadi',
+      date: new Date('2024-04-09')
+    },
+    {
+      id: 5,
+      title: 'Labour Day',
+      date: new Date('2024-05-01')
+    },
+    {
+      id: 6,
+      title: 'Independence Day',
+      date: new Date('2024-08-15')
+    },
+    {
+      id: 7,
+      title: 'Ganesh Chaturthi',
+      date: new Date('2024-09-19')
+    },
+    {
+      id: 8,
+      title: 'Gandhi Jayanti',
+      date: new Date('2024-10-02')
+    },
+    {
+      id: 9,
+      title: 'Diwali',
+      date: new Date('2024-10-31')
+    },
+    {
+      id: 10,
+      title: 'Christmas',
+      date: new Date('2024-12-25')
+    }
+  ];
 
   useEffect(() => {
-    fetchHolidays();
+    // Set predefined holidays directly
+    setHolidays(predefinedHolidays);
   }, []);
-
-  const fetchHolidays = async () => {
-    try {
-      const now = new Date();
-      const oneYearLater = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
-      const response = await axios.get(
-        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${API_KEY}&timeMin=${now.toISOString()}&timeMax=${oneYearLater.toISOString()}`
-      );
-      if (response.data.items?.length > 0) {
-        const holidayEvents = response.data.items.map(holiday => ({
-          id: holiday.id,
-          title: holiday.summary,
-          date: new Date(holiday.start.date || holiday.start.dateTime),
-        }));
-        setHolidays(holidayEvents);
-      }
-    } catch (error) {
-      setError('Failed to fetch holidays');
-    }
-  };
 
   const handleDateClick = (date) => {
     if (!dateRange.startDate) {
@@ -229,17 +262,16 @@ const Booktimeoff = () => {
             startDate: new Date(leave.startDate),
             endDate: new Date(leave.endDate),
             status: leave.status,
-            reason: leave.reason
+            reason: leave.reason,
+            comments: leave.comments
           }));
           setEvents(formattedEvents);
         }
       } catch (error) {
-        console.error('Error fetching leave requests:', {
-          message: error.message,
-          response: error.response?.data,
-          status: error.response?.status
-        });
-        setError(`Failed to fetch leave requests: ${error.message}`);
+        console.log('No leave requests found');
+        setEvents([]); // Set empty array for no leaves
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -278,6 +310,24 @@ const Booktimeoff = () => {
                   Today
                 </Button>
               </Box>
+
+              {!loading && events.length === 0 && (
+                <Paper 
+                  elevation={0} 
+                  sx={{ 
+                    p: 2, 
+                    mb: 2, 
+                    backgroundColor: '#f8fafc',
+                    borderRadius: 2,
+                    textAlign: 'center',
+                    border: '1px dashed #ccc'
+                  }}
+                >
+                  <Typography color="textSecondary">
+                    No leave requests found. Click on dates to request a new leave.
+                  </Typography>
+                </Paper>
+              )}
               
               <Paper 
                 elevation={0}

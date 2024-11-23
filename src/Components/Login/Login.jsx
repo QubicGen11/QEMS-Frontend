@@ -143,6 +143,9 @@ const Login = ({name}) => {
                 <a className="text-sm text-[#7747ff]" href="#">
                   Forgot your password?
                 </a>
+
+          
+
               </div>
               <button
                 type="submit"

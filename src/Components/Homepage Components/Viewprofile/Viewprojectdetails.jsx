@@ -16,12 +16,12 @@ const Viewprojectdetails = ({ data }) => {
                     <div className="p-2">{data.employee_id}</div>
                 </div>
 
-                <div className="col-5 col-md-3 bg-light border-bottom border-white border-3">
+                {/* <div className="col-5 col-md-3 bg-light border-bottom border-white border-3">
                     <div className="p-2">Designation</div>
                 </div>
                 <div className="col-7 col-md-9 bg-light border-start border-bottom border-white border-3">
-                    <div className="p-2">{data.position}</div>
-                </div>
+                    <div className="p-2">{data.mainPosition}</div>
+                </div> */}
 
                 <div className="col-5 col-md-3 bg-light border-bottom border-white border-3">
                     <div className="p-2">Company Mail</div>
@@ -30,12 +30,7 @@ const Viewprojectdetails = ({ data }) => {
                     <div className="p-2">{data.companyEmail}</div>
                 </div>
 
-                <div className="col-5 col-md-3 bg-light border-bottom border-white border-3">
-                    <div className="p-2">Business Unit</div>
-                </div>
-                <div className="col-7 col-md-9 bg-light border-start border-bottom border-white border-3">
-                    <div className="p-2">NA</div>
-                </div>
+            
 
                 <div className="col-5 col-md-3 bg-light border-bottom border-white border-3">
                     <div className="p-2">Job</div>

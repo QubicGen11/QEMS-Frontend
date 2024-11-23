@@ -501,7 +501,8 @@ const Dashboard = () => {
     } catch (error) {
       setIsReportSubmitted(false);
       setReportContent(reportContent);
-      toast.error('Failed to submit report. Please try again.');
+      console.error('Error submitting report:', error);
+      toast.error(error.response?.data?.message || 'Failed to submit report. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -1131,7 +1132,7 @@ const Dashboard = () => {
 
                   <div class="card" style={{ background: "url('https://res.cloudinary.com/defsu5bfc/image/upload/v1716373294/waves_hxaazs.png')", backgroundRepeat: 'no-repeat', backgroundSize: "cover", backgroundColor: '#009efb', borderRadius: '10px' }}>
 
-                    <div className="card-body">
+                    {/* <div className="card-body">
 
                       <h5 className="text-white font-semibold relative bottom-2" style={{ fontFamily: 'sans-serif' }}>Upcoming Holidays</h5>
 
@@ -1167,11 +1168,11 @@ const Dashboard = () => {
 
                       </div>
 
-                    </div>
+                    </div> */}
 
                   </div>
 
-                  <iframe src="https://qubic-gen.blogspot.com/" frameborder="0" className="relative bottom-3 h-48 rounded-lg w-full"></iframe>
+                  <iframe src="https://qubic-gen.blogspot.com/" frameborder="0" className="relative bottom-3 h-60 rounded-lg w-full"></iframe>
 
                 </div>
 

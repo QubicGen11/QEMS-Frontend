@@ -8,6 +8,8 @@ import "./Vieweditprofile.css";
 import config from '../../config';
 import useEmployeeStore from '../../../store/employeeStore';
 import debounce from 'lodash/debounce';
+import { Tooltip } from 'react-tooltip';
+
 
 const ViewEditProfile = () => {
   const email = Cookies.get('email');
@@ -91,25 +93,100 @@ const ViewEditProfile = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validate file size (e.g., max 5MB)
+    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast.error('Image size should be less than 5MB');
       return;
     }
 
     try {
-      // Show preview immediately
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-        setLocalFormData(prev => ({ ...prev, employeeImg: reader.result }));
-      };
-      reader.readAsDataURL(file);
+      // Check image dimensions before resizing
+      const dimensions = await getImageDimensions(file);
+      
+      // Minimum resolution check (e.g., 200x200)
+      if (dimensions.width < 200 || dimensions.height < 200) {
+        toast.error('Image resolution too low. Please use an image at least 200x200 pixels.');
+        return;
+      }
 
+      // Maximum resolution check (e.g., 4000x4000)
+      if (dimensions.width > 4000 || dimensions.height > 4000) {
+        toast.error('Image resolution too high. Please use an image less than 4000x4000 pixels.');
+        return;
+      }
+
+      const resizedImage = await resizeImage(file);
+      setImagePreview(resizedImage);
+      setLocalFormData(prev => ({ ...prev, employeeImg: resizedImage }));
     } catch (error) {
       console.error('Error handling image:', error);
       toast.error('Error uploading image');
     }
+  };
+
+  // Function to get image dimensions
+  const getImageDimensions = (file) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.src = URL.createObjectURL(file);
+      
+      img.onload = () => {
+        URL.revokeObjectURL(img.src);
+        resolve({ width: img.width, height: img.height });
+      };
+      
+      img.onerror = () => {
+        URL.revokeObjectURL(img.src);
+        reject(new Error('Failed to load image'));
+      };
+    });
+  };
+
+  // Image resize utility function
+  const resizeImage = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+
+          // Set desired dimensions (1:1 aspect ratio)
+          const maxSize = 400; // Maximum dimension
+          canvas.width = maxSize;
+          canvas.height = maxSize;
+
+          // Fill background white
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, maxSize, maxSize);
+
+          // Calculate scaling and position
+          const scale = Math.min(maxSize / img.width, maxSize / img.height);
+          const x = (maxSize - img.width * scale) / 2;
+          const y = (maxSize - img.height * scale) / 2;
+
+          // Draw image with proper scaling
+          ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+
+          // Convert to base64 with compression
+          const resizedImage = canvas.toDataURL('image/jpeg', 0.8);
+          resolve(resizedImage);
+        };
+
+        img.onerror = (error) => {
+          reject(error);
+        };
+      };
+
+      reader.onerror = (error) => {
+        reject(error);
+      };
+    });
   };
 
   // Add optimistic update function
@@ -118,8 +195,8 @@ const ViewEditProfile = () => {
     localStorage.setItem('employeeData', JSON.stringify(newData));
     localStorage.setItem('employeeInfo', JSON.stringify(newData));
     
-    // Dispatch event for other components
-    window.dispatchEvent(new CustomEvent('employeeDataUpdated', { detail: newData }));
+    // Update store immediately
+    updateEmployeeData(email);
   };
 
   // Optimized handleSubmit function with loading state
@@ -171,19 +248,18 @@ const ViewEditProfile = () => {
       }
 
       // Update store
-      await updateEmployeeData(localFormData.companyEmail);
+      await updateEmployeeData(email);
       
-      // Show success toast
       toast.success("Profile updated successfully!");
       
-      // Wait a bit before navigating to ensure toast is visible
+      // Short delay to ensure toast is visible
       setTimeout(() => {
-        navigate('/viewprofile/personal-details');
-      }, 2000);
+        // Reload the page
+        window.location.reload();
+      }, 1000);
 
     } catch (error) {
       console.error('Error submitting form:', error);
-      // Show error toast
       toast.error(error.response?.data?.message || "Error updating profile");
     } finally {
       setIsLoading(false);
@@ -207,30 +283,28 @@ const ViewEditProfile = () => {
       <div className="tab-pane fade show active" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabIndex={0}>
         <form onSubmit={handleSubmit} className="row gy-3 gy-xxl-4">
           <div className="col-12 col-md-12 flex">
-            <div className="text-start"
-              onMouseEnter={() => setHover(true)}
-              onMouseLeave={() => setHover(false)}
-              style={{ position: 'relative', display: 'inline-block' }}>
-              <img
-                className="profile-user-img img-fluid img-circle"
-                src={imagePreview}
-                alt="User profile picture"
-                onClick={() => fileInputRef.current.click()}
-                style={{ cursor: 'pointer', width: '120px', height: '120px' }}
-              />
-              {hover && (
-                <div style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  color: 'white',
-                  fontSize: '17px',
-                  pointerEvents: 'none'
-                }}>
-                  Edit
-                </div>
-              )}
+            <div className="profile-section">
+              <div 
+                className="text-start profile-image-container"
+                onMouseEnter={() => setHover(true)}
+                onMouseLeave={() => setHover(false)}
+                data-tooltip-id="profile-image-tooltip"
+                data-tooltip-content="Click to upload profile picture. Recommended size: 400x400 pixels. Should be less than 4mb"
+              >
+                <img
+                  className="profile-user-img rounded-circle"
+                  src={imagePreview}
+                  alt="User profile picture"
+                  onClick={() => fileInputRef.current.click()}
+                />
+                {hover && (
+                  <div className="image-hover-text">
+                    Edit
+                  </div>
+                )}
+                {/* <div className="help-icon">?</div> */}
+              </div>
+              <Tooltip id="profile-image-tooltip" />
               <input
                 type="file"
                 id="imageUpload"
@@ -301,7 +375,7 @@ const ViewEditProfile = () => {
             <input type="text" className="form-control" id="inputEducation" name="education" value={localFormData.education} onChange={handleChange} />
           </div>
           <div className="col-12">
-            <label htmlFor="inputSkill" className="form-label">Skills<span>*</span></label>
+            <label htmlFor="inputSkill" className="form-label">Technical Skills<span>*</span></label>
             <input type="text" className="form-control" id="inputSkill" name="skills" value={localFormData.skills} onChange={handleChange} />
           </div>
           <div className="col-12 col-md-6">

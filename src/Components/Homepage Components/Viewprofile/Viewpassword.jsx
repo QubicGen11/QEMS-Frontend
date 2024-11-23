@@ -9,6 +9,9 @@ const Viewpassword = () => {
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const email = Cookies.get('email');
 
     const handleSubmit = async (event) => {
@@ -68,39 +71,66 @@ const Viewpassword = () => {
                 <div className="row gy-3 gy-xxl-4">
                     <div className="col-12">
                         <label htmlFor="currentPassword" className="form-label">Current Password</label>
-                        <input
-                            type="password"
-                            className="form-control"
-                            id="currentPassword"
-                            value={currentPassword}
-                            onChange={(e) => setCurrentPassword(e.target.value)}
-                            required
-                            disabled={isLoading}
-                        />
+                        <div className="position-relative">
+                            <input
+                                type={showCurrentPassword ? "text" : "password"}
+                                className="form-control"
+                                id="currentPassword"
+                                value={currentPassword}
+                                onChange={(e) => setCurrentPassword(e.target.value)}
+                                required
+                                disabled={isLoading}
+                            />
+                            <span
+                                className="position-absolute top-50 end-0 translate-middle-y pe-3 cursor-pointer"
+                                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                {showCurrentPassword ? "🙈" : "👁️"}
+                            </span>
+                        </div>
                     </div>
                     <div className="col-12">
                         <label htmlFor="newPassword" className="form-label">New Password</label>
-                        <input
-                            type="password"
-                            className="form-control"
-                            id="newPassword"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            required
-                            disabled={isLoading}
-                        />
+                        <div className="position-relative">
+                            <input
+                                type={showNewPassword ? "text" : "password"}
+                                className="form-control"
+                                id="newPassword"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                required
+                                disabled={isLoading}
+                            />
+                            <span
+                                className="position-absolute top-50 end-0 translate-middle-y pe-3 cursor-pointer"
+                                onClick={() => setShowNewPassword(!showNewPassword)}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                {showNewPassword ? "🙈" : "👁️"}
+                            </span>
+                        </div>
                     </div>
                     <div className="col-12">
                         <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
-                        <input
-                            type="password"
-                            className="form-control"
-                            id="confirmPassword"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            required
-                            disabled={isLoading}
-                        />
+                        <div className="position-relative">
+                            <input
+                                type={showConfirmPassword ? "text" : "password"}
+                                className="form-control"
+                                id="confirmPassword"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                required
+                                disabled={isLoading}
+                            />
+                            <span
+                                className="position-absolute top-50 end-0 translate-middle-y pe-3 cursor-pointer"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                {showConfirmPassword ? "🙈" : "👁️"}
+                            </span>
+                        </div>
                     </div>
                     <div className="col-12">
                         <button 
