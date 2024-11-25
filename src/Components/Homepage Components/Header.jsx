@@ -327,13 +327,27 @@ const Header = () => {
   return (
     <StyledAppBar>
       <Toolbar sx={{ minHeight: '56px !important' }}>
-        {/* Mobile menu icon */}
+        {/* Mobile menu icon - only visible on mobile */}
         <IconButton
           edge="start"
           color="inherit"
           aria-label="menu"
           sx={{ 
-            display: { sm: 'none' },
+            display: { xs: 'flex', md: 'none' }, // Show only on mobile, hide on md and up
+            marginRight: 2
+          }}
+          onClick={() => document.body.classList.toggle('sidebar-open')}
+        >
+          <i className="fas fa-bars" />
+        </IconButton>
+
+        {/* Desktop menu icon - only visible on larger screens */}
+        <IconButton
+          edge="start"
+          color="inherit"
+          aria-label="menu"
+          sx={{ 
+            display: { xs: 'none', md: 'flex' }, // Hide on mobile, show on md and up
             marginRight: 2
           }}
         >

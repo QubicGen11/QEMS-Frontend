@@ -1063,7 +1063,7 @@ const Dashboard = () => {
 
                 <div className="col-12 col-lg-6" bis_skin_checked={1} >
 
-                  <div className="card" bis_skin_checked={1} >
+                  <div className="card h-[40vh]" bis_skin_checked={1} >
 
                     <div className="card-header" bis_skin_checked={1} >
 
@@ -1092,7 +1092,7 @@ const Dashboard = () => {
                       </div>
                     </div>
 
-                    <div className="card-body table-responsive p-0" style={{ height: '30vh' }}>
+                    <div className="card-body table-responsive p-0 h-full" >
                       <div className="relative">
                         {isRefreshing && !isInitialLoad && (
                           <div className="absolute top-0 left-0 right-0 z-10 bg-blue-50 text-blue-600 text-center py-1 text-sm">
@@ -1128,51 +1128,11 @@ const Dashboard = () => {
 
 
 
-                <div className="col-12 col-lg-6 mt-1">
+                <div className="col-12 col-lg-6  " >
 
-                  <div class="card" style={{ background: "url('https://res.cloudinary.com/defsu5bfc/image/upload/v1716373294/waves_hxaazs.png')", backgroundRepeat: 'no-repeat', backgroundSize: "cover", backgroundColor: '#009efb', borderRadius: '10px' }}>
+               
 
-                    {/* <div className="card-body">
-
-                      <h5 className="text-white font-semibold relative bottom-2" style={{ fontFamily: 'sans-serif' }}>Upcoming Holidays</h5>
-
-                      <div className="flex justify-between items-center">
-
-                        <div className="flex items-center">
-
-                          <img
-
-                            src="https://smarthr.dreamstechnologies.com/react/template/static/media/holiday-calendar.d66643357778e940f4b7d889afd5f589.svg"
-
-                            style={{ width: '30px' }}
-
-                            alt=""
-
-                          />
-
-                          <div className="ml-2">
-
-                            <p className="font-sans text-white text-base lg:text-xl">Independence Day</p>
-
-                            <p className="font-sans text-white text-sm lg:text-base">Mon 20 May 2024</p>
-
-                          </div>
-
-                        </div>
-
-                        <div>
-
-                          <Link to="/booktimeoff" className="btn btn-primary text-black bg-white font-sans mt-3 rounded-xl">View all</Link>
-
-                        </div>
-
-                      </div>
-
-                    </div> */}
-
-                  </div>
-
-                  <iframe src="https://qubic-gen.blogspot.com/" frameborder="0" className="relative bottom-3 h-60 rounded-lg w-full"></iframe>
+                  <iframe src="https://qubic-gen.blogspot.com/" frameborder="0" className="relative  h-[40vh] rounded-lg w-full"></iframe>
 
                 </div>
 
@@ -1183,6 +1143,10 @@ const Dashboard = () => {
 
 
               </div>
+
+
+
+              
 
               <div className="col-12 col-lg-12 mt-2 bg-white">
                 <h1 className='text-2xl'>Games</h1>

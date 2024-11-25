@@ -309,12 +309,12 @@ const Register = () => {
                 className="col-span-1 md:col-span-2 mt-4 relative inline-flex items-center justify-center px-8 py-2.5 
                          bg-gradient-to-r from-yellow-400 to-yellow-500
                          text-black text-sm font-semibold tracking-wide
-                         rounded-md shadow-md w-2/12
+                         rounded-full shadow-md w-6/12
                          transform transition-all duration-500 ease-in-out
                          hover:scale-[1.02] hover:shadow-lg
                          active:scale-[0.98]
                          disabled:opacity-50 disabled:cursor-not-allowed
-                         group overflow-hidden"
+                         group overflow-hidden "
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center gap-2">
