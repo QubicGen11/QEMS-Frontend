@@ -1022,17 +1022,23 @@ const Dashboard = () => {
                                           onChange={setReportContent}
                                           modules={modules}
                                           formats={formats}
-                                          placeholder="Submit Your Daily Update...!"
+                                          placeholder="Submit Your Daily Update...! (Required)"
                                           className="bg-white"
                                           style={{ height: '200px', marginBottom: '50px' }}
+                                          required
                                         />
+                                        {!reportContent && (
+                                          <p className="text-red-500 text-sm mt-1">
+                                            * Daily report is required
+                                          </p>
+                                        )}
                                       </div>
                                       <div className="flex justify-center mt-16">
                                         <button
                                           type="submit"
-                                          disabled={uploadingMedia}
+                                          disabled={uploadingMedia || !reportContent.trim()}
                                           className={`inline-flex cursor-pointer items-center gap-1 rounded bg-yellow-300 border px-4 py-2 text-sm font-bold transform hover:scale-110 transition duration-400 ease-in-out hover:bg-yellow-500 ${
-                                            uploadingMedia ? 'opacity-50 cursor-not-allowed' : ''
+                                            (uploadingMedia || !reportContent.trim()) ? 'opacity-50 cursor-not-allowed' : ''
                                           }`}
                                         >
                                           {uploadingMedia ? 'Uploading...' : 'Submit Report'}

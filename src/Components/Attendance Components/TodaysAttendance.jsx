@@ -84,10 +84,20 @@ const TodaysAttendance = () => {
     if (!checkinTime) return 'absent';
     
     const checkin = new Date(checkinTime);
-    const threshold = new Date(checkin);
-    threshold.setHours(10, 30, 0); // 10:30 AM threshold
+    const targetTime = new Date(checkin);
+    targetTime.setHours(10, 30, 0); // Set target time to 10:30 AM
     
-    return checkin > threshold ? 'late' : 'ontime';
+    return checkin > targetTime ? 'late' : 'ontime';
+  };
+
+  const getCheckoutStatus = (checkoutTime) => {
+    if (!checkoutTime) return 'pending';
+    
+    const checkout = new Date(checkoutTime);
+    const targetTime = new Date(checkout);
+    targetTime.setHours(17, 0, 0); // Set target time to 5:00 PM
+    
+    return checkout < targetTime ? 'early' : 'complete';
   };
 
   const formatTime = (time) => {
@@ -104,6 +114,9 @@ const TodaysAttendance = () => {
       case 'ontime': return 'bg-green-100 text-green-800';
       case 'late': return 'bg-yellow-100 text-yellow-800';
       case 'absent': return 'bg-red-100 text-red-800';
+      case 'early': return 'bg-orange-100 text-orange-800';
+      case 'complete': return 'bg-blue-100 text-blue-800';
+      case 'pending': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -176,7 +189,10 @@ const TodaysAttendance = () => {
                       Check-out Time
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
+                      Check-in Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Check-out Status
                     </th>
                   </tr>
                 </thead>
@@ -224,12 +240,40 @@ const TodaysAttendance = () => {
                           {record.checkinStatus.toUpperCase()}
                         </span>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(getCheckoutStatus(record.checkout_Time))}`}>
+                          {getCheckoutStatus(record.checkout_Time).toUpperCase()}
+                        </span>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           )}
+
+          {/* Add a legend for time rules */}
+          <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+            <h4 className="text-lg font-semibold mb-2">Working Hours: 10:30 AM - 5:00 PM</h4>
+            <ul className="space-y-2">
+              <li className="flex items-center">
+                <span className={`px-2 py-1 mr-2 rounded-full ${getStatusColor('ontime')}`}>ON TIME</span>
+                <span>Check-in before 10:30 AM</span>
+              </li>
+              <li className="flex items-center">
+                <span className={`px-2 py-1 mr-2 rounded-full ${getStatusColor('late')}`}>LATE</span>
+                <span>Check-in after 10:30 AM</span>
+              </li>
+              <li className="flex items-center">
+                <span className={`px-2 py-1 mr-2 rounded-full ${getStatusColor('early')}`}>EARLY</span>
+                <span>Check-out before 5:00 PM</span>
+              </li>
+              <li className="flex items-center">
+                <span className={`px-2 py-1 mr-2 rounded-full ${getStatusColor('complete')}`}>COMPLETE</span>
+                <span>Check-out after 5:00 PM</span>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
       <Footer />
