@@ -1001,7 +1001,7 @@ const Dashboard = () => {
                       {currentTime.toLocaleDateString('en-US', { weekday: 'long' })}, {currentTime.toLocaleTimeString('en-US')}
                       <p className='text-center text-lg my-2'>Work Time</p>
                     </p>
-                    <p className='text-center' style={{ fontSize: '20px', height: '30px' }}>{`${time.hours} Hrs : ${time.minutes} Min : ${time.seconds} Sec`}</p>
+                    {/* <p className='text-center' style={{ fontSize: '20px', height: '30px' }}>{`${time.hours} Hrs : ${time.minutes} Min : ${time.seconds} Sec`}</p> */}
 
                     <div className="card-footer p-0">
                       <ul className="nav flex-column bg-white">

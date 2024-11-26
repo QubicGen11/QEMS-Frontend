@@ -31,79 +31,83 @@ const AttendanceSheet = () => {
       const response = await axios.get(
         `${config.apiUrl}/qubinest/allAttendance/${year}/${month}`
       );
-
-      // Group attendance records by employeeId
-      const groupedData = response.data.reduce((acc, record) => {
+  
+      const attendanceData = response.data.attendance || response.data;
+      
+      if (!Array.isArray(attendanceData)) {
+        console.error('Expected array but got:', attendanceData);
+        setAttendance([]);
+        setFilteredData([]);
+        return;
+      }
+  
+      // Get current date
+      const today = new Date();
+      const currentDay = today.getDate();
+  
+      const groupedData = attendanceData.reduce((acc, record) => {
         if (!acc[record.employeeId]) {
           acc[record.employeeId] = {
             employeeId: record.employeeId,
             employeeName: record.employeeName,
             companyEmail: record.companyEmail,
-            department: record.department,
+            department: record.department || 'N/A',
             profileImage: record.profileImage,
             records: [],
             presentDays: 0,
             absentDays: 0,
             lateDays: 0,
+            totalDays: 1,
             averageCheckin: 'N/A'
           };
         }
+  
+        // Add record to records array
         acc[record.employeeId].records.push(record);
+  
+        // Count today's attendance
+        if (record.date) {
+          const recordDate = new Date(record.date);
+          if (recordDate.getDate() === currentDay) {
+            if (record.checkin_Time) {
+              const checkinTime = new Date(record.checkin_Time);
+              // Check if late (after 9:30 AM)
+              if (checkinTime.getHours() > 9 || 
+                  (checkinTime.getHours() === 9 && checkinTime.getMinutes() > 30)) {
+                acc[record.employeeId].lateDays = 1;
+              } else {
+                acc[record.employeeId].presentDays = 1;
+              }
+            } else {
+              acc[record.employeeId].absentDays = 1;
+            }
+          }
+        }
+  
         return acc;
       }, {});
-
-      // Calculate statistics for each employee
-      const processedData = await Promise.all(
-        Object.values(groupedData).map(async (employee) => {
-          try {
-            // Get average working time
-            const avgTimeResponse = await axios.get(
-              `${config.apiUrl}/qubinest/allAttendance/${employee.employeeId}`
-            );
-
-            // Calculate attendance metrics
-            const metrics = employee.records.reduce(
-              (acc, record) => {
-                // Present Days
-                if (record.status === 'approved') {
-                  acc.presentDays++;
-                }
-
-                // Absent Days (no check-in)
-                if (!record.checkin_Time) {
-                  acc.absentDays++;
-                }
-
-                // Late Days
-                if (record.checkin_Time) {
-                  const checkinTime = new Date(record.checkin_Time);
-                  const lateThreshold = new Date(checkinTime);
-                  lateThreshold.setHours(9, 30, 0); // 9:30 AM threshold
-                  if (checkinTime > lateThreshold) {
-                    acc.lateDays++;
-                  }
-                }
-
-                return acc;
-              },
-              { presentDays: 0, absentDays: 0, lateDays: 0 }
-            );
-
-            return {
-              ...employee,
-              ...metrics,
-              averageCheckin: avgTimeResponse.data.averageCheckinTime || 'N/A',
-              totalDays: employee.records.length
-            };
-          } catch (error) {
-            console.error(`Error processing employee ${employee.employeeId}:`, error);
-            return employee;
-          }
-        })
-      );
-
-      setAttendance(processedData);
-      setFilteredData(processedData);
+  
+      // Calculate average check-in time
+      Object.values(groupedData).forEach(employee => {
+        const validCheckins = employee.records
+          .filter(r => r.checkin_Time)
+          .map(r => new Date(r.checkin_Time));
+  
+        if (validCheckins.length > 0) {
+          const totalMinutes = validCheckins.reduce((sum, date) => {
+            return sum + date.getHours() * 60 + date.getMinutes();
+          }, 0);
+          
+          const avgMinutes = Math.round(totalMinutes / validCheckins.length);
+          const hours = Math.floor(avgMinutes / 60);
+          const minutes = avgMinutes % 60;
+          
+          employee.averageCheckin = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        }
+      });
+  
+      setAttendance(Object.values(groupedData));
+      setFilteredData(Object.values(groupedData));
     } catch (error) {
       toast.error('Failed to fetch attendance data');
       console.error('Error:', error);

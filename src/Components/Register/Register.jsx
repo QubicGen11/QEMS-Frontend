@@ -18,9 +18,12 @@ const Register = () => {
   const [joiningDate, setJoiningDate] = useState('');
   const [department, setDepartment] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showOTPField, setShowOTPField] = useState(false);
+  const [otp, setOTP] = useState('');
+  const [registeredEmail, setRegisteredEmail] = useState('');
   const navigate = useNavigate();
 
-  const onSubmit = async (event) => {
+  const handleInitialRegistration = async (event) => {
     event.preventDefault();
     setIsLoading(true);
 
@@ -61,9 +64,33 @@ const Register = () => {
         department
       });
 
-      console.log('Response:', response.data);
-      toast.success(response.data.message || 'Registration successful!');
+      console.log('Registration Response:', response.data);
+      toast.success('OTP sent to your email!');
+      setShowOTPField(true);
+      setRegisteredEmail(email);
       
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error(error.response?.data?.message || 'Registration failed!');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOTPVerification = async (event) => {
+    event.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const response = await axios.post(`${config.apiUrl}/qubinest/verify-otp`, {
+        email: registeredEmail,
+        otp
+      });
+
+      console.log('OTP Verification Response:', response.data);
+      toast.success('Registration completed successfully!');
+      
+      // Clear form
       setUsername('');
       setEmail('');
       setPassword('');
@@ -73,10 +100,17 @@ const Register = () => {
       setMainPosition('');
       setJoiningDate('');
       setDepartment('');
+      setOTP('');
+      setShowOTPField(false);
+      
+      // Redirect to login
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);
       
     } catch (error) {
       console.error('Error:', error);
-      toast.error(error.response?.data?.message || 'Registration failed!');
+      toast.error(error.response?.data?.message || 'OTP verification failed!');
     } finally {
       setIsLoading(false);
     }
@@ -145,198 +179,250 @@ const Register = () => {
               <p className="text-gray-600 mt-2 text-sm">Register into your account as</p>
             </div>
 
-            <form onSubmit={onSubmit} className="grid grid-cols-2 gap-x-5 gap-y-4">
-              {/* Role Select */}
-              <div>
-                <label className="block text-gray-700 text-sm mb-1.5">
-                  Role <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
-                >
-                  <option value="">Select</option>
-                  <option value="Employee">Employee</option>
-                  <option value="Intern">Intern</option>
-                  <option value="Manager">Manager</option>
-                  <option value="Admin">Admin</option>
-                </select>
-              </div>
-
-              {/* Username Input */}
-              <div>
-                <label className="block text-gray-700 text-sm mb-1.5">
-                  Username <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
-                  placeholder="Enter your username"
-                />
-              </div>
-
-              {/* Email Input */}
-              <div>
-                <label className="block text-gray-700 text-sm mb-1.5">
-                  Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
-                  placeholder="Enter your email"
-                />
-              </div>
-
-              {/* Password Input */}
-              <div>
-                <label className="block text-gray-700 text-sm mb-1.5">
-                  Password <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+            {!showOTPField ? (
+              // Initial Registration Form
+              <form onSubmit={handleInitialRegistration} className="grid grid-cols-2 gap-x-5 gap-y-4">
+                {/* Role Select */}
+                <div>
+                  <label className="block text-gray-700 text-sm mb-1.5">
+                    Role <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
                     className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
-                    placeholder="Enter your password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2"
                   >
-                    {showPassword ? "🙈" : "👁️"}
-                  </button>
+                    <option value="">Select</option>
+                    <option value="Employee">Employee</option>
+                    <option value="Intern">Intern</option>
+                    <option value="Manager">Manager</option>
+                    <option value="Admin">Admin</option>
+                  </select>
                 </div>
-              </div>
 
-              {/* Confirm Password Input */}
-              <div>
-                <label className="block text-gray-700 text-sm mb-1.5">
-                  Confirm Password <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
+                {/* Username Input */}
+                <div>
+                  <label className="block text-gray-700 text-sm mb-1.5">
+                    Username <span className="text-red-500">*</span>
+                  </label>
                   <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
-                    placeholder="Confirm your password"
+                    placeholder="Enter your username"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2"
-                  >
-                    {showConfirmPassword ? "🙈" : "👁️"}
-                  </button>
                 </div>
-              </div>
 
-              {/* Salary Input */}
-              <div>
-                <label className="block text-gray-700 text-sm mb-1.5">
-                  Salary <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  value={salary}
-                  onChange={(e) => setSalary(e.target.value)}
-                  className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
-                  placeholder="Enter your salary"
-                />
-              </div>
+                {/* Email Input */}
+                <div>
+                  <label className="block text-gray-700 text-sm mb-1.5">
+                    Email <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
+                    placeholder="Enter your email"
+                  />
+                </div>
 
-              {/* Main Position Input */}
-              <div>
-                <label className="block text-gray-700 text-sm mb-1.5">
-                  Main Position <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={mainPosition}
-                  onChange={(e) => setMainPosition(e.target.value)}
-                  className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
-                  placeholder="Enter your main position"
-                />
-              </div>
-
-              {/* Department Select */}
-              <div>
-                <label className="block text-gray-700 text-sm mb-1.5">
-                  Department <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
-                >
-                  <option value="">Select Department</option>
-                  <option value="Robotic Process Automation (RPA) Department">RPA Department</option>
-                  <option value="Web Development Department">Web Development</option>
-                  <option value="Training and Development Department">Training & Development</option>
-                  <option value="Administration Department">Administration</option>
-                </select>
-              </div>
-
-              {/* Joining Date Input */}
-              <div>
-                <label className="block text-gray-700 text-sm mb-1.5">
-                  Joining Date <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="date"
-                  value={joiningDate}
-                  onChange={(e) => setJoiningDate(e.target.value)}
-                  className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
-                />
-              </div>
-              <div>
-
-              </div>
-
-              {/* Submit Button - New Stylish Version */}
-              <div className="flex justify-end ">
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="col-span-1 md:col-span-2 mt-4 relative inline-flex items-center justify-center px-8 py-2.5 
-                         bg-gradient-to-r from-yellow-400 to-yellow-500
-                         text-black text-sm font-semibold tracking-wide
-                         rounded-full shadow-md w-6/12
-                         transform transition-all duration-500 ease-in-out
-                         hover:scale-[1.02] hover:shadow-lg
-                         active:scale-[0.98]
-                         disabled:opacity-50 disabled:cursor-not-allowed
-                         group overflow-hidden "
-              >
-                {isLoading ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    <span className="ml-1">Processing...</span>
+                {/* Password Input */}
+                <div>
+                  <label className="block text-gray-700 text-sm mb-1.5">
+                    Password <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
+                      placeholder="Enter your password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
+                    >
+                      {showPassword ? "🙈" : "👁️"}
+                    </button>
                   </div>
-                ) : (
-                  <>
-                    <span className="relative z-10 w-24 mx-auto">Register</span>
-                    <div className="absolute inset-0 -z-10 bg-gradient-to-r from-yellow-500 to-yellow-600 
-                                  opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-1/4 mx-auto" />
-                    <div className="absolute right-2 transform translate-x-8 group-hover:translate-x-0 transition-transform duration-300 w-4 mx-auto">
-                      →
+                </div>
+
+                {/* Confirm Password Input */}
+                <div>
+                  <label className="block text-gray-700 text-sm mb-1.5">
+                    Confirm Password <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
+                      placeholder="Confirm your password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
+                    >
+                      {showConfirmPassword ? "🙈" : "👁️"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Salary Input */}
+                <div>
+                  <label className="block text-gray-700 text-sm mb-1.5">
+                    Salary <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    value={salary}
+                    onChange={(e) => setSalary(e.target.value)}
+                    className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
+                    placeholder="Enter your salary"
+                  />
+                </div>
+
+                {/* Main Position Input */}
+                <div>
+                  <label className="block text-gray-700 text-sm mb-1.5">
+                    Main Position <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={mainPosition}
+                    onChange={(e) => setMainPosition(e.target.value)}
+                    className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
+                    placeholder="Enter your main position"
+                  />
+                </div>
+
+                {/* Department Select */}
+                <div>
+                  <label className="block text-gray-700 text-sm mb-1.5">
+                    Department <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={department}
+                    onChange={(e) => setDepartment(e.target.value)}
+                    className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
+                  >
+                    <option value="">Select Department</option>
+                    <option value="Robotic Process Automation (RPA) Department">RPA Department</option>
+                    <option value="Web Development Department">Web Development</option>
+                    <option value="Training and Development Department">Training & Development</option>
+                    <option value="Administration Department">Administration</option>
+                  </select>
+                </div>
+
+                {/* Joining Date Input */}
+                <div>
+                  <label className="block text-gray-700 text-sm mb-1.5">
+                    Joining Date <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={joiningDate}
+                    onChange={(e) => setJoiningDate(e.target.value)}
+                    className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
+                  />
+                </div>
+                <div>
+
+                </div>
+
+                {/* Submit Button - New Stylish Version */}
+                <div className="flex justify-end ">
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="col-span-1 md:col-span-2 mt-4 relative inline-flex items-center justify-center px-8 py-2.5 
+                           bg-gradient-to-r from-yellow-400 to-yellow-500
+                           text-black text-sm font-semibold tracking-wide
+                           rounded-full shadow-md w-6/12
+                           transform transition-all duration-500 ease-in-out
+                           hover:scale-[1.02] hover:shadow-lg
+                           active:scale-[0.98]
+                           disabled:opacity-50 disabled:cursor-not-allowed
+                           group overflow-hidden "
+                >
+                  {isLoading ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      <span className="ml-1">Processing...</span>
                     </div>
-                  </>
-                )}
-              </button>
-              </div>
-            </form>
+                  ) : (
+                    <>
+                      <span className="relative z-10 w-24 mx-auto">Register</span>
+                      <div className="absolute inset-0 -z-10 bg-gradient-to-r from-yellow-500 to-yellow-600 
+                                    opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-1/4 mx-auto" />
+                      <div className="absolute right-2 transform translate-x-8 group-hover:translate-x-0 transition-transform duration-300 w-4 mx-auto">
+                        →
+                      </div>
+                    </>
+                  )}
+                </button>
+                </div>
+              </form>
+            ) : (
+              // OTP Verification Form
+              <form onSubmit={handleOTPVerification} className="space-y-4">
+                <div className="text-center mb-4">
+                  <h2 className="text-xl font-semibold">Verify Your Email</h2>
+                  <p className="text-gray-600 mt-2">
+                    Enter the OTP sent to {registeredEmail}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 text-sm mb-1.5">
+                    OTP <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={otp}
+                    onChange={(e) => setOTP(e.target.value)}
+                    className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
+                    placeholder="Enter OTP"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full relative inline-flex items-center justify-center px-8 py-2.5 
+                           bg-gradient-to-r from-yellow-400 to-yellow-500
+                           text-black text-sm font-semibold tracking-wide
+                           rounded-full shadow-md
+                           transform transition-all duration-500 ease-in-out
+                           hover:scale-[1.02] hover:shadow-lg
+                           active:scale-[0.98]
+                           disabled:opacity-50 disabled:cursor-not-allowed
+                           group overflow-hidden"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      <span>Verifying...</span>
+                    </div>
+                  ) : (
+                    'Verify OTP'
+                  )}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </div>
