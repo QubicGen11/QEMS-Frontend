@@ -155,27 +155,47 @@ const Allemployees = () => {
     setAllSelected(newSelectedEmployees.size === employees.length);
   };
 
-  const handleDelete = async (employeeId) => {
-    if (window.confirm('Are you sure you want to delete this employee?')) {
-        try {
-            setIsLoading(true);
-            const response = await axios.delete(`${config.apiUrl}/qubinest/employees/${employeeId}`);
-            
-            if (response.status === 204) {
-                toast.success('Employee deleted successfully');
-                fetchEmployees(); // Refresh the list
-            }
-        } catch (error) {
-            console.error('Error deleting employee:', error);
-            
-            const errorMessage = error.response?.data?.details 
-                || error.response?.data?.error 
-                || 'Failed to delete employee';
-            
-            toast.error(errorMessage);
-        } finally {
-            setIsLoading(false);
+  const handleDisable = async (employeeId) => {
+    if (window.confirm('Are you sure you want to disable this employee?')) {
+      try {
+        setIsLoading(true);
+        const response = await axios.put(`${config.apiUrl}/qubinest/updateUserStatus`, {
+          email: employeeId,
+          status: 'Disabled'
+        });
+
+        if (response.status === 200) {
+          toast.success('Employee disabled successfully');
+          fetchEmployees();
         }
+      } catch (error) {
+        console.error('Error disabling employee:', error);
+        toast.error('Failed to disable employee');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const handleEnable = async (employeeId) => {
+    if (window.confirm('Are you sure you want to enable this employee?')) {
+      try {
+        setIsLoading(true);
+        const response = await axios.put(`${config.apiUrl}/qubinest/updateUserStatus`, {
+          email: employeeId,
+          status: 'Active'
+        });
+
+        if (response.status === 200) {
+          toast.success('Employee enabled successfully');
+          fetchEmployees();
+        }
+      } catch (error) {
+        console.error('Error enabling employee:', error);
+        toast.error('Failed to enable employee');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -395,21 +415,21 @@ const Allemployees = () => {
                             </td>
                             <td className="px-4 py-4 text-sm whitespace-nowrap">
                               <div className="flex items-center gap-x-6">
-                                <button 
-                                  onClick={() => handleDelete(employee.employeeId)}
-                                  className="text-red-500 transition-colors duration-200 hover:text-red-700 focus:outline-none"
-                                >
-                                  Disable
-                                </button>
-                                {/* <button 
-                                  onClick={() => {
-                                    setEditingEmployee(employee);
-                                    setIsEditModalOpen(true);
-                                  }}
-                                  className="text-yellow-500 transition-colors duration-200 hover:text-yellow-700 focus:outline-none"
-                                >
-                                  Edit
-                                </button> */}
+                                {employee.status === 'Active' ? (
+                                  <button 
+                                    onClick={() => handleDisable(employee.email)}
+                                    className="text-red-500 transition-colors duration-200 hover:text-red-700 focus:outline-none"
+                                  >
+                                    Disable
+                                  </button>
+                                ) : (
+                                  <button 
+                                    onClick={() => handleEnable(employee.email)}
+                                    className="text-green-500 transition-colors duration-200 hover:text-green-700 focus:outline-none"
+                                  >
+                                    Enable
+                                  </button>
+                                )}
                               </div>
                             </td>
                           </tr>

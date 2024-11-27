@@ -123,8 +123,7 @@ const Booktimeoff = () => {
   }, []);
 
   const handleDateClick = (date) => {
-    const localDate = new Date(date);
-    localDate.setHours(0, 0, 0, 0);
+    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
     
     if (!dateRange.startDate) {
       setDateRange({ startDate: localDate, endDate: null });
