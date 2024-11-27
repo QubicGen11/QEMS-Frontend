@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -64,6 +64,17 @@ const NotificationModal = styled(Box)(({ theme }) => ({
 }));
 
 const NotificationItem = ({ notification, onRead, onSelect, isSelected, selectedNotification }) => {
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (isSelected && containerRef.current) {
+      containerRef.current.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  }, [isSelected]);
+
   const getBorderColor = (type) => {
     switch (type?.toLowerCase()) {
       case 'success':
@@ -81,6 +92,7 @@ const NotificationItem = ({ notification, onRead, onSelect, isSelected, selected
 
   return (
     <Box
+      ref={containerRef}
       onClick={(e) => {
         if (!isSelected) {
           onRead(notification.id);
@@ -487,7 +499,16 @@ const Header = () => {
           BackdropProps={{ invisible: true }}
         >
           <NotificationModal>
-            <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'grey.100' }}>
+            <Box sx={{ 
+              p: 2, 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              bgcolor: 'grey.100',
+              position: 'sticky',
+              top: 0,
+              zIndex: 3,
+            }}>
               <Typography variant="h6">Notifications</Typography>
               <Box>
                 {notifications.length > 0 && (
@@ -511,19 +532,22 @@ const Header = () => {
               </Box>
             </Box>
             <Divider />
-            <Box sx={{ 
-              maxHeight: 'calc(60vh - 60px)',
-              overflow: 'auto',
-              '&::-webkit-scrollbar': {
-                width: '6px',
-              },
-              '&::-webkit-scrollbar-thumb': {
-                backgroundColor: 'rgba(0,0,0,0.2)',
-                borderRadius: '3px',
-              },
-              position: 'relative',
-              padding: selectedNotification ? 0 : '8px 0',
-            }}>
+            <Box 
+              sx={{ 
+                maxHeight: 'calc(60vh - 60px)',
+                overflow: 'auto',
+                '&::-webkit-scrollbar': {
+                  width: '6px',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: 'rgba(0,0,0,0.2)',
+                  borderRadius: '3px',
+                },
+                position: 'relative',
+                padding: selectedNotification ? 0 : '8px 0',
+                scrollBehavior: 'smooth',
+              }}
+            >
               {notifications.length === 0 ? (
                 <Box sx={{ p: 2, textAlign: 'center', color: 'text.secondary' }}>
                   No notifications
