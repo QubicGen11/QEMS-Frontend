@@ -56,61 +56,136 @@ const NotificationModal = styled(Box)(({ theme }) => ({
   top: '80px',
   right: '20px',
   width: 400,
-  maxHeight: '80vh',
+  maxHeight: '60vh',
   backgroundColor: theme.palette.background.paper,
   boxShadow: theme.shadows[5],
   borderRadius: theme.shape.borderRadius,
   overflow: 'hidden'
 }));
 
-const NotificationItem = ({ notification, onRead }) => {
+const NotificationItem = ({ notification, onRead, onSelect, isSelected, selectedNotification }) => {
   const getBorderColor = (type) => {
-    switch (type) {
-      case 'LEAVE_APPROVED':
-      case 'ATTENDANCE_APPROVED':
-        return 'success.main';
-      case 'LEAVE_REJECTED':
-      case 'ATTENDANCE_REJECTED':
-        return 'error.main';
-      case 'REPORT_PENDING':
-        return 'warning.main';
+    switch (type?.toLowerCase()) {
+      case 'success':
+        return '#4CAF50';
+      case 'warning':
+        return '#FFC107';
+      case 'error':
+        return '#F44336';
+      case 'info':
+        return '#2196F3';
       default:
-        return 'primary.main';
+        return '#2196F3'; // default to info color
     }
   };
 
   return (
     <Box
-      onClick={() => onRead(notification.id)}
+      onClick={(e) => {
+        if (!isSelected) {
+          onRead(notification.id);
+          onSelect(notification);
+        }
+      }}
       sx={{
-        p: 2,
+        p: 1.5,
         cursor: 'pointer',
         borderLeft: 3,
         borderColor: getBorderColor(notification.type),
         '&:hover': {
-          bgcolor: 'action.hover',
+          bgcolor: !isSelected && 'action.hover',
         },
-        bgcolor: notification.isRead ? 'transparent' : 'action.selected',
+        bgcolor: isSelected ? 'action.selected' : notification.isRead ? 'transparent' : 'action.selected',
+        borderRadius: 1,
+        boxShadow: '0 1px 2px gray',
+        transition: 'all 0.3s ease',
+        display: isSelected ? 'block' : (selectedNotification ? 'none' : 'block'),
+        position: isSelected ? 'relative' : 'relative',
+        padding: isSelected ? '16px' : '12px',
+        margin: isSelected ? '0' : '4px 8px',
+        minHeight: isSelected ? 'auto' : '80px',
+        maxHeight: isSelected ? 'none' : '80px',
+        
       }}
     >
+      {isSelected && (
+        <IconButton
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelect(null);
+          }}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: 'text.secondary',
+          }}
+          size="small"
+        >
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      )}
+
       <Typography 
         variant="body2" 
-        sx={{ color: 'text.primary' }}
+        sx={{ 
+          color: 'text.primary',
+          fontWeight: !notification.isRead ? 600 : 400,
+          fontSize: '0.875rem',
+          pr: isSelected ? 4 : 0,
+          ...(isSelected ? {
+            display: 'block',
+          } : {
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          })
+        }}
         component="div"
         dangerouslySetInnerHTML={{ 
           __html: DOMPurify.sanitize(notification.message) 
         }}
       />
+      
       <Typography 
         variant="caption" 
         sx={{ 
           color: 'text.secondary', 
           mt: 0.5, 
-          display: 'block' 
+          display: 'block',
+          fontSize: '0.75rem'
         }}
       >
         {new Date(notification.createdAt).toLocaleString()}
       </Typography>
+      
+      {isSelected && (
+        <Box sx={{ mt: 2 }}>
+          <Divider sx={{ my: 1 }} />
+          {notification.type && (
+            <Typography variant="body2" color="text.secondary">
+              Type: {notification.type}
+            </Typography>
+          )}
+          {notification.location && (
+            <Typography variant="body2" color="text.secondary">
+              Location: {notification.location}
+            </Typography>
+          )}
+          {notification.date && (
+            <Typography variant="body2" color="text.secondary">
+              Date: {notification.date}
+            </Typography>
+          )}
+          {notification.time && (
+            <Typography variant="body2" color="text.secondary">
+              Time: {notification.time}
+            </Typography>
+          )}
+        </Box>
+      )}
     </Box>
   );
 };
@@ -130,6 +205,7 @@ const Header = () => {
   const [openNotifications, setOpenNotifications] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+  const [selectedNotification, setSelectedNotification] = useState(null);
 
   useEffect(() => {
     if (userEmail && !employeeData) {
@@ -324,6 +400,11 @@ const Header = () => {
     setAnchorEl(null);
   };
 
+  // Add this function to handle notification selection
+  const handleNotificationSelect = (notification) => {
+    setSelectedNotification(notification);
+  };
+
   return (
     <StyledAppBar>
       <Toolbar sx={{ minHeight: '56px !important' }}>
@@ -399,7 +480,10 @@ const Header = () => {
         {/* Notification Modal */}
         <Modal
           open={openNotifications}
-          onClose={() => setOpenNotifications(false)}
+          onClose={() => {
+            setOpenNotifications(false);
+            setSelectedNotification(null);
+          }}
           BackdropProps={{ invisible: true }}
         >
           <NotificationModal>
@@ -417,14 +501,29 @@ const Header = () => {
                 )}
                 <IconButton
                   size="small"
-                  onClick={() => setOpenNotifications(false)}
+                  onClick={() => {
+                    setOpenNotifications(false);
+                    setSelectedNotification(null);
+                  }}
                 >
                   <CloseIcon fontSize="small" />
                 </IconButton>
               </Box>
             </Box>
             <Divider />
-            <Box sx={{ maxHeight: 'calc(80vh - 100px)', overflow: 'auto' }}>
+            <Box sx={{ 
+              maxHeight: 'calc(60vh - 60px)',
+              overflow: 'auto',
+              '&::-webkit-scrollbar': {
+                width: '6px',
+              },
+              '&::-webkit-scrollbar-thumb': {
+                backgroundColor: 'rgba(0,0,0,0.2)',
+                borderRadius: '3px',
+              },
+              position: 'relative',
+              padding: selectedNotification ? 0 : '8px 0',
+            }}>
               {notifications.length === 0 ? (
                 <Box sx={{ p: 2, textAlign: 'center', color: 'text.secondary' }}>
                   No notifications
@@ -435,6 +534,9 @@ const Header = () => {
                     key={notification.id}
                     notification={notification}
                     onRead={markAsRead}
+                    onSelect={handleNotificationSelect}
+                    isSelected={selectedNotification?.id === notification.id}
+                    selectedNotification={selectedNotification}
                   />
                 ))
               )}
