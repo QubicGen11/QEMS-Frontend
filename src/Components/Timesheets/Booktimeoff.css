@@ -163,6 +163,7 @@
   padding: 0.75em 0.5em;
   background: none;
   border-radius: 8px;
+  
 }
 
 .react-calendar__tile:enabled:hover,
@@ -176,8 +177,14 @@
 }
 
 .react-calendar__tile--active {
-  background: #1976d2 !important;
-  color: white;
+  background: #e3f2fd !important;
+  color: #1976d2 !important;
+  border-radius: 4px;
+}
+
+.react-calendar__tile--active:enabled:hover,
+.react-calendar__tile--active:enabled:focus {
+  background: #bbdefb !important;
 }
 
 .dot {
@@ -288,13 +295,13 @@
   
 /* Add these new styles */
 .highlight-range {
-  background-color: rgba(25, 118, 210, 0.1) !important;
+  background-color: #e3f2fd !important;
   color: #1976d2 !important;
   position: relative;
 }
 
 .highlight-range:hover {
-  background-color: rgba(25, 118, 210, 0.2) !important;
+  background-color: #bbdefb !important;
 }
 
 .highlight-range::after {
@@ -350,12 +357,12 @@
 
 /* Highlight range styling */
 .highlight-range {
-  background-color: rgba(25, 118, 210, 0.1) !important;
+  background-color: #e3f2fd !important;
   color: #1976d2 !important;
 }
 
 .highlight-range:hover {
-  background-color: rgba(25, 118, 210, 0.2) !important;
+  background-color: #bbdefb !important;
 }
 
 /* Event indicator styling */

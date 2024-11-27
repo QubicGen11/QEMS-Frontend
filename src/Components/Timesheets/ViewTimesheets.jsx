@@ -9,6 +9,31 @@ import Header from '../Homepage Components/Header';
 import Sidemenu from '../Homepage Components/Sidemenu';
 import Footer from '../Homepage Components/Footer';
 
+// Add this helper function at the top
+const calculateTotalHours = (checkin, checkout) => {
+  if (!checkin || !checkout) return '---';
+  
+  const checkinTime = new Date(checkin);
+  const checkoutTime = new Date(checkout);
+  
+  const diff = checkoutTime - checkinTime;
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  
+  if (hours < 0 || minutes < 0) return '---';
+  return `${hours}h ${minutes}m`;
+};
+
+// Add this helper function for 12-hour time format
+const format12HourTime = (date) => {
+  if (!date) return 'N/A';
+  return new Date(date).toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+};
+
 // Memoized row component
 const TimesheetRow = memo(({ timesheet }) => (
   <tr className="hover:bg-gray-50">
@@ -16,10 +41,15 @@ const TimesheetRow = memo(({ timesheet }) => (
       {new Date(timesheet.date).toLocaleDateString()}
     </td>
     <td className="px-6 py-4 whitespace-nowrap">
-      {timesheet.checkin_Time ? new Date(timesheet.checkin_Time).toLocaleTimeString() : 'N/A'}
+      {format12HourTime(timesheet.checkin_Time)}
     </td>
     <td className="px-6 py-4 whitespace-nowrap">
-      {timesheet.checkout_Time ? new Date(timesheet.checkout_Time).toLocaleTimeString() : 'N/A'}
+      {format12HourTime(timesheet.checkout_Time)}
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800`}>
+        {calculateTotalHours(timesheet.checkin_Time, timesheet.checkout_Time)}
+      </span>
     </td>
     <td className="px-6 py-4 whitespace-nowrap">
       <StatusBadge status={timesheet.status} />
@@ -161,6 +191,7 @@ const ViewTimesheets = () => {
                                 <th>Date</th>
                                 <th>Check In</th>
                                 <th>Check Out</th>
+                                <th>Total Hours</th>
                                 <th>Status</th>
                                 <th>Report</th>
                               </tr>

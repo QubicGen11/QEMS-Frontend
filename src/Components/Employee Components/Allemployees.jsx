@@ -399,9 +399,9 @@ const Allemployees = () => {
                                   onClick={() => handleDelete(employee.employeeId)}
                                   className="text-red-500 transition-colors duration-200 hover:text-red-700 focus:outline-none"
                                 >
-                                  Delete
+                                  Disable
                                 </button>
-                                <button 
+                                {/* <button 
                                   onClick={() => {
                                     setEditingEmployee(employee);
                                     setIsEditModalOpen(true);
@@ -409,7 +409,7 @@ const Allemployees = () => {
                                   className="text-yellow-500 transition-colors duration-200 hover:text-yellow-700 focus:outline-none"
                                 >
                                   Edit
-                                </button>
+                                </button> */}
                               </div>
                             </td>
                           </tr>

@@ -237,14 +237,7 @@ const AttendanceSheet = () => {
             </span>
           </span>
         </td>
-        <td className="px-6 py-4 whitespace-nowrap">
-          <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-            ${record.averageCheckin === 'N/A' ? 'bg-gray-100 text-gray-800' :
-            new Date(`2000-01-01 ${record.averageCheckin}`).getHours() >= 9.5 ? 
-            'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-            {record.averageCheckin}
-          </span>
-        </td>
+      
         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
           <button
             onClick={() => handleViewDetails(record.employeeId, record.companyEmail)}
@@ -368,9 +361,7 @@ const AttendanceSheet = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Late Days
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Average Check-in
-                    </th>
+                
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>

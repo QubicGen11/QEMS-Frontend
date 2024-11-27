@@ -15,6 +15,42 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { FaFileDownload, FaCheck, FaTimes, FaUsers } from 'react-icons/fa';
 
+const formatIndianDate = (date) => {
+  if (!date) return '---';
+  return new Date(date).toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
+};
+
+const formatIndianTime = (date) => {
+  if (!date) return '---';
+  return new Date(date).toLocaleTimeString('en-IN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+};
+
+const calculateWorkingHours = (checkinTime, checkoutTime) => {
+  if (!checkinTime || !checkoutTime) return '---';
+  
+  const checkin = new Date(checkinTime);
+  const checkout = new Date(checkoutTime);
+  
+  // Calculate difference in milliseconds
+  const diff = checkout - checkin;
+  
+  // Convert to hours and minutes
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  
+  // Format the output
+  if (hours < 0 || minutes < 0) return '---';
+  return `${hours}h ${minutes}m`;
+};
+
 const SingleEmployeeAttendance = () => {
   const [employee, setEmployee] = useState(null);
   const [employeeTitle, setEmployeeTitle] = useState('');
@@ -322,9 +358,9 @@ const SingleEmployeeAttendance = () => {
 
     // Prepare the data
     const data = filteredAttendance.map(record => ({
-      date: new Date(record.date).toLocaleDateString(),
-      checkin: new Date(record.checkin_Time).toLocaleTimeString(),
-      checkout: record.checkout_Time ? new Date(record.checkout_Time).toLocaleTimeString() : '---',
+      date: formatIndianDate(record.date),
+      checkin: formatIndianTime(record.checkin_Time),
+      checkout: record.checkout_Time ? formatIndianTime(record.checkout_Time) : '---',
       status: getCheckinStatus(record.checkin_Time, record.checkout_Time),
       approval: record.status?.toUpperCase() || 'PENDING'
     }));
@@ -383,9 +419,9 @@ const SingleEmployeeAttendance = () => {
       name: record.username || 'N/A',
       empId: record.employeeId || 'N/A',
       position: record.mainPosition || 'N/A',
-      date: new Date(record.date).toLocaleDateString(),
-      checkin: record.checkin_Time ? new Date(record.checkin_Time).toLocaleTimeString() : '---',
-      checkout: record.checkout_Time ? new Date(record.checkout_Time).toLocaleTimeString() : '---',
+      date: formatIndianDate(record.date),
+      checkin: record.checkin_Time ? formatIndianTime(record.checkin_Time) : '---',
+      checkout: record.checkout_Time ? formatIndianTime(record.checkout_Time) : '---',
       status: getCheckinStatus(record.checkin_Time, record.checkout_Time),
       approval: record.status?.toUpperCase() || 'PENDING'
     }));
@@ -538,6 +574,9 @@ const SingleEmployeeAttendance = () => {
                               Check-out Time
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Total Working Time
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Status
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -561,15 +600,24 @@ const SingleEmployeeAttendance = () => {
                                   />
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                  {new Date(record.date).toLocaleDateString()}
+                                  {formatIndianDate(record.date)}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {new Date(record.checkin_Time).toLocaleTimeString()}
+                                  {formatIndianTime(record.checkin_Time)}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {record.checkout_Time ? new Date(record.checkout_Time).toLocaleTimeString() : '---'}
+                                  {record.checkout_Time ? formatIndianTime(record.checkout_Time) : '---'}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                    record.checkin_Time && record.checkout_Time 
+                                      ? 'bg-blue-100 text-blue-800'
+                                      : 'bg-gray-100 text-gray-800'
+                                  }`}>
+                                    {calculateWorkingHours(record.checkin_Time, record.checkout_Time)}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
                                   {getCheckinStatus(record.checkin_Time, record.checkout_Time)}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
@@ -590,7 +638,7 @@ const SingleEmployeeAttendance = () => {
                             ))
                           ) : (
                             <tr>
-                              <td colSpan="7" className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                              <td colSpan="8" className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                 No data available for the selected period.
                               </td>
                             </tr>

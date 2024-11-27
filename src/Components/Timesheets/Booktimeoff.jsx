@@ -123,22 +123,24 @@ const Booktimeoff = () => {
   }, []);
 
   const handleDateClick = (date) => {
+    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    
     if (!dateRange.startDate) {
-      setDateRange({ startDate: date, endDate: null });
+      setDateRange({ startDate: localDate, endDate: null });
     } else if (!dateRange.endDate) {
-      if (date >= dateRange.startDate) {
-        setDateRange(prev => ({ ...prev, endDate: date }));
+      if (localDate >= dateRange.startDate) {
+        setDateRange(prev => ({ ...prev, endDate: localDate }));
         setShowModal(true);
         setFormData(prev => ({
           ...prev,
           startDate: dateRange.startDate,
-          endDate: date
+          endDate: localDate
         }));
       } else {
-        setDateRange({ startDate: date, endDate: null });
+        setDateRange({ startDate: localDate, endDate: null });
       }
     } else {
-      setDateRange({ startDate: date, endDate: null });
+      setDateRange({ startDate: localDate, endDate: null });
     }
   };
 
@@ -225,9 +227,13 @@ const Booktimeoff = () => {
     return null;
   };
 
-  const tileClassName = ({ date }) => {
+  const tileClassName = ({ date, view }) => {
     const dateStr = date.toISOString().split('T')[0];
     const classes = [];
+
+    if (view === 'month' && date.toDateString() === new Date().toDateString()) {
+      classes.push('highlight-today');
+    }
 
     if (dateRange.startDate && dateRange.endDate) {
       const startStr = dateRange.startDate.toISOString().split('T')[0];
@@ -333,7 +339,10 @@ const Booktimeoff = () => {
                 elevation={0}
                 sx={{ 
                   p: 2, 
-                  backgroundColor: '#f8fafc',
+                  backgroundColor: '#E5E3D4',
+                  
+                  boxShadow: '0 1px 10px gray',
+                  
                   borderRadius: 2
                 }}
               >

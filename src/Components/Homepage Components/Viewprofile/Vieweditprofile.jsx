@@ -380,7 +380,7 @@ const ViewEditProfile = () => {
           </div>
           <div className="col-12 col-md-6">
             <label htmlFor="inputPhone" className="form-label">Phone<span>*</span></label>
-            <input type="text" className="form-control" id="inputPhone" name="phone" value={localFormData.phone} onChange={handleChange} />
+            <input type="number" className="form-control" id="inputPhone" name="phone" value={localFormData.phone} onChange={handleChange} />
           </div>
           <div className="col-12 col-md-6">
             <label htmlFor="inputEmail" className="form-label">Personal Email<span>*</span></label>

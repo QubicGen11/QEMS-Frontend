@@ -121,6 +121,25 @@ const TodaysAttendance = () => {
     }
   };
 
+  // Add this helper function to calculate working hours
+  const calculateWorkingHours = (checkinTime, checkoutTime) => {
+    if (!checkinTime || !checkoutTime) return '---';
+    
+    const checkin = new Date(checkinTime);
+    const checkout = new Date(checkoutTime);
+    
+    // Calculate difference in milliseconds
+    const diff = checkout - checkin;
+    
+    // Convert to hours and minutes
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    // Format the output
+    if (hours < 0 || minutes < 0) return '---';
+    return `${hours}h ${minutes}m`;
+  };
+
   return (
     <>
       <Header />
@@ -189,6 +208,9 @@ const TodaysAttendance = () => {
                       Check-out Time
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Total Working Time
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Check-in Status
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -234,6 +256,15 @@ const TodaysAttendance = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {record.formattedCheckout}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          record.checkin_Time && record.checkout_Time 
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {calculateWorkingHours(record.checkin_Time, record.checkout_Time)}
+                        </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(record.checkinStatus)}`}>
