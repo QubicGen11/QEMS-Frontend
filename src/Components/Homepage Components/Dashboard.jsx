@@ -550,7 +550,11 @@ const Dashboard = () => {
       
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Error clocking in');
+      if (error.response?.data?.error === 'INVALID_NETWORK') {
+        toast.error('Please connect to Organization WiFi network to clock in');
+      } else {
+        toast.error(error.response?.data?.message || 'Error clocking in');
+      }
       throw error;
     } finally {
       setLoading(false);
