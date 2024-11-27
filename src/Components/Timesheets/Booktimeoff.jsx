@@ -123,7 +123,8 @@ const Booktimeoff = () => {
   }, []);
 
   const handleDateClick = (date) => {
-    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    const localDate = new Date(date);
+    localDate.setHours(0, 0, 0, 0);
     
     if (!dateRange.startDate) {
       setDateRange({ startDate: localDate, endDate: null });
@@ -339,27 +340,51 @@ const Booktimeoff = () => {
                 elevation={0}
                 sx={{ 
                   p: 2, 
-                  backgroundColor: '#E5E3D4',
-                  
-                  boxShadow: '0 1px 10px gray',
-                  
-                  borderRadius: 2
+                  position: 'relative',
+                  borderRadius: 2,
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    borderRadius: 'inherit',
+                    zIndex: 1
+                  }
                 }}
               >
-                <Calendar
-                  onChange={handleDateClick}
-                  value={selectedDate}
-                  tileContent={tileContent}
-                  tileClassName={tileClassName}
-                  className="custom-calendar"
-                  nextLabel={<NavigateNextIcon />}
-                  prevLabel={<NavigateBeforeIcon />}
-                  navigationLabel={({ date }) => (
-                    <Typography variant="h6" sx={{ fontWeight: 500 }}>
-                      {date.toLocaleString('default', { month: 'long', year: 'numeric' })}
-                    </Typography>
-                  )}
+                <Box 
+                  sx={{ 
+                    backgroundImage: 'url(https://res.cloudinary.com/dlcxoeria/image/upload/v1732725446/Dark_Blue_Minimalist_Simple_Inspirational_Desktop_Wallpaper_anyjgv.jpg)',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    opacity: 0.8,
+                    borderRadius: 'inherit'
+                  }} 
                 />
+                <Box sx={{ position: 'relative', zIndex: 2 }}>
+                  <Calendar
+                    onChange={handleDateClick}
+                    value={selectedDate}
+                    tileContent={tileContent}
+                    tileClassName={tileClassName}
+                    className="custom-calendar"
+                    nextLabel={<NavigateNextIcon />}
+                    prevLabel={<NavigateBeforeIcon />}
+                    navigationLabel={({ date }) => (
+                      <Typography variant="h6" sx={{ fontWeight: 500, color: '#fff' }}>
+                        {date.toLocaleString('default', { month: 'long', year: 'numeric' })}
+                      </Typography>
+                    )}
+                  />
+                </Box>
               </Paper>
             </Card>
           </Grid>
