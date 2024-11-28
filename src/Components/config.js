@@ -1,15 +1,24 @@
 const config = {
-    // apiUrl: 'https://qubinest-ems-backend.vercel.app'
+    // apiUrl: 'http://localhost:3000',
     apiUrl: 'https://qemsbe.qubinest.com',
-    // apiUrl: 'http://localhost:3000', // Localhost URL
     allowedNetworks: [
       {
-        ssid: 'YourCompanyWiFi', // Replace with your company WiFi name
-        subnet: '192.168.1.0/24' // Replace with your company WiFi subnet
+        network: '192.168.29.0',
+        subnet: '255.255.255.0',
+        gateway: '192.168.29.1',
+        ipv6: '2405:201:c052:1888',
+        interface: 'WiFi'
+      },
+      {
+        // Second office network
+        network: '192.168.1.0',
+        subnet: '255.255.255.0',
+        gateway: '192.168.1.1',
+        ipv6: '2401:4900:1cb0:2fb0',
+        interface: 'WiFi'
       }
-      // Add more networks if needed
     ]
-  };
+};
 
 export default config;
   
