@@ -1,23 +1,25 @@
 const config = {
     // apiUrl: 'http://localhost:3000',
     apiUrl: 'https://qemsbe.qubinest.com',
-    allowedNetworks: [
+    serverConfig: {
+      publicIP: '74.179.60.127',
+      privateIP: '10.0.0.4'
+  },
+  
+  allowedNetworks: [
       {
-        network: '192.168.29.0',
-        subnet: '255.255.255.0',
-        gateway: '192.168.29.1',
-        ipv6: '2405:201:c052:1888',
-        interface: 'WiFi'
+          cidr: '192.168.29.0/16',
+          subnet: '255.255.255.0',
+          gateway: '192.168.29.1',
+          description: 'Office Network 1'
       },
       {
-        // Second office network
-        network: '192.168.1.0',
-        subnet: '255.255.255.0',
-        gateway: '192.168.1.1',
-        ipv6: '2401:4900:1cb0:2fb0',
-        interface: 'WiFi'
+          cidr: '192.168.1.0/16',
+          subnet: '255.255.255.0',
+          gateway: '192.168.1.1',
+          description: 'Office Network 2'
       }
-    ]
+  ]
 };
 
 export default config;
