@@ -35,7 +35,7 @@ const router = createBrowserRouter([
     element: <Login />
   },
   {
-    path: "/register",
+    path: "/qubicgenregistrationpageabcdefghijklmnopqrstuvwxyz",
     element: <Register />
   },
   {

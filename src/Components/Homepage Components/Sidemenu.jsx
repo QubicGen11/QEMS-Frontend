@@ -64,7 +64,7 @@ const Sidemenu = () => {
 
   return (
     <>
-      <aside className="main-sidebar sidebar-dark-primary elevation-4">
+      <aside className="main-sidebar sidebar-dark-primary elevation-4" style={{backgroundColor: "rgba(0,0,0,0.9)", backdropFilter: "blur(30px)"}}>
         <div className="sidebar">
           <div className="w-40 mt-3 pb-3 mb-3 d-flex">
             <div className="flex gap-9">
@@ -271,7 +271,7 @@ const Sidemenu = () => {
                         </Link>
                       </li>
                       <li className="nav-item">
-                        <Link to="/register" className="nav-link">
+                        <Link to="/qubicgenregistrationpageabcdefghijklmnopqrstuvwxyz" className="nav-link">
                           <FontAwesomeIcon icon={faPlusCircle} className="nav-icon" />
                           <p>Add Employees</p>
                         </Link>
