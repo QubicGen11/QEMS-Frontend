@@ -1,613 +1,325 @@
 import React, { useState, useEffect } from 'react';
-import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
-import { 
-  Box, 
-  Card, 
-  Grid,
-  Typography, 
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Paper,
-  Chip,
-  Divider
-} from '@mui/material';
-import { 
-  Close as CloseIcon,
-  Event as EventIcon,
-  Today as TodayIcon,
-  NavigateNext as NavigateNextIcon,
-  NavigateBefore as NavigateBeforeIcon
-} from '@mui/icons-material';
-import "./Booktimeoff.css";
+import axios from 'axios';
+import moment from 'moment';
+import { toast } from 'react-toastify';
+import config from '../config';
+import Cookies from 'js-cookie';
 import Header from '../Homepage Components/Header';
 import Sidemenu from '../Homepage Components/Sidemenu';
-import Footer from '../Homepage Components/Footer';
-import axios from 'axios';
-import Cookies from 'js-cookie';
-import config from '../config';
 
 const Booktimeoff = () => {
-  const formatDate = (date) => {
-    if (!date) return null;
-    return new Date(date).toISOString();
-  };
-
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [events, setEvents] = useState([]);
-  const [showModal, setShowModal] = useState(false);
+  const [currentDate, setCurrentDate] = useState(moment());
+  const [leaveRequests, setLeaveRequests] = useState([]);
   const [holidays, setHolidays] = useState([]);
-  const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedDates, setSelectedDates] = useState({ start: null, end: null });
   const email = Cookies.get('email');
+  
   const [formData, setFormData] = useState({
-    title: '',
     type: '',
     dayType: 'full',
     reason: '',
     comments: '',
-    
-    document: null,
   });
-  const [dateRange, setDateRange] = useState({
-    startDate: null,
-    endDate: null
-  });
-  const [loading, setLoading] = useState(true);
 
-  // Define holidays directly in the component
-  const predefinedHolidays = [
-    {
-      id: 1,
-      title: "New Year's Day",
-      date: new Date('2024-01-01')
-    },
-    {
-      id: 2,
-      title: 'Republic Day',
-      date: new Date('2024-01-26')
-    },
-    {
-      id: 3,
-      title: 'Holi',
-      date: new Date('2024-03-25')
-    },
-    {
-      id: 4,
-      title: 'Ugadi',
-      date: new Date('2024-04-09')
-    },
-    {
-      id: 5,
-      title: 'Labour Day',
-      date: new Date('2024-05-01')
-    },
-    {
-      id: 6,
-      title: 'Independence Day',
-      date: new Date('2024-08-15')
-    },
-    {
-      id: 7,
-      title: 'Ganesh Chaturthi',
-      date: new Date('2024-09-19')
-    },
-    {
-      id: 8,
-      title: 'Gandhi Jayanti',
-      date: new Date('2024-10-02')
-    },
-    {
-      id: 9,
-      title: 'Diwali',
-      date: new Date('2024-10-31')
-    },
-    {
-      id: 10,
-      title: 'Christmas',
-      date: new Date('2024-12-25')
+  // Calendar generation logic
+  const generateCalendar = () => {
+    const startDay = currentDate.clone().startOf('month').startOf('week');
+    const endDay = currentDate.clone().endOf('month').endOf('week');
+    const calendar = [];
+    let day = startDay.clone();
+
+    while (day.isBefore(endDay, 'day')) {
+      calendar.push(
+        Array(7).fill(0).map(() => {
+          const currentDay = day.clone();
+          day.add(1, 'day');
+          return currentDay;
+        })
+      );
     }
-  ];
+    return calendar;
+  };
 
+  // Fetch leave requests and holidays
   useEffect(() => {
-    // Set predefined holidays directly
-    setHolidays(predefinedHolidays);
-  }, []);
+    const fetchData = async () => {
+      try {
+        // Fetch leave requests
+        const response = await axios.get(
+          `${config.apiUrl}/qubinest/getleaverequests/${encodeURIComponent(email)}`
+        );
+        setLeaveRequests(response.data || []);
+
+        // Set predefined holidays
+        setHolidays([
+          { date: '2024-01-01', title: "New Year's Day" },
+          { date: '2024-01-26', title: 'Republic Day' },
+          // ... add other holidays
+        ]);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, [email]);
 
   const handleDateClick = (date) => {
-    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-    
-    if (!dateRange.startDate) {
-      setDateRange({ startDate: localDate, endDate: null });
-    } else if (!dateRange.endDate) {
-      if (localDate >= dateRange.startDate) {
-        setDateRange(prev => ({ ...prev, endDate: localDate }));
-        setShowModal(true);
-        setFormData(prev => ({
-          ...prev,
-          startDate: dateRange.startDate,
-          endDate: localDate
-        }));
+    if (!selectedDates.start) {
+      setSelectedDates({ start: date, end: null });
+    } else if (!selectedDates.end) {
+      if (date.isBefore(selectedDates.start)) {
+        setSelectedDates({ start: date, end: null });
       } else {
-        setDateRange({ startDate: localDate, endDate: null });
+        setSelectedDates(prev => ({ ...prev, end: date }));
+        setShowModal(true);
       }
     } else {
-      setDateRange({ startDate: localDate, endDate: null });
+      setSelectedDates({ start: date, end: null });
     }
   };
 
   const handleSubmit = async () => {
-    if (!dateRange.startDate || !dateRange.endDate || !formData.type || !formData.reason) {
-      setError('Please fill in all required fields');
+    if (!selectedDates.start || !selectedDates.end || !formData.type || !formData.reason) {
+      toast.error('Please fill in all required fields');
       return;
     }
 
-    const payload = {
-      companyEmail: email,
-      leaveType: formData.type,
-      duration: formData.dayType,
-      reason: formData.reason,
-      startDate: formatDate(dateRange.startDate),
-      endDate: formatDate(dateRange.endDate),
-      comments: formData.comments || '',
-      document: formData.document || null,
-    };
-
     try {
-      console.log('Submitting payload:', payload);
-      const response = await axios.post(`${config.apiUrl}/qubinest/newleaverequest`, payload);
+      const payload = {
+        companyEmail: email,
+        leaveType: formData.type,
+        duration: formData.dayType,
+        reason: formData.reason,
+        startDate: selectedDates.start.toISOString(),
+        endDate: selectedDates.end.toISOString(),
+        comments: formData.comments || '',
+      };
+
+      await axios.post(`${config.apiUrl}/qubinest/newleaverequest`, payload);
+      toast.success('Leave request submitted successfully');
       
-      if (response.data.leaveRequest) {
-        setEvents(prevEvents => [...prevEvents, {
-          id: response.data.leaveRequest.leave_id,
-          title: formData.type || 'Leave Request',
-          date: new Date(response.data.leaveRequest.startDate),
-          startDate: new Date(response.data.leaveRequest.startDate),
-          endDate: new Date(response.data.leaveRequest.endDate),
-          status: response.data.leaveRequest.status,
-          ...formData
-        }]);
+      // Reset form and modal
+      setShowModal(false);
+      setSelectedDates({ start: null, end: null });
+      setFormData({
+        type: '',
+        dayType: 'full',
+        reason: '',
+        comments: '',
+      });
 
-        setShowModal(false);
-        setFormData({
-          title: '',
-          type: '',
-          dayType: 'full',
-          reason: '',
-          comments: '',
-          document: null,
-        });
-        setDateRange({ startDate: null, endDate: null });
-      }
-    } catch (error) {
-      console.error('Error details:', error.response?.data);
-      setError(error.response?.data || 'Failed to submit leave request');
-    }
-  };
-
-  const formatDisplayDate = (date) => {
-    if (!date) return '';
-    return new Date(date).toISOString().split('T')[0];
-  };
-
-  const tileContent = ({ date }) => {
-    const dateStr = date.toISOString().split('T')[0];
-    
-    const eventForDate = events.find(event => {
-      const startStr = new Date(event.startDate).toISOString().split('T')[0];
-      const endStr = new Date(event.endDate).toISOString().split('T')[0];
-      return dateStr >= startStr && dateStr <= endStr;
-    });
-
-    const holidayForDate = holidays.some(holiday => 
-      holiday.date.toISOString().split('T')[0] === dateStr
-    );
-
-    if (eventForDate) {
-      return (
-        <div className="leave-indicator">
-          <div className={`dot event ${eventForDate.status}`} />
-          <div className="leave-type">{eventForDate.type || eventForDate.leaveType}</div>
-        </div>
+      // Reload leave requests
+      const response = await axios.get(
+        `${config.apiUrl}/qubinest/getleaverequests/${encodeURIComponent(email)}`
       );
-    }
+      setLeaveRequests(response.data || []);
 
-    if (holidayForDate) {
-      return <div className="dot holiday" />;
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to submit leave request');
     }
-
-    return null;
   };
-
-  const tileClassName = ({ date, view }) => {
-    const dateStr = date.toISOString().split('T')[0];
-    const classes = [];
-
-    if (view === 'month' && date.toDateString() === new Date().toDateString()) {
-      classes.push('highlight-today');
-    }
-
-    if (dateRange.startDate && dateRange.endDate) {
-      const startStr = dateRange.startDate.toISOString().split('T')[0];
-      const endStr = dateRange.endDate.toISOString().split('T')[0];
-      if (dateStr >= startStr && dateStr <= endStr) {
-        classes.push('highlight-range');
-      }
-    }
-
-    const hasEvent = events.some(event => {
-      const eventStartStr = new Date(event.startDate).toISOString().split('T')[0];
-      const eventEndStr = new Date(event.endDate).toISOString().split('T')[0];
-      return dateStr >= eventStartStr && dateStr <= eventEndStr;
-    });
-
-    if (hasEvent) {
-      classes.push('has-event');
-    }
-
-    return classes.join(' ');
-  };
-
-  useEffect(() => {
-    const fetchLeaveRequests = async () => {
-      try {
-        const response = await axios.get(`${config.apiUrl}/qubinest/getleaverequests/${encodeURIComponent(email)}`);
-        if (response.data) {
-          const formattedEvents = response.data.map(leave => ({
-            id: leave.leave_id,
-            type: leave.leaveType,
-            title: `${leave.leaveType} Leave`,
-            startDate: new Date(leave.startDate),
-            endDate: new Date(leave.endDate),
-            status: leave.status,
-            reason: leave.reason,
-            comments: leave.comments
-          }));
-          setEvents(formattedEvents);
-        }
-      } catch (error) {
-        console.log('No leave requests found');
-        setEvents([]); // Set empty array for no leaves
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (email) {
-      fetchLeaveRequests();
-    }
-  }, [email]);
 
   return (
     <>
       <Header />
       <Sidemenu />
-      <Box className="content-wrapper" sx={{ p: 3, backgroundColor: '#f4f6f9' }}>
-        <Grid container spacing={3}>
-          {/* Calendar Section */}
-          <Grid item xs={12} md={8}>
-            <Card 
-              elevation={3}
-              sx={{
-                p: 3,
-                height: '100%',
-                borderRadius: 2,
-                backgroundColor: '#fff'
-              }}
-            >
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                <Typography variant="h5" sx={{ fontWeight: 600, color: '#1976d2' }}>
-                  <EventIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                  Book Time Off
-                </Typography>
-                <Button
-                  variant="contained"
-                  startIcon={<TodayIcon />}
-                  onClick={() => setSelectedDate(new Date())}
-                >
-                  Today
-                </Button>
-              </Box>
-
-              {!loading && events.length === 0 && (
-                <Paper 
-                  elevation={0} 
-                  sx={{ 
-                    p: 2, 
-                    mb: 2, 
-                    backgroundColor: '#f8fafc',
-                    borderRadius: 2,
-                    textAlign: 'center',
-                    border: '1px dashed #ccc'
-                  }}
-                >
-                  <Typography color="textSecondary">
-                    No leave requests found. Click on dates to request a new leave.
-                  </Typography>
-                </Paper>
-              )}
-              
-              <Paper 
-                elevation={0}
-                sx={{ 
-                  p: 2, 
-                  position: 'relative',
-                  borderRadius: 2,
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                    borderRadius: 'inherit',
-                    zIndex: 1
-                  }
-                }}
+      <div className="content-wrapper p-4">
+        <div className="calendar-container bg-white rounded-lg shadow-lg p-6">
+          {/* Calendar Header */}
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold">
+              {currentDate.format('MMMM YYYY')}
+            </h2>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setCurrentDate(prev => prev.clone().subtract(1, 'month'))}
+                className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
               >
-                <Box 
-                  sx={{ 
-                    backgroundImage: 'url(https://res.cloudinary.com/dlcxoeria/image/upload/v1732725446/Dark_Blue_Minimalist_Simple_Inspirational_Desktop_Wallpaper_anyjgv.jpg)',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    opacity: 0.8,
-                    borderRadius: 'inherit'
-                  }} 
-                />
-                <Box sx={{ position: 'relative', zIndex: 2 }}>
-                  <Calendar
-                    onChange={handleDateClick}
-                    value={selectedDate}
-                    tileContent={tileContent}
-                    tileClassName={tileClassName}
-                    className="custom-calendar"
-                    nextLabel={<NavigateNextIcon />}
-                    prevLabel={<NavigateBeforeIcon />}
-                    navigationLabel={({ date }) => (
-                      <Typography variant="h6" sx={{ fontWeight: 500, color: '#fff' }}>
-                        {date.toLocaleString('default', { month: 'long', year: 'numeric' })}
-                      </Typography>
-                    )}
-                  />
-                </Box>
-              </Paper>
-            </Card>
-          </Grid>
+                Previous
+              </button>
+              <button
+                onClick={() => setCurrentDate(moment())}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+              >
+                Today
+              </button>
+              <button 
+                onClick={() => setCurrentDate(prev => prev.clone().add(1, 'month'))}
+                className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+              >
+                Next
+              </button>
+            </div>
+          </div>
 
-          {/* Holiday List Section */}
-          <Grid item xs={12} md={4}>
-            <Card 
-              elevation={3}
-              sx={{
-                height: '100%',
-                borderRadius: 2,
-                backgroundColor: '#fff'
-              }}
-            >
-              <Box sx={{ 
-                p: 2, 
-                display: 'flex', 
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                borderBottom: '1px solid #eee'
-              }}>
-                <Typography variant="h6" sx={{ fontWeight: 500 }}>
-                  Holiday List
-                </Typography>
-                <IconButton size="small">
-                  <CloseIcon />
-                </IconButton>
-              </Box>
-              
-              <Box sx={{ p: 2, maxHeight: '600px', overflowY: 'auto' }}>
-                {error ? (
-                  <Typography color="error">{error}</Typography>
-                ) : (
-                  holidays.map(holiday => (
-                    <Box 
-                      key={holiday.id}
-                      sx={{
-                        mb: 2,
-                        p: 2,
-                        borderRadius: 1,
-                        backgroundColor: '#f8fafc',
-                        '&:hover': {
-                          backgroundColor: '#f0f4f8'
-                        }
-                      }}
-                    >
-                      <Chip
-                        label={new Date(holiday.date).toLocaleDateString('en-US', {
-                          weekday: 'short',
-                          month: 'short',
-                          day: 'numeric'
-                        })}
-                        color="primary"
-                        size="small"
-                        sx={{ mb: 1 }}
-                      />
-                      <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
-                        {holiday.title}
-                      </Typography>
-                    </Box>
-                  ))
-                )}
-              </Box>
-            </Card>
-          </Grid>
-        </Grid>
+          {/* Calendar Grid */}
+          <div className="grid grid-cols-7 gap-1">
+            {/* Weekday headers */}
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
+              <div 
+                key={day} 
+                className={`text-center py-2 font-semibold ${index === 0 || index === 6 ? 'text-red-500' : ''}`}
+              >
+                {day}
+              </div>
+            ))}
+
+            {/* Calendar days */}
+            {generateCalendar().map((week, weekIdx) => (
+              week.map((day, dayIdx) => {
+                const isSelected = selectedDates.start && day.isSame(selectedDates.start, 'day') ||
+                                   selectedDates.end && day.isSame(selectedDates.end, 'day');
+                const isInRange = selectedDates.start && selectedDates.end &&
+                                  day.isBetween(selectedDates.start, selectedDates.end, 'day', '[]');
+                const hasLeave = leaveRequests.some(leave => 
+                  day.isBetween(moment(leave.startDate), moment(leave.endDate), 'day', '[]')
+                );
+                const isHoliday = holidays.some(holiday => 
+                  day.isSame(moment(holiday.date), 'day')
+                );
+                const isToday = day.isSame(moment(), 'day');
+                const isWeekend = dayIdx === 0 || dayIdx === 6; // Check if it's Saturday or Sunday
+
+                return (
+                  <div
+                    key={`${weekIdx}-${dayIdx}`}
+                    onClick={() => handleDateClick(day)}
+                    className={`
+                      min-h-[80px] p-2 border rounded-lg cursor-pointer
+                      ${!day.isSame(currentDate, 'month') ? 'bg-gray-50 text-gray-400' : 'bg-white'}
+                      ${isSelected ? 'bg-blue-100 border-blue-500' : ''}
+                      ${isInRange ? 'bg-blue-50' : ''}
+                      ${hasLeave ? 'border-yellow-500' : ''}
+                      ${isHoliday ? 'bg-red-50' : ''}
+                      ${isToday ? 'border-2 border-green-500 font-bold text-green-500 shadow-xl' : ''}
+                      ${isWeekend ? 'bg-red-50 text-red-500' : ''} // Weekend highlighting
+                      hover:bg-gray-50
+                    `}
+                  >
+                    <div className="flex justify-between">
+                      <span className={`
+                        ${isToday ? 'font-bold text-green-500' : ''}
+                        ${isWeekend ? 'text-red-500' : ''}
+                      `}>
+                        {day.format('D')}
+                      </span>
+                      {hasLeave && <span className="text-xs text-yellow-600">Leave</span>}
+                      {isHoliday && <span className="text-xs text-red-600">Holiday</span>}
+                    </div>
+                  </div>
+                );
+              })
+            ))}
+          </div>
+        </div>
 
         {/* Leave Request Modal */}
-        <Dialog 
-          open={showModal} 
-          onClose={() => setShowModal(false)}
-          maxWidth="sm"
-          fullWidth
-          PaperProps={{
-            elevation: 0,
-            sx: {
-              borderRadius: 2
-            }
-          }}
-        >
-          <DialogTitle sx={{ 
-            borderBottom: '1px solid #eee',
-            backgroundColor: '#f8fafc'
-          }}>
-            <Box display="flex" alignItems="center" justifyContent="space-between">
-              <Typography variant="h6">Request Leave</Typography>
-              <IconButton onClick={() => setShowModal(false)} size="small">
-                <CloseIcon />
-              </IconButton>
-            </Box>
-          </DialogTitle>
-          
-          <DialogContent sx={{ mt: 2 }}>
-            <Grid container spacing={2}>
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  required
-                  label="From Date"
-                  type="date"
-                  value={formatDisplayDate(dateRange.startDate)}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  onChange={(e) => {
-                    const date = new Date(e.target.value);
-                    setDateRange(prev => ({ ...prev, startDate: date }));
-                  }}
-                />
-              </Grid>
+        {showModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white p-6 rounded-lg w-full max-w-md">
+              <h3 className="text-xl font-bold mb-4">New Leave Request</h3>
               
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  required
-                  label="To Date"
-                  type="date"
-                  value={formatDisplayDate(dateRange.endDate)}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  onChange={(e) => {
-                    const date = new Date(e.target.value);
-                    setDateRange(prev => ({ ...prev, endDate: date }));
-                  }}
-                  inputProps={{
-                    min: formatDisplayDate(dateRange.startDate)
-                  }}
-                />
-              </Grid>
+              <div className="space-y-4">
+                {/* Date Selection Fields */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block mb-1">Start Date</label>
+                    <input
+                      type="date"
+                      value={selectedDates.start ? selectedDates.start.format('YYYY-MM-DD') : ''}
+                      onChange={(e) => setSelectedDates(prev => ({
+                        ...prev,
+                        start: moment(e.target.value)
+                      }))}
+                      className="w-full p-2 border rounded"
+                      min={moment().format('YYYY-MM-DD')}
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1">End Date</label>
+                    <input
+                      type="date"
+                      value={selectedDates.end ? selectedDates.end.format('YYYY-MM-DD') : ''}
+                      onChange={(e) => setSelectedDates(prev => ({
+                        ...prev,
+                        end: moment(e.target.value)
+                      }))}
+                      className="w-full p-2 border rounded"
+                      min={selectedDates.start ? selectedDates.start.format('YYYY-MM-DD') : moment().format('YYYY-MM-DD')}
+                    />
+                  </div>
+                </div>
 
-              {dateRange.endDate && dateRange.startDate > dateRange.endDate && (
-                <Grid item xs={12}>
-                  <Typography color="error">
-                    End date cannot be before start date
-                  </Typography>
-                </Grid>
-              )}
-
-              <Grid item xs={12}>
-                <FormControl fullWidth>
-                  <InputLabel>Leave Type</InputLabel>
-                  <Select
+                <div>
+                  <label className="block mb-1">Leave Type</label>
+                  <select
                     value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    label="Leave Type"
+                    onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
+                    className="w-full p-2 border rounded"
                   >
-                    <MenuItem value="vacation">Vacation Leave</MenuItem>
-                    <MenuItem value="sick">Sick Leave</MenuItem>
-                    <MenuItem value="personal">Personal Leave</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              
-              <Grid item xs={12}>
-                <FormControl fullWidth>
-                  <InputLabel>Duration</InputLabel>
-                  <Select
+                    <option value="">Select Type</option>
+                    <option value="Casual">Casual Leave</option>
+                    <option value="Sick">Sick Leave</option>
+                    <option value="Personal">Personal Leave</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block mb-1">Duration</label>
+                  <select
                     value={formData.dayType}
-                    onChange={(e) => setFormData({ ...formData, dayType: e.target.value })}
-                    label="Duration"
+                    onChange={(e) => setFormData(prev => ({ ...prev, dayType: e.target.value }))}
+                    className="w-full p-2 border rounded"
                   >
-                    <MenuItem value="full">Full Day</MenuItem>
-                    <MenuItem value="half">Half Day</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
+                    <option value="full">Full Day</option>
+                    <option value="half">Half Day</option>
+                  </select>
+                </div>
 
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Reason"
-                  multiline
-                  rows={2}
-                  value={formData.reason}
-                  onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Comments"
-                  multiline
-                  rows={2}
-                  value={formData.comments}
-                  onChange={(e) => setFormData({ ...formData, comments: e.target.value })}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <Button
-                  variant="outlined"
-                  component="label"
-                  fullWidth
-                  startIcon={<EventIcon />}
-                >
-                  Upload Document
-                  <input
-                    type="file"
-                    hidden
-                    onChange={(e) => setFormData({ ...formData, document: e.target.files[0] })}
+                <div>
+                  <label className="block mb-1">Reason</label>
+                  <textarea
+                    value={formData.reason}
+                    onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
+                    className="w-full p-2 border rounded"
+                    rows="3"
                   />
-                </Button>
-              </Grid>
-            </Grid>
-          </DialogContent>
+                </div>
 
-          <DialogActions sx={{ p: 2, borderTop: '1px solid #eee' }}>
-            <Button onClick={() => setShowModal(false)}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleSubmit} 
-              variant="contained" 
-              color="primary"
-              startIcon={<EventIcon />}
-            >
-              Submit Request
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </Box>
-      <Footer />
+                <div>
+                  <label className="block mb-1">Additional Comments</label>
+                  <textarea
+                    value={formData.comments}
+                    onChange={(e) => setFormData(prev => ({ ...prev, comments: e.target.value }))}
+                    className="w-full p-2 border rounded"
+                    rows="2"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 mt-6">
+                <button
+                  onClick={() => {
+                    setShowModal(false);
+                    setSelectedDates({ start: null, end: null });
+                  }}
+                  className="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                  Submit Request
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </>
   );
 };
