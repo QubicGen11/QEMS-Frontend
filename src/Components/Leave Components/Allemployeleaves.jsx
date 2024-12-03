@@ -22,15 +22,20 @@ const Allemployeleaves = () => {
     email: '',
     leaveType: '',
     startDate: '',
-    endDate: ''
+    endDate: '',
+    status: '',
+    duration: '',
+    noOfDays: ''
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = String(date.getFullYear()).slice(-2);
+    const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
 
@@ -39,7 +44,7 @@ const Allemployeleaves = () => {
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = String(date.getFullYear()).slice(-2);
+    const year = date.getFullYear();
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${day}/${month}/${year} ${hours}:${minutes}`;
@@ -64,7 +69,10 @@ const Allemployeleaves = () => {
       email: '',
       leaveType: '',
       startDate: '',
-      endDate: ''
+      endDate: '',
+      status: '',
+      duration: '',
+      noOfDays: ''
     });
   };
 
@@ -76,6 +84,9 @@ const Allemployeleaves = () => {
         const matchesEmployeeId = request?.employee_id?.toString().toLowerCase().includes(filters.employeeId.toLowerCase());
         const matchesEmail = request?.employeeEmail?.toLowerCase().includes(filters.email.toLowerCase());
         const matchesLeaveType = !filters.leaveType || request?.leaveType === filters.leaveType;
+        const matchesStatus = !filters.status || request?.status === filters.status;
+        const matchesDuration = !filters.duration || request?.duration?.toLowerCase() === filters.duration.toLowerCase();
+        const matchesNoOfDays = !filters.noOfDays || request?.noOfDays === parseInt(filters.noOfDays);
         
         let matchesDateRange = true;
         if (filters.startDate && filters.endDate) {
@@ -87,7 +98,13 @@ const Allemployeleaves = () => {
           matchesDateRange = requestStart >= filterStart && requestEnd <= filterEnd;
         }
 
-        return matchesEmployeeId && matchesEmail && matchesLeaveType && matchesDateRange;
+        return matchesEmployeeId && 
+               matchesEmail && 
+               matchesLeaveType && 
+               matchesDateRange && 
+               matchesStatus && 
+               matchesDuration && 
+               matchesNoOfDays;
       })
       .sort((a, b) => {
         if (a.status === 'pending' && b.status !== 'pending') return -1;
@@ -232,6 +249,20 @@ const Allemployeleaves = () => {
     }
   };
 
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const handleItemsPerPageChange = (e) => {
+    setItemsPerPage(parseInt(e.target.value));
+    setCurrentPage(1); // Reset to first page when changing items per page
+  };
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredLeaveRequests.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredLeaveRequests.length / itemsPerPage);
+
   return (
     <div>
       <Header />
@@ -317,6 +348,57 @@ const Allemployeleaves = () => {
                   className="w-full p-2 border rounded-md"
                 />
               </div>
+
+              {/* Status Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Status
+                </label>
+                <select
+                  name="status"
+                  value={filters.status}
+                  onChange={handleFilterChange}
+                  className="w-full p-2 border rounded-md"
+                >
+                  <option value="">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+              </div>
+
+              {/* Duration Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Duration
+                </label>
+                <select
+                  name="duration"
+                  value={filters.duration}
+                  onChange={handleFilterChange}
+                  className="w-full p-2 border rounded-md"
+                >
+                  <option value="">All Duration</option>
+                  <option value="full day">Full Day</option>
+                  <option value="half day">Half Day</option>
+                </select>
+              </div>
+
+              {/* Number of Days Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Number of Days
+                </label>
+                <input
+                  type="number"
+                  name="noOfDays"
+                  value={filters.noOfDays}
+                  onChange={handleFilterChange}
+                  placeholder="Filter by days"
+                  min="0"
+                  className="w-full p-2 border rounded-md"
+                />
+              </div>
             </div>
 
             {/* Clear Filters Button */}
@@ -384,81 +466,146 @@ const Allemployeleaves = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredLeaveRequests.length > 0 ? (
-                    filteredLeaveRequests.map((request) => (
-                      <tr key={request.id} className="bg-white border-b hover:bg-gray-50">
-                        <td className="py-4 px-6">
-                          <Checkbox
-                            checked={selectedRequests.includes(request.id)}
-                            onChange={() => handleSelectRequest(request.id)}
-                            disabled={
-                              request.status === 'approved' || 
-                              request.status === 'rejected'
-                            }
-                          />
-                        </td>
-                        <td className="py-4 px-6">{request.employee_id}</td>
-                        <td className="py-4 px-6">{request.employeeEmail}</td>
-                        <td className="py-4 px-6">{request.leaveType}</td>
-                        <td className="py-4 px-6">{request.duration}</td>
-                        <td className="py-4 px-6">{formatDateTime(request.leaveFrom)}</td>
-                        <td className="py-4 px-6">{formatDateTime(request.leaveTo)}</td>
-                        <td className="py-4 px-6">{request.noOfDays}</td>
-                        <td className="py-4 px-6">
-                          <div className="max-w-xs truncate" title={request.reason}>
-                            {request.reason}
-                          </div>
-                        </td>
-                        <td className="py-4 px-6">
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            request.status === 'approved' ? 'bg-green-100 text-green-800' :
-                            request.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                            'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                          </span>
-                        </td>
-                        <td className="py-4 px-6">{formatDateTime(request.createdAt)}</td>
-                      
-                        <td className="py-4 px-6">
-                          <div className="flex gap-2">
-                            <button 
-                              className={`px-3 py-1 rounded text-sm ${
-                                request.status === 'approved' 
-                                  ? 'bg-gray-300 cursor-not-allowed text-gray-600' 
-                                  : 'bg-green-500 hover:bg-green-600 text-white'
-                              }`}
-                              onClick={() => handleStatusChange(request.id, "Approved", request.employeeEmail)}
-                              disabled={request.status === 'approved'}
-                            >
-                              Approve
-                            </button>
-                            <button 
-                              className={`px-3 py-1 rounded text-sm ${
-                                request.status === 'rejected' 
-                                  ? 'bg-gray-300 cursor-not-allowed text-gray-600' 
-                                  : 'bg-red-500 hover:bg-red-600 text-white'
-                              }`}
-                              onClick={() => handleStatusChange(request.id, "Rejected", request.employeeEmail)}
-                              disabled={request.status === 'rejected'}
-                            >
-                              Reject
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="10" className="py-4 px-6 text-center">
-                        No leave requests found
+                  {currentItems.map((request) => (
+                    <tr key={request.id} className="bg-white border-b hover:bg-gray-50">
+                      <td className="py-4 px-6">
+                        <Checkbox
+                          checked={selectedRequests.includes(request.id)}
+                          onChange={() => handleSelectRequest(request.id)}
+                          disabled={
+                            request.status === 'approved' || 
+                            request.status === 'rejected'
+                          }
+                        />
+                      </td>
+                      <td className="py-4 px-6">{request.employee_id}</td>
+                      <td className="py-4 px-6">{request.employeeEmail}</td>
+                      <td className="py-4 px-6">{request.leaveType}</td>
+                      <td className="py-4 px-6">{request.duration}</td>
+                      <td className="py-4 px-6">{formatDateTime(request.leaveFrom)}</td>
+                      <td className="py-4 px-6">{formatDateTime(request.leaveTo)}</td>
+                      <td className="py-4 px-6">{request.noOfDays}</td>
+                      <td className="py-4 px-6">
+                        <div className="max-w-xs truncate" title={request.reason}>
+                          {request.reason}
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          request.status === 'approved' ? 'bg-green-100 text-green-800' :
+                          request.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                          'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6">{formatDateTime(request.createdAt)}</td>
+                    
+                      <td className="py-4 px-6">
+                        <div className="flex gap-2">
+                          <button 
+                            className={`px-3 py-1 rounded text-sm ${
+                              request.status === 'approved' 
+                                ? 'bg-gray-300 cursor-not-allowed text-gray-600' 
+                                : 'bg-green-500 hover:bg-green-600 text-white'
+                            }`}
+                            onClick={() => handleStatusChange(request.id, "Approved", request.employeeEmail)}
+                            disabled={request.status === 'approved'}
+                          >
+                            Approve
+                          </button>
+                          <button 
+                            className={`px-3 py-1 rounded text-sm ${
+                              request.status === 'rejected' 
+                                ? 'bg-gray-300 cursor-not-allowed text-gray-600' 
+                                : 'bg-red-500 hover:bg-red-600 text-white'
+                            }`}
+                            onClick={() => handleStatusChange(request.id, "Rejected", request.employeeEmail)}
+                            disabled={request.status === 'rejected'}
+                          >
+                            Reject
+                          </button>
+                        </div>
                       </td>
                     </tr>
-                  )}
+                  ))}
                 </tbody>
               </table>
             </div>
           )}
+
+          <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+
+
+                      {/* Showing entries info */}
+                      <div className="text-sm text-gray-600">
+              Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredLeaveRequests.length)} of {filteredLeaveRequests.length} entries
+            </div>
+            {/* Items per page dropdown */}
+            
+
+
+
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className={`px-3 py-1 rounded ${
+                  currentPage === 1
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-blue-500 text-white hover:bg-blue-600'
+                }`}
+              >
+                Previous
+              </button>
+
+              {/* Page numbers */}
+              <div className="flex space-x-1">
+                {[...Array(totalPages)].map((_, index) => (
+                  <button
+                    key={index + 1}
+                    onClick={() => handlePageChange(index + 1)}
+                    className={`px-3 py-1 rounded ${
+                      currentPage === index + 1
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-white text-gray-700 border hover:bg-gray-50'
+                    }`}
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className={`px-3 py-1 rounded ${
+                  currentPage === totalPages
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-blue-500 text-white hover:bg-blue-600'
+                }`}
+              >
+                Next
+              </button>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <label className="text-sm text-gray-600">Show</label>
+              <select
+                value={itemsPerPage}
+                onChange={handleItemsPerPageChange}
+                className="border rounded px-2 py-1 text-sm"
+              >
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+              </select>
+              <span className="text-sm text-gray-600">entries</span>
+            </div>
+
+            {/* Pagination controls */}
+          
+          </div>
         </section>
       </div>
       <Footer />

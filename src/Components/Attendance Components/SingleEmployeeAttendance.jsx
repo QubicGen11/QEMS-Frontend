@@ -146,7 +146,7 @@ const SingleEmployeeAttendance = () => {
 
   useEffect(() => {
     handleFilter();
-  }, [year, month]);
+  }, [year, month, attendance]);
 
   const handleFilter = () => {
     if (!year || !month) {
@@ -154,12 +154,47 @@ const SingleEmployeeAttendance = () => {
       return;
     }
 
+    // Filter attendance records for selected month and year
     const filtered = attendance.filter(record => {
       const recordDate = new Date(record.date);
-      return recordDate.getFullYear() === year && recordDate.getMonth() + 1 === month;
+      const recordMonth = recordDate.getMonth() + 1; // Adding 1 because getMonth() returns 0-11
+      const recordYear = recordDate.getFullYear();
+      
+      return recordMonth === parseInt(month) && recordYear === parseInt(year);
     });
 
     setFilteredAttendance(filtered);
+
+    // Update monthly statistics
+    const monthStats = {
+      totalDays: filtered.length,
+      presentDays: filtered.filter(record => record.checkin_Time).length,
+      absentDays: filtered.filter(record => !record.checkin_Time).length,
+      onTime: filtered.filter(record => getCheckinStatus(record.checkin_Time, record.checkout_Time) === 'ontime').length,
+      late: filtered.filter(record => getCheckinStatus(record.checkin_Time, record.checkout_Time) === 'late').length,
+      earlyDeparture: filtered.filter(record => getCheckinStatus(record.checkin_Time, record.checkout_Time) === 'early departure').length
+    };
+
+    // Calculate average check-in time for the month
+    const checkInTimes = filtered
+      .filter(record => record.checkin_Time)
+      .map(record => new Date(record.checkin_Time));
+    
+    if (checkInTimes.length > 0) {
+      const avgTime = checkInTimes.reduce((acc, time) => {
+        return acc + time.getHours() * 60 + time.getMinutes();
+      }, 0) / checkInTimes.length;
+
+      const avgHours = Math.floor(avgTime / 60);
+      const avgMinutes = Math.floor(avgTime % 60);
+      
+      setAvgTimings({
+        hours: avgHours,
+        minutes: avgMinutes
+      });
+    } else {
+      setAvgTimings({ hours: 0, minutes: 0 });
+    }
   };
 
   const handleApprove = async () => {
@@ -554,6 +589,47 @@ const SingleEmployeeAttendance = () => {
                       <FaTimes className={isDeclining || selectedRecords.length === 0 ? 'text-gray-400' : 'text-red-600'} />
                       {isDeclining ? 'Declining...' : 'Decline'}
                     </button>
+                  </div>
+                </div>
+                <div className="flex flex-col mt-4 mb-6">
+                  <div className="bg-white p-4 rounded-lg shadow-sm">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Month Summary */}
+                      <div className="bg-blue-50 p-4 rounded-lg">
+                        <h3 className="text-lg font-semibold text-blue-800">Monthly Summary</h3>
+                        <p className="text-sm text-blue-600 mt-2">
+                          Total Days: {filteredAttendance.length}
+                        </p>
+                        <p className="text-sm text-blue-600">
+                          Present Days: {filteredAttendance.filter(record => record.checkin_Time).length}
+                        </p>
+                        <p className="text-sm text-blue-600">
+                          Absent Days: {filteredAttendance.filter(record => !record.checkin_Time).length}
+                        </p>
+                      </div>
+
+                      {/* Average Timings */}
+                      <div className="bg-green-50 p-4 rounded-lg">
+                        <h3 className="text-lg font-semibold text-green-800">Average Timings</h3>
+                        <p className="text-sm text-green-600 mt-2">
+                          Average Check-in: {avgTimings.hours}:{String(avgTimings.minutes).padStart(2, '0')}
+                        </p>
+                      </div>
+
+                      {/* Status Summary */}
+                      <div className="bg-purple-50 p-4 rounded-lg">
+                        <h3 className="text-lg font-semibold text-purple-800">Status Summary</h3>
+                        <p className="text-sm text-purple-600 mt-2">
+                          On Time: {filteredAttendance.filter(record => getCheckinStatus(record.checkin_Time, record.checkout_Time) === 'ontime').length}
+                        </p>
+                        <p className="text-sm text-purple-600">
+                          Late: {filteredAttendance.filter(record => getCheckinStatus(record.checkin_Time, record.checkout_Time) === 'late').length}
+                        </p>
+                        <p className="text-sm text-purple-600">
+                          Early Departure: {filteredAttendance.filter(record => getCheckinStatus(record.checkin_Time, record.checkout_Time) === 'early departure').length}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">

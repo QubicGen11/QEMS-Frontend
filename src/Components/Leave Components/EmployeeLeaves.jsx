@@ -35,6 +35,15 @@ const EmployeeLeaves = () => {
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [modalData, setModalData] = useState(null);
   const [openDropdownId, setOpenDropdownId] = useState(null);
+  const [filters, setFilters] = useState({
+    employeeId: '',
+    leaveType: '',
+    startDate: '',
+    endDate: '',
+    status: '',
+    duration: '',
+    noOfDays: ''
+  });
   
   useEffect(() => {
     fetchInitialData();
@@ -157,6 +166,26 @@ const EmployeeLeaves = () => {
     setModalData(null);
   };
 
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      employeeId: '',
+      leaveType: '',
+      startDate: '',
+      endDate: '',
+      status: '',
+      duration: '',
+      noOfDays: ''
+    });
+  };
+
   return (
     <div>
       <Header />
@@ -170,6 +199,114 @@ const EmployeeLeaves = () => {
                 Loading employee details...
               </span>
             )}
+          </div>
+          
+          <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Employee ID Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Employee ID
+                </label>
+                <input
+                  type="text"
+                  name="employeeId"
+                  value={filters.employeeId}
+                  onChange={handleFilterChange}
+                  placeholder="Search by ID"
+                  className="w-full p-2 border rounded-md"
+                />
+              </div>
+
+              {/* Leave Type Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Leave Type
+                </label>
+                <select
+                  name="leaveType"
+                  value={filters.leaveType}
+                  onChange={handleFilterChange}
+                  className="w-full p-2 border rounded-md"
+                >
+                  <option value="">All Types</option>
+                  {Array.from(new Set(leaveRequests.map(req => req.leaveType))).map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Status Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Status
+                </label>
+                <select
+                  name="status"
+                  value={filters.status}
+                  onChange={handleFilterChange}
+                  className="w-full p-2 border rounded-md"
+                >
+                  <option value="">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+              </div>
+
+              {/* Date Range Filters */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  From Date
+                </label>
+                <input
+                  type="date"
+                  name="startDate"
+                  value={filters.startDate}
+                  onChange={handleFilterChange}
+                  className="w-full p-2 border rounded-md"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  To Date
+                </label>
+                <input
+                  type="date"
+                  name="endDate"
+                  value={filters.endDate}
+                  onChange={handleFilterChange}
+                  className="w-full p-2 border rounded-md"
+                />
+              </div>
+
+              {/* Number of Days Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Number of Days
+                </label>
+                <input
+                  type="number"
+                  name="noOfDays"
+                  value={filters.noOfDays}
+                  onChange={handleFilterChange}
+                  placeholder="Filter by days"
+                  min="0"
+                  className="w-full p-2 border rounded-md"
+                />
+              </div>
+            </div>
+
+            {/* Clear Filters Button */}
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={clearFilters}
+                className="bg-gray-100 text-gray-600 px-4 py-2 rounded-md hover:bg-gray-200"
+              >
+                Clear Filters
+              </button>
+            </div>
           </div>
           
           {isInitialLoading ? (
@@ -190,14 +327,29 @@ const EmployeeLeaves = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {leaveRequests.length === 0 ? (
-                    <tr>
-                      <td colSpan="8" className="py-4 px-6 text-center text-gray-500">
-                        No leave requests found
-                      </td>
-                    </tr>
-                  ) : (
-                    leaveRequests.map((request) => (
+                  {leaveRequests
+                    .filter(request => {
+                      const matchesEmployeeId = request.name?.toLowerCase().includes(filters.employeeId.toLowerCase());
+                      const matchesLeaveType = !filters.leaveType || request.leaveType === filters.leaveType;
+                      const matchesStatus = !filters.status || request.status === filters.status;
+                      const matchesNoOfDays = !filters.noOfDays || request.noOfDays === parseInt(filters.noOfDays);
+                      
+                      let matchesDateRange = true;
+                      if (filters.startDate && filters.endDate) {
+                        const requestStart = new Date(request.leaveFrom);
+                        const requestEnd = new Date(request.leaveTo);
+                        const filterStart = new Date(filters.startDate);
+                        const filterEnd = new Date(filters.endDate);
+                        matchesDateRange = requestStart >= filterStart && requestEnd <= filterEnd;
+                      }
+
+                      return matchesEmployeeId && 
+                             matchesLeaveType && 
+                             matchesStatus && 
+                             matchesNoOfDays && 
+                             matchesDateRange;
+                    })
+                    .map((request) => (
                       <tr key={request.id} className="bg-white border-b" onClick={() => handleRowClick(request)}>
                         <td className="py-4 px-6">
                           <img className="w-10 h-10 rounded-full" src={request.image} alt={request.name} />
@@ -214,8 +366,7 @@ const EmployeeLeaves = () => {
                         </td>
                         <td className="py-4 px-6">{request.reason.length > 20 ? `${request.reason.substring(0, 20)}...` : request.reason}</td>
                       </tr>
-                    ))
-                  )}
+                    ))}
                 </tbody>
               </table>
             </div>
