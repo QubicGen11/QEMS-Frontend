@@ -103,7 +103,13 @@ const SingleEmployeeAttendance = () => {
     try {
       const cleanEmployeeId = employeeId.replace(':', '');
       const response = await axios.get(`${config.apiUrl}/qubinest/employee/${cleanEmployeeId}`);
-      setEmployee(response.data);
+      const employeeData = response.data;
+      const fullName = `${employeeData.firstname || ''} ${employeeData.lastname || ''}`.trim();
+      setEmployee({
+        ...employeeData,
+        username: fullName,
+        mainPosition: employeeData.companyEmail || 'Email Not Set'
+      });
     } catch (error) {
       console.error('Error fetching employee details:', error);
     }

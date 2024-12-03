@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import Header from '../Homepage Components/Header';
@@ -8,6 +8,9 @@ import { FiClock, FiCalendar, FiUsers, FiAlertCircle } from 'react-icons/fi';
 import LoadingSkeleton from './LoadingSkeleton';
 import config from '../config';
 import Cookies from 'js-cookie';
+import * as XLSX from 'xlsx';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFileExcel, faFilter, faTimes } from '@fortawesome/free-solid-svg-icons';
 
 const TodaysAttendance = () => {
   const [attendance, setAttendance] = useState([]);
@@ -18,6 +21,13 @@ const TodaysAttendance = () => {
     lateToday: 0,
     absentToday: 0
   });
+  const [filters, setFilters] = useState({
+    employeeId: '',
+    email: '',
+    department: '',
+    status: 'all'
+  });
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     fetchTodaysAttendance();
@@ -140,54 +150,142 @@ const TodaysAttendance = () => {
     return `${hours}h ${minutes}m`;
   };
 
+  // Add export to Excel function
+  const exportToExcel = () => {
+    const dataToExport = attendance.map(record => ({
+      'Employee ID': record.employeeId,
+      'Email': record.email,
+      'Department': record.department || 'N/A',
+      'Check-in Time': record.formattedCheckin,
+      'Check-out Time': record.formattedCheckout,
+      'Status': record.checkinStatus
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(dataToExport);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Attendance');
+    XLSX.writeFile(wb, 'todays_attendance.xlsx');
+  };
+
+  // Enhanced filter function
+  const filteredAttendance = useMemo(() => {
+    return attendance.filter(record => {
+      const matchesEmployeeId = record.employeeId?.toString().toLowerCase().includes(filters.employeeId.toLowerCase());
+      const matchesEmail = record.email?.toLowerCase().includes(filters.email.toLowerCase());
+      const matchesDepartment = !filters.department || record.department === filters.department;
+      const matchesStatus = filters.status === 'all' || record.checkinStatus === filters.status;
+
+      return matchesEmployeeId && matchesEmail && matchesDepartment && matchesStatus;
+    });
+  }, [attendance, filters]);
+
   return (
     <>
       <Header />
       <Sidemenu />
       <div className="content-wrapper p-4">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold text-gray-800">Today's Attendance</h1>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2"
+            >
+              <FontAwesomeIcon icon={faFilter} />
+              {showFilters ? 'Hide Filters' : 'Show Filters'}
+            </button>
+            <button
+              onClick={exportToExcel}
+              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2"
+            >
+              <FontAwesomeIcon icon={faFileExcel} />
+              Export to Excel
+            </button>
+          </div>
+        </div>
+
+        {/* Filters Section */}
+        {showFilters && (
+          <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Employee ID Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Employee ID
+                </label>
+                <input
+                  type="text"
+                  name="employeeId"
+                  value={filters.employeeId}
+                  onChange={(e) => setFilters({ ...filters, employeeId: e.target.value })}
+                  placeholder="Search by ID"
+                  className="w-full p-2 border rounded-md"
+                />
+              </div>
+
+              {/* Email Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <input
+                  type="text"
+                  name="email"
+                  value={filters.email}
+                  onChange={(e) => setFilters({ ...filters, email: e.target.value })}
+                  placeholder="Search by email"
+                  className="w-full p-2 border rounded-md"
+                />
+              </div>
+
+              {/* Department Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Department
+                </label>
+                <input
+                  type="text"
+                  name="department"
+                  value={filters.department}
+                  onChange={(e) => setFilters({ ...filters, department: e.target.value })}
+                  placeholder="Search by department"
+                  className="w-full p-2 border rounded-md"
+                />
+              </div>
+
+              {/* Status Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Status
+                </label>
+                <select
+                  name="status"
+                  value={filters.status}
+                  onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                  className="w-full p-2 border rounded-md"
+                >
+                  <option value="all">All Status</option>
+                  <option value="ontime">On Time</option>
+                  <option value="late">Late</option>
+                  <option value="absent">Absent</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => setFilters({ employeeId: '', email: '', department: '', status: 'all' })}
+                className="bg-gray-100 text-gray-600 px-4 py-2 rounded-md hover:bg-gray-200 flex items-center gap-2"
+              >
+                <FontAwesomeIcon icon={faTimes} />
+                Clear Filters
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Attendance Table */}
         <div className="bg-white rounded-lg shadow-lg p-6">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-800">Today's Attendance</h1>
-            <p className="text-gray-600 mt-2">
-              {new Date().toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
-            </p>
-          </div>
-
-          {/* Statistics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <StatCard
-              icon={<FiUsers />}
-              title="Total Employees"
-              value={stats.totalEmployees}
-              color="bg-blue-500"
-            />
-            <StatCard
-              icon={<FiClock />}
-              title="Present Today"
-              value={stats.presentToday}
-              color="bg-green-500"
-            />
-            <StatCard
-              icon={<FiAlertCircle />}
-              title="Late Today"
-              value={stats.lateToday}
-              color="bg-yellow-500"
-            />
-            <StatCard
-              icon={<FiCalendar />}
-              title="Absent Today"
-              value={stats.absentToday}
-              color="bg-red-500"
-            />
-          </div>
-
-          {/* Attendance Table */}
           {loading ? (
             <LoadingSkeleton />
           ) : (
@@ -219,7 +317,7 @@ const TodaysAttendance = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {attendance.map((record) => (
+                  {filteredAttendance.map((record) => (
                     <tr key={record.employeeId}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -237,43 +335,23 @@ const TodaysAttendance = () => {
                             )}
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">
-                              {record.employeeName}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {record.email}
-                            </div>
+                            <div className="text-sm font-medium text-gray-900">{record.employeeName}</div>
+                            <div className="text-sm text-gray-500">{record.email}</div>
                           </div>
                         </div>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap">{record.department || 'N/A'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{record.formattedCheckin}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{record.formattedCheckout}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{calculateWorkingHours(record.checkin_Time, record.checkout_Time)}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 py-1 text-sm rounded-full bg-purple-100 text-purple-800">
-                          {record.department}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {record.formattedCheckin}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {record.formattedCheckout}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          record.checkin_Time && record.checkout_Time 
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {calculateWorkingHours(record.checkin_Time, record.checkout_Time)}
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(record.checkinStatus)}`}>
+                          {record.checkinStatus}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(record.checkinStatus)}`}>
-                          {record.checkinStatus.toUpperCase()}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(getCheckoutStatus(record.checkout_Time))}`}>
-                          {getCheckoutStatus(record.checkout_Time).toUpperCase()}
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(getCheckoutStatus(record.checkout_Time))}`}>
+                          {getCheckoutStatus(record.checkout_Time)}
                         </span>
                       </td>
                     </tr>
@@ -282,29 +360,6 @@ const TodaysAttendance = () => {
               </table>
             </div>
           )}
-
-          {/* Add a legend for time rules */}
-          <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-            <h4 className="text-lg font-semibold mb-2">Working Hours: 10:30 AM - 5:00 PM</h4>
-            <ul className="space-y-2">
-              <li className="flex items-center">
-                <span className={`px-2 py-1 mr-2 rounded-full ${getStatusColor('ontime')}`}>ON TIME</span>
-                <span>Check-in before 10:30 AM</span>
-              </li>
-              <li className="flex items-center">
-                <span className={`px-2 py-1 mr-2 rounded-full ${getStatusColor('late')}`}>LATE</span>
-                <span>Check-in after 10:30 AM</span>
-              </li>
-              <li className="flex items-center">
-                <span className={`px-2 py-1 mr-2 rounded-full ${getStatusColor('early')}`}>EARLY</span>
-                <span>Check-out before 5:00 PM</span>
-              </li>
-              <li className="flex items-center">
-                <span className={`px-2 py-1 mr-2 rounded-full ${getStatusColor('complete')}`}>COMPLETE</span>
-                <span>Check-out after 5:00 PM</span>
-              </li>
-            </ul>
-          </div>
         </div>
       </div>
       <Footer />
