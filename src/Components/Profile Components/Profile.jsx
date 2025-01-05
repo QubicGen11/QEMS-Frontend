@@ -109,16 +109,9 @@ const Profile = () => {
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    background: `
-                      linear-gradient(rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.1)),
-                      linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.9)),
-                      url("https://images.unsplash.com/photo-1485217988980-11786ced9454?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"),
-                      url("https://images.unsplash.com/photo-1604879616509-d841eec0ca4e?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"),
-
-                    `,
-                    backgroundSize: "cover, cover, cover, cover",
-                    backgroundPosition: "center, center 55%, center, center",
-                    backgroundBlendMode: "overlay, overlay, soft-light, normal",
+                    background: `linear-gradient(rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.7)), url("https://images.unsplash.com/photo-1553877522-43269d4ea984?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
                     zIndex: 0,
                   }}
                 />
