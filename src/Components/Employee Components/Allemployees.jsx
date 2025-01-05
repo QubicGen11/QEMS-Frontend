@@ -357,9 +357,6 @@ const Allemployees = () => {
                             Email
                           </th>
                           <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500">
-                            Role
-                          </th>
-                          <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500">
                             Position
                           </th>
                           <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500">
@@ -380,11 +377,28 @@ const Allemployees = () => {
                                 />
                                 <div className="flex items-center gap-x-2">
                                   <div 
-                                    className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-medium shadow-lg transform transition-all duration-300 hover:scale-110 ${getRandomGradient(employee.email)} cursor-pointer`}
-                                    onClick={() => handleViewProfile(employee.email)}
+                                    className="relative w-10 h-10 group"
+                                    title={employee.role}
                                   >
-                                    {getInitials(employee.username || `${employee.firstname} ${employee.lastname}`)}
+                                    <div 
+                                      className={`w-full h-full rounded-full flex items-center justify-center text-white font-medium shadow-lg ${getRandomGradient(employee.email)} cursor-pointer`}
+                                      onClick={() => handleViewProfile(employee.email)}
+                                    >
+                                      {getInitials(employee.username || `${employee.firstname} ${employee.lastname}`)}
+                                      
+                                      <span className="absolute -bottom-1 -right-1 w-4 h-4 text-[10px] bg-blue-600 rounded-full flex items-center justify-center border-2 border-white">
+                                        {employee.role?.[0]}
+                                      </span>
+                                    </div>
+                                    
+                                    <div 
+                                      className="absolute hidden group-hover:block bg-black text-white text-xs py-1 px-2 rounded -top-8 left-1/2 transform -translate-x-1/2 pointer-events-none"
+                                      style={{ zIndex: 1000 }}
+                                    >
+                                      {employee.role}
+                                    </div>
                                   </div>
+                                  
                                   <div>
                                     <h2 
                                       className="font-medium text-gray-800 cursor-pointer hover:text-blue-600"
@@ -406,9 +420,6 @@ const Allemployees = () => {
                             </td>
                             <td className="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
                               {employee.email}
-                            </td>
-                            <td className="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
-                              {employee.role}
                             </td>
                             <td className="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
                               {employee.mainPosition}
