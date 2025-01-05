@@ -7,7 +7,7 @@ import { RiDeleteBinLine } from "react-icons/ri";
 import { BiPencil } from "react-icons/bi";
 import imgConfig from "../imgConfig"; // Ensure this is correctly configured
 import { CiMenuKebab } from "react-icons/ci";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import config from "../config";
 import { ThreeDots } from 'react-loader-spinner';
 import { toast } from 'react-toastify';
@@ -16,6 +16,27 @@ import { FiFilter } from 'react-icons/fi';
 import { HiDownload } from 'react-icons/hi';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+
+const Tooltip = ({ children, content }) => {
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  return (
+    <div className="relative">
+      <div
+        onMouseEnter={() => setShowTooltip(true)}
+        onMouseLeave={() => setShowTooltip(false)}
+      >
+        {children}
+      </div>
+      {showTooltip && (
+        <div className="absolute z-10 px-2 py-1 text-xs text-white bg-gray-800 rounded-md whitespace-nowrap -top-8 left-1/2 transform -translate-x-1/2">
+          {content}
+          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-gray-800"></div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const getInitials = (name) => {
   if (!name) return '';
@@ -34,7 +55,10 @@ const colors = [
 ];
 
 const getRandomColor = (email) => {
-  // Use email as a seed to always get the same color for the same user
+  const colors = [
+    'bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-yellow-500',
+    'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-teal-500'
+  ];
   const index = email.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return colors[index % colors.length];
 };
@@ -64,6 +88,7 @@ const getRandomGradient = (email) => {
 };
 
 const AllEmployeeAttendance = () => {
+  const navigate = useNavigate();
   const [employees, setEmployees] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
@@ -365,6 +390,10 @@ const AllEmployeeAttendance = () => {
     }
   };
 
+  const handleViewAttendance = (employee) => {
+    navigate(`/singleemployeeattendance/${employee.employeeId}`);
+  };
+
   return (
     <>
       <div>
@@ -459,122 +488,92 @@ const AllEmployeeAttendance = () => {
                         </div>
                       ) : (
                         <table className="min-w-full divide-y divide-gray-200 text-black:divide-gray-700">
-                          <thead className="bg-gray-50 text-black:bg-gray-800">
+                          <thead className="bg-gray-50">
                             <tr>
-                              <th className="py-3.5 px-4 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
-                                <div className="flex items-center gap-x-3">
-                                  <input
-                                    type="checkbox"
-                                    className="text-blue-500 border-gray-300 rounded text-black:bg-gray-900 text-black:ring-offset-gray-900 text-black:border-gray-700"
-                                  />
-                                  <span>Name</span>
-                                </div>
+                              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Name
                               </th>
-                              <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
+                              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Employee ID
                               </th>
-                              <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
+                              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Status
                               </th>
-                              <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
+                              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Email address
                               </th>
-                              <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
-                                Role
-                              </th>
-                              <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
+                              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Salary
                               </th>
-                              <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
+                              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Position
                               </th>
-                              <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 text-black:text-gray-400">
+                              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Actions
                               </th>
                             </tr>
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-200 text-black:divide-gray-700 text-black:bg-gray-900">
-                            {filteredEmployees.map((user) => (
-                              <tr key={user.id || user.email}>
-                                <td className="px-4 py-4 text-sm font-medium text-gray-700 whitespace-nowrap">
-                                  <div className="inline-flex items-center gap-x-3">
-                                    <input
-                                      type="checkbox"
-                                      className="text-blue-500 border-gray-300 rounded text-black:bg-gray-900 text-black:ring-offset-gray-900 text-black:border-gray-700"
-                                    />
-                                    <div className="flex items-center gap-x-2">
-                                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-medium shadow-lg transform transition-all duration-300 hover:scale-110 ${getRandomGradient(user.email)}`}>
-                                        {getInitials(user.username)}
-                                      </div>
-                                      <div>
-                                        <h2 className="font-medium text-gray-800 text-black:text-white">
-                                          {user.username}
-                                        </h2>
+                            {filteredEmployees.map((employee) => (
+                              <tr key={employee.email} className="hover:bg-gray-50">
+                                <td className="px-4 py-4 whitespace-nowrap">
+                                  <div className="flex items-center">
+                                    <div className={`h-10 w-10 rounded-full ${getRandomGradient(employee.email)} flex items-center justify-center text-white font-semibold`}>
+                                      {getInitials(employee.username)}
+                                    </div>
+                                    <div className="ml-3">
+                                      <div className="text-sm font-medium text-gray-900">{employee.username}</div>
+                                      <div className="flex items-center mt-1">
+                                        <Tooltip content={`Role: ${employee.role || 'Unassigned'}`}>
+                                          <div 
+                                            className={`w-4 h-4 rounded-full ${getRandomColor(employee.email)} flex items-center justify-center cursor-help`}
+                                          >
+                                            <span className="text-[8px] text-white font-medium">
+                                              {employee.role?.charAt(0) || 'U'}
+                                            </span>
+                                          </div>
+                                        </Tooltip>
                                       </div>
                                     </div>
                                   </div>
                                 </td>
-                                <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
-                                  {user.employeeId}
-                                </td>
-                                <td className={`relative px-4 py-4 text-sm font-medium text-gray-700 whitespace-nowrap ${getStatusClasses(user.status)}`}>
-                                  {user.status}
-                                </td>
-                                <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
-                                  {user.email}
-                                </td>
-                                <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
-                                  {user.role}
-                                </td>
-                                <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
-                                  {user.salary}
-                                </td>
-                                <td className="px-4 py-4 text-sm text-gray-500 text-black:text-gray-300 whitespace-nowrap">
-                                  {user.mainPosition}
-                                </td>
-                                <td className="px-4 py-4 text-sm whitespace-nowrap">
-                                  <div className="flex items-center gap-x-6">
-                                    <Link 
-                                      to={`/singleemployeeattendance/:${user.employeeId}`} 
-                                      className="inline-flex items-center px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors duration-200 group"
-                                    >
-                                      <svg 
-                                        xmlns="http://www.w3.org/2000/svg" 
-                                        className="h-4 w-4 mr-2" 
-                                        fill="none" 
-                                        viewBox="0 0 24 24" 
-                                        stroke="currentColor"
-                                      >
-                                        <path 
-                                          strokeLinecap="round" 
-                                          strokeLinejoin="round" 
-                                          strokeWidth={2} 
-                                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" 
-                                        />
-                                        <path 
-                                          strokeLinecap="round" 
-                                          strokeLinejoin="round" 
-                                          strokeWidth={2} 
-                                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" 
-                                        />
-                                      </svg>
-                                      <span className="font-medium">View Attendance</span>
-                                      <svg 
-                                        xmlns="http://www.w3.org/2000/svg" 
-                                        className="h-4 w-4 ml-2 transform transition-transform group-hover:translate-x-1" 
-                                        fill="none" 
-                                        viewBox="0 0 24 24" 
-                                        stroke="currentColor"
-                                      >
-                                        <path 
-                                          strokeLinecap="round" 
-                                          strokeLinejoin="round" 
-                                          strokeWidth={2} 
-                                          d="M9 5l7 7-7 7" 
-                                        />
-                                      </svg>
-                                    </Link>
+                                <td className="px-4 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">
+                                    {employee.department || 'N/A'}
                                   </div>
+                                  <div className="text-xs text-gray-500">
+                                    {employee.subDepartment || 'N/A'}
+                                  </div>
+                                  <div className="text-xs text-gray-400">
+                                    ID: {employee.employeeId || 'Not Assigned'}
+                                  </div>
+                                </td>
+                                <td className="px-4 py-4 whitespace-nowrap">
+                                  <span className={`px-2 py-1 text-xs rounded-full ${getStatusClasses(employee.status)}`}>
+                                    {employee.status || 'Active'}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">{employee.email}</div>
+                                </td>
+                                <td className="px-4 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">
+                                    {employee.salary ? `₹${employee.salary.toLocaleString()}` : 'N/A'}
+                                  </div>
+                                </td>
+                                <td className="px-4 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">{employee.mainPosition || 'N/A'}</div>
+                                </td>
+                                <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                  <button 
+                                    className="bg-blue-50 text-blue-600 px-3 py-1 rounded-md hover:bg-blue-100 flex items-center gap-2"
+                                    onClick={() => handleViewAttendance(employee)}
+                                  >
+                                    <span className="text-sm">View Attendance</span>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                  </button>
                                 </td>
                               </tr>
                             ))}
