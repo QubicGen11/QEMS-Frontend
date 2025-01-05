@@ -4,13 +4,13 @@ import { toast } from 'react-toastify';
 import Header from '../Homepage Components/Header';
 import Sidemenu from '../Homepage Components/Sidemenu';
 import Footer from '../Homepage Components/Footer';
-import { FiClock, FiCalendar, FiUsers, FiAlertCircle } from 'react-icons/fi';
+import { FiClock, FiCalendar, FiUsers, FiAlertCircle, FiSearch } from 'react-icons/fi';
 import LoadingSkeleton from './LoadingSkeleton';
 import config from '../config';
 import Cookies from 'js-cookie';
 import * as XLSX from 'xlsx';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFileExcel, faFilter, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faFileExcel, faFilter, faTimes, faSearch } from '@fortawesome/free-solid-svg-icons';
 
 const TodaysAttendance = () => {
   const [attendance, setAttendance] = useState([]);
@@ -22,15 +22,35 @@ const TodaysAttendance = () => {
     absentToday: 0
   });
   const [filters, setFilters] = useState({
-    employeeId: '',
-    email: '',
     department: '',
-    status: 'all'
+    status: 'all',
+    employeeId: ''
   });
   const [showFilters, setShowFilters] = useState(false);
+  const [departments, setDepartments] = useState(['All']);
+  const [selectedDepartment, setSelectedDepartment] = useState('All');
 
   useEffect(() => {
     fetchTodaysAttendance();
+  }, []);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const response = await axios.get(`${config.apiUrl}/qubinest/employees/departments`, {
+          headers: {
+            'Authorization': `Bearer ${Cookies.get('token')}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        setDepartments(['All', ...response.data]);
+      } catch (error) {
+        console.error('Error fetching departments:', error);
+        toast.error('Failed to fetch departments');
+      }
+    };
+
+    fetchDepartments();
   }, []);
 
   const fetchTodaysAttendance = async () => {
@@ -170,12 +190,23 @@ const TodaysAttendance = () => {
   // Enhanced filter function
   const filteredAttendance = useMemo(() => {
     return attendance.filter(record => {
-      const matchesEmployeeId = record.employeeId?.toString().toLowerCase().includes(filters.employeeId.toLowerCase());
-      const matchesEmail = record.email?.toLowerCase().includes(filters.email.toLowerCase());
-      const matchesDepartment = !filters.department || record.department === filters.department;
-      const matchesStatus = filters.status === 'all' || record.checkinStatus === filters.status;
+      // Department filter
+      const departmentMatch = 
+        !filters.department || 
+        filters.department === 'All' || 
+        record.department === filters.department;
 
-      return matchesEmployeeId && matchesEmail && matchesDepartment && matchesStatus;
+      // Status filter
+      const statusMatch = 
+        filters.status === 'all' || 
+        record.checkinStatus === filters.status;
+
+      // Employee ID filter
+      const employeeIdMatch = 
+        !filters.employeeId || 
+        record.employeeId.toLowerCase().includes(filters.employeeId.toLowerCase());
+
+      return departmentMatch && statusMatch && employeeIdMatch;
     });
   }, [attendance, filters]);
 
@@ -207,79 +238,73 @@ const TodaysAttendance = () => {
         {/* Filters Section */}
         {showFilters && (
           <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Employee ID Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Employee ID
-                </label>
-                <input
-                  type="text"
-                  name="employeeId"
-                  value={filters.employeeId}
-                  onChange={(e) => setFilters({ ...filters, employeeId: e.target.value })}
-                  placeholder="Search by ID"
-                  className="w-full p-2 border rounded-md"
-                />
-              </div>
+            <div className="mb-4 space-y-4">
+              <div className="flex items-center gap-4">
+                {/* Employee ID Filter */}
+                <div className="flex items-center gap-2">
+                  <FontAwesomeIcon icon={faSearch} className="text-gray-500" />
+                  <input
+                    type="text"
+                    placeholder="Search by Employee ID"
+                    className="border rounded-md px-3 py-1.5 text-gray-700"
+                    value={filters.employeeId}
+                    onChange={(e) => setFilters(prev => ({ 
+                      ...prev, 
+                      employeeId: e.target.value 
+                    }))}
+                  />
+                </div>
 
-              {/* Email Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <input
-                  type="text"
-                  name="email"
-                  value={filters.email}
-                  onChange={(e) => setFilters({ ...filters, email: e.target.value })}
-                  placeholder="Search by email"
-                  className="w-full p-2 border rounded-md"
-                />
-              </div>
+                {/* Department Filter */}
+                <div className="flex items-center gap-2">
+                  <FontAwesomeIcon icon={faFilter} className="text-gray-500" />
+                  <select
+                    className="border rounded-md px-3 py-1.5 text-gray-700"
+                    value={filters.department}
+                    onChange={(e) => setFilters(prev => ({ 
+                      ...prev, 
+                      department: e.target.value 
+                    }))}
+                  >
+                    {departments.map((dept) => (
+                      <option key={dept} value={dept}>
+                        {dept}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              {/* Department Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Department
-                </label>
-                <input
-                  type="text"
-                  name="department"
-                  value={filters.department}
-                  onChange={(e) => setFilters({ ...filters, department: e.target.value })}
-                  placeholder="Search by department"
-                  className="w-full p-2 border rounded-md"
-                />
-              </div>
+                {/* Status Filter */}
+                <div className="flex items-center gap-2">
+                  <FontAwesomeIcon icon={faFilter} className="text-gray-500" />
+                  <select
+                    className="border rounded-md px-3 py-1.5 text-gray-700"
+                    value={filters.status}
+                    onChange={(e) => setFilters(prev => ({ 
+                      ...prev, 
+                      status: e.target.value 
+                    }))}
+                  >
+                    <option value="all">All Status</option>
+                    <option value="ontime">On Time</option>
+                    <option value="late">Late</option>
+                    <option value="absent">Absent</option>
+                  </select>
+                </div>
 
-              {/* Status Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Status
-                </label>
-                <select
-                  name="status"
-                  value={filters.status}
-                  onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                  className="w-full p-2 border rounded-md"
+                {/* Clear Filters Button */}
+                <button
+                  onClick={() => setFilters({ 
+                    department: '', 
+                    status: 'all', 
+                    employeeId: '' 
+                  })}
+                  className="bg-gray-100 text-gray-600 px-4 py-2 rounded-md hover:bg-gray-200 flex items-center gap-2"
                 >
-                  <option value="all">All Status</option>
-                  <option value="ontime">On Time</option>
-                  <option value="late">Late</option>
-                  <option value="absent">Absent</option>
-                </select>
+                  <FontAwesomeIcon icon={faTimes} />
+                  Clear Filters
+                </button>
               </div>
-            </div>
-
-            <div className="mt-4 flex justify-end">
-              <button
-                onClick={() => setFilters({ employeeId: '', email: '', department: '', status: 'all' })}
-                className="bg-gray-100 text-gray-600 px-4 py-2 rounded-md hover:bg-gray-200 flex items-center gap-2"
-              >
-                <FontAwesomeIcon icon={faTimes} />
-                Clear Filters
-              </button>
             </div>
           </div>
         )}
@@ -313,6 +338,9 @@ const TodaysAttendance = () => {
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Check-out Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Position
                     </th>
                   </tr>
                 </thead>
@@ -353,6 +381,9 @@ const TodaysAttendance = () => {
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(getCheckoutStatus(record.checkout_Time))}`}>
                           {getCheckoutStatus(record.checkout_Time)}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {record.mainPosition || 'N/A'}
                       </td>
                     </tr>
                   ))}

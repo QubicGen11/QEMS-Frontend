@@ -81,9 +81,16 @@ const Allemployeleaves = () => {
     
     return leaveRequests
       .filter(request => {
+        if (request.employee_id === 'N/A' || !request.employee_id) {
+          return false;
+        }
+
         const matchesEmployeeId = request?.employee_id?.toString().toLowerCase().includes(filters.employeeId.toLowerCase());
         const matchesEmail = request?.employeeEmail?.toLowerCase().includes(filters.email.toLowerCase());
-        const matchesLeaveType = !filters.leaveType || request?.leaveType === filters.leaveType;
+        
+        const matchesLeaveType = filters.leaveType === 'All Types' || filters.leaveType === '' || 
+                                request?.leaveType?.toLowerCase() === filters.leaveType.toLowerCase();
+        
         const matchesStatus = !filters.status || request?.status === filters.status;
         const matchesDuration = !filters.duration || request?.duration?.toLowerCase() === filters.duration.toLowerCase();
         const matchesNoOfDays = !filters.noOfDays || request?.noOfDays === parseInt(filters.noOfDays);
@@ -263,6 +270,13 @@ const Allemployeleaves = () => {
   const currentItems = filteredLeaveRequests.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredLeaveRequests.length / itemsPerPage);
 
+  const leaveTypes = [
+    'All Types',
+    'Personal',
+    'Casual',
+    'sick' // Keep only one version of sick leave
+  ];
+
   return (
     <div>
       <Header />
@@ -305,19 +319,18 @@ const Allemployeleaves = () => {
               </div>
 
               {/* Leave Type Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Leave Type
-                </label>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">Leave Type</label>
                 <select
                   name="leaveType"
                   value={filters.leaveType}
                   onChange={handleFilterChange}
-                  className="w-full p-2 border rounded-md"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 >
-                  <option value="">All Types</option>
-                  {uniqueLeaveTypes.map(type => (
-                    <option key={type} value={type}>{type}</option>
+                  {leaveTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
                   ))}
                 </select>
               </div>

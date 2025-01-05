@@ -304,18 +304,8 @@ const Sidemenu = () => {
                           <p>Employee Leaves</p>
                         </Link>
                       </li>
-                      <li className="nav-item">
-                        <Link to="/leavebalance" className="nav-link">
-                          <FontAwesomeIcon icon={faBalanceScale} className="nav-icon" />
-                          <p>Leave Balance</p>
-                        </Link>
-                      </li>
-                      <li className="nav-item">
-                        <Link to="/leavetype" className="nav-link">
-                          <FontAwesomeIcon icon={faListAlt} className="nav-icon" />
-                          <p>Leave Type</p>
-                        </Link>
-                      </li>
+                   
+                     
                     </ul>
                   </li>
                 </>
