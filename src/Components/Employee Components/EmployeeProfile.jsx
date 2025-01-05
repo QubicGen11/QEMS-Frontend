@@ -181,10 +181,47 @@ const EmployeeProfile = () => {
                         </p>
                       </div>
                     </div>
-                    <div className="flex flex-col gap-2">
-                      <h1 className="text-lg font-semibold">Position</h1>
+
+                    <div className="flex items-center">
+                      <FiBriefcase className="w-5 h-5 text-gray-500 mr-3" />
+                      <div>
+                      <h1 className="text-md ">Position</h1>
                       <p className="text-gray-600">{employee?.users[0]?.mainPosition || "Not Assigned"}</p>
+
+                      </div>
                     </div>
+                    <div className="flex items-center">
+                      <FiBriefcase className="w-5 h-5 text-gray-500 mr-3" />
+                      <div>
+                      <p className="text-gray-600 text-sm">Department</p>
+                      <p className="font-medium text-gray-500">{employee?.users?.[0]?.department || "Not specified"}</p>
+                 
+                      </div>
+                    </div>
+                    <div className="flex items-center">
+                      <FiBriefcase className="w-5 h-5 text-gray-500 mr-3" />
+                      <div>
+                      <p className="text-gray-600 text-sm">Sub Department</p>
+                      <p className="font-medium text-gray-500">{employee?.users?.[0]?.subDepartment || "Not specified"}</p>
+                   
+                      </div>
+                    </div>
+
+
+
+                    <div className="flex flex-col gap-2">
+                    
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                    
+                    </div>
+                    <div>
+                  
+                    </div>
+                  
+                  </div>
+           
                     {/* <div className="flex items-center">
                       <FiLinkedin className="w-5 h-5 text-gray-500 mr-3" />
                       <div>
@@ -289,6 +326,9 @@ const EmployeeProfile = () => {
                     </p>
                   </div>
                 )}
+
+                {/* Work Information Card */}
+               
               </div>
             </div>
           </>
