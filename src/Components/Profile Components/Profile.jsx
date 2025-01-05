@@ -19,6 +19,7 @@ const Profile = () => {
   const [employeeInfo, setEmployeeInfo] = useState(null);
   const [canEdit, setCanEdit] = useState(true);
   const location = useLocation();
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const fetchEmployeeInfo = async () => {
@@ -35,13 +36,14 @@ const Profile = () => {
             ...employeeData,
             mainPosition: employeeData.users[0]?.mainPosition,
           });
+          
+          // Check if user is admin
+          setIsAdmin(employeeData.users[0]?.role === 'Admin');
 
-          // Add employee ID as cookie if it exists
           if (employeeData.employee_id) {
             Cookies.set("employee_id", employeeData.employee_id);
           }
         }
-        console.log(employeeData);
       } catch (error) {
         console.error("Error fetching employee data:", error);
       }
@@ -75,11 +77,7 @@ const Profile = () => {
     }
   }, []);
 
-  const handleReset = () => {
-    localStorage.removeItem('lastEditTimestamp');
-    setCanEdit(true);
-    toast.success('Edit restriction reset for testing purposes');
-  };
+
 
   const handleEditClick = (e) => {
     if (!canEdit) {
@@ -100,54 +98,71 @@ const Profile = () => {
               <div
                 className="widget-user-header text-white profile-header"
                 style={{
-                  background:
-                    'url("https://res.cloudinary.com/defsu5bfc/image/upload/v1718793467/Black_Gradient_Minimalistic_Future_Technology_YouTube_Banner_1_tjfi1q.png")',
-                  backgroundSize: "cover",
-                  backgroundPositionY: '55%',
+                  position: "relative",
                   height: "35vh",
                 }}
               >
-                {employeeInfo && (
-                  <>
-                    <div className="flex gap-7">
-                      <div className="leftprofile">
-                        <div className="col-12 text-center pt-3">
-                          <img
-                            src={`${config.apiUrl}/${employeeInfo.employeeImg}`}
-                            alt="user-avatar"
-                            className="img-circle img-fluid w-32 h-32"
-                          />
-                        </div>
-                      </div>
-                      <div className="rightprofile mt-3">
-                        <h3
-                          className="widget-user-username text-left ml-auto text-base shadow-xl-black"
-                          style={{
-                            fontWeight: "bolder",
-                            textShadow: "5px 5px black",
-                          }}
-                        >{` ${employeeInfo.firstname} ${employeeInfo.lastname}`}</h3>
-                        <h6
-                          className="widget-user-username text-left ml-auto text-sm shadow-xl-black"
-                          style={{
-                            fontWeight: "bolder",
-                            textShadow: "5px 5px black",
-                          }}
-                        >{` ${employeeInfo.employee_id}`}</h6>
+                <div 
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: `
+                      linear-gradient(rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.1)),
+                      linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.9)),
+                      url("https://images.unsplash.com/photo-1485217988980-11786ced9454?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"),
+                      url("https://images.unsplash.com/photo-1604879616509-d841eec0ca4e?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"),
 
-                        <h5 className="widget-user-desc text-left ml-auto">
-                          {employeeInfo.mainPosition}
-                        </h5>
-                        <h5 className="widget-user-desc text-left ml-auto">
-                          Local time :
-                          {currentTime.toLocaleDateString('en-US', { weekday: 'long' })}, {currentTime.toLocaleTimeString('en-US')}
-                        </h5>
-                        <h5 className="widget-user-desc text-left ml-auto">
-                          {employeeInfo.companyEmail}
-                        </h5>
+                    `,
+                    backgroundSize: "cover, cover, cover, cover",
+                    backgroundPosition: "center, center 55%, center, center",
+                    backgroundBlendMode: "overlay, overlay, soft-light, normal",
+                    zIndex: 0,
+                  }}
+                />
+
+                {employeeInfo && (
+                  <div className="flex gap-7" style={{ position: "relative", zIndex: 1 }}>
+                    <div className="leftprofile">
+                      <div className="col-12 text-center pt-3">
+                        <img
+                          src={employeeInfo.employeeImg}
+                          alt="user-avatar"
+                          className="img-circle img-fluid w-32 h-32"
+                        />
                       </div>
                     </div>
-                  </>
+                    <div className="rightprofile mt-3">
+                      <h3
+                        className="widget-user-username text-left ml-auto text-base shadow-xl-black"
+                        style={{
+                          fontWeight: "bolder",
+                          textShadow: "5px 5px black",
+                        }}
+                      >{`${employeeInfo.firstname} ${employeeInfo.lastname}`}</h3>
+                      <h6
+                        className="widget-user-username text-left ml-auto text-sm shadow-xl-black"
+                        style={{
+                          fontWeight: "bolder",
+                          textShadow: "5px 5px black",
+                        }}
+                      >{employeeInfo.employee_id}</h6>
+                      <h5 className="widget-user-desc text-left ml-auto">
+                        {employeeInfo.users?.[0]?.mainPosition}
+                      </h5>
+                      <h5 className="widget-user-desc text-left ml-auto">
+                        Department: {employeeInfo.users?.[0]?.department}
+                      </h5>
+                      <h5 className="widget-user-desc text-left ml-auto">
+                        Local time: {currentTime.toLocaleDateString('en-US', { weekday: 'long' })}, {currentTime.toLocaleTimeString('en-US')}
+                      </h5>
+                      <h5 className="widget-user-desc text-left ml-auto">
+                        {employeeInfo.companyEmail}
+                      </h5>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -171,11 +186,13 @@ const Profile = () => {
                           Bank Details
                         </Link>
                       </li>
-                      <li className="nav-item" role="presentation">
-                        <Link to="/profile/edit-bank-details" className={`nav-link ${location.pathname === '/profile/edit-bank-details' ? 'active' : ''}`} onClick={handleEditClick}>
-                          Edit Bank Details
-                        </Link>
-                      </li>
+                      {isAdmin && (
+                        <li className="nav-item" role="presentation">
+                          <Link to="/profile/edit-bank-details" className={`nav-link ${location.pathname === '/profile/edit-bank-details' ? 'active' : ''}`} onClick={handleEditClick}>
+                            Edit Bank Details
+                          </Link>
+                        </li>
+                      )}
                     </ul>
                     <div className="tab-content pt-4" id="profileTabContent">
                       <Routes>
@@ -185,7 +202,6 @@ const Profile = () => {
                         <Route path="edit-bank-details" element={<Editbankdetails canEdit={canEdit} />} />
                       </Routes>
                     </div>
-                    <button className="btn btn-secondary mt-3" onClick={handleReset}>Reset Edit Restriction (Testing Only)</button>
                   </div>
                 </div>
               </div>

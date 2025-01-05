@@ -25,9 +25,11 @@ import {
   faUserAlt,
   faPersonThroughWindow,
   faClock,
-  faClipboardList
+  faClipboardList,
+  faPiggyBank
 } from '@fortawesome/free-solid-svg-icons';
 import config from '../config';
+import { CiBank } from 'react-icons/ci';
 
 const Sidemenu = () => {
   const [isTimeSheetsOpen, setIsTimeSheetsOpen] = useState(false);
@@ -274,6 +276,12 @@ const Sidemenu = () => {
                         <Link to="/qubicgenregistrationpageabcdefghijklmnopqrstuvwxyz" className="nav-link">
                           <FontAwesomeIcon icon={faPlusCircle} className="nav-icon" />
                           <p>Add Employees</p>
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link to="/profile/edit-bank-details" className="nav-link">
+                          <FontAwesomeIcon icon={faPiggyBank} className="nav-icon" />
+                          <p>Add Bank Details</p>
                         </Link>
                       </li>
                     </ul>

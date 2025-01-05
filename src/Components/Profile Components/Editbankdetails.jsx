@@ -7,8 +7,9 @@ import { useNavigate } from 'react-router-dom';
 import config from '../config';
 
 const Editbankdetails = ({ canEdit }) => {
-    const employee_id = Cookies.get('employee_id');
-    const navigate = useNavigate();
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [selectedEmployee, setSelectedEmployee] = useState('');
+    const [employees, setEmployees] = useState([]);
     const [formData, setFormData] = useState({
         bankName: '',
         accountNumber: '',
@@ -17,97 +18,186 @@ const Editbankdetails = ({ canEdit }) => {
         aadharNumber: '',
         pfNumber: ''
     });
+    const employee_id = Cookies.get('employee_id');
+    const navigate = useNavigate();
 
+    // First fetch all users and check if current user is admin
+    useEffect(() => {
+        const checkAdminAndFetchUsers = async () => {
+            try {
+                // Check if current user is admin
+                const userResponse = await axios.get(`${config.apiUrl}/qubinest/getemployees/${Cookies.get('email')}`);
+                const isUserAdmin = userResponse.data.users[0]?.role === 'Admin';
+                setIsAdmin(isUserAdmin);
+
+                if (isUserAdmin) {
+                    // Get all users if admin
+                    const allUsersResponse = await axios.get(`${config.apiUrl}/qubinest/allusers`);
+                    setEmployees(allUsersResponse.data);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                toast.error('Error fetching users data');
+            }
+        };
+
+        checkAdminAndFetchUsers();
+    }, []);
+
+    // Fetch bank details when an employee is selected
     useEffect(() => {
         const fetchBankDetails = async () => {
             try {
-                const response = await axios.get(`${config.apiUrl}/api/bankdetails/${employee_id}`);
-                if (response.data) {
-                    setFormData(response.data);
+                if (selectedEmployee) {
+                    const response = await axios.get(`${config.apiUrl}/api/bankdetails/${selectedEmployee}`);
+                    if (response.data) {
+                        setFormData(response.data);
+                    }
                 }
             } catch (error) {
                 console.error('Error fetching bank details:', error);
+                toast.error('Error fetching bank details');
             }
         };
 
         fetchBankDetails();
-    }, [employee_id]);
-
-    useEffect(() => {
-        const lastEditTimestamp = localStorage.getItem('lastEditTimestamp');
-        if (lastEditTimestamp) {
-            const lastEditDate = new Date(lastEditTimestamp);
-            const currentDate = new Date();
-            const diffTime = Math.abs(currentDate - lastEditDate);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-            if (diffDays < 30) {
-                toast.info(`You can edit your bank details after ${30 - diffDays} days`);
-            } else {
-                canEdit = true;
-            }
-        }
-    }, [canEdit]);
+    }, [selectedEmployee]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData({
-            ...formData,
+        setFormData(prevState => ({
+            ...prevState,
             [name]: value
-        });
+        }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        if (!canEdit) {
-            toast.error('You can only edit your bank details once every 30 days.');
-            return;
-        }
-
         try {
-            await axios.post(`${config.apiUrl}/api/bankdetails/${employee_id}`, formData);
+            if (!selectedEmployee) {
+                toast.error('Please select an employee');
+                return;
+            }
+
+            await axios.post(`${config.apiUrl}/api/bankdetails/${selectedEmployee}`, formData);
             toast.success('Bank details updated successfully');
-            localStorage.setItem('lastEditTimestamp', new Date().toISOString());
             navigate('/profile/bank-details');
-            window.location.reload();
         } catch (error) {
             console.error('Error submitting form:', error);
-            toast.error('Error submitting form');
+            toast.error('Error updating bank details');
         }
     };
 
     return (
-        <div className="tab-pane fade show active" id="edit-bank-details" role="tabpanel" aria-labelledby="edit-bank-details-tab" tabIndex={0}>
-            <form onSubmit={handleSubmit} className="row gy-3 gy-xxl-4">
-                <div className="col-12 col-md-6">
-                    <label htmlFor="bankName" className="form-label">Bank Name<span>*</span></label>
-                    <input type="text" className="form-control" id="bankName" name="bankName" value={formData.bankName} onChange={handleChange} disabled={!canEdit} />
+        <div className="tab-pane fade show active">
+            {isAdmin ? (
+                <form onSubmit={handleSubmit} className="row gy-3">
+                    <div className="col-12">
+                        <label className="form-label">Select Employee</label>
+                        <select 
+                            className="form-select" 
+                            value={selectedEmployee} 
+                            onChange={(e) => setSelectedEmployee(e.target.value)}
+                        >
+                            <option value="">Select an employee</option>
+                            {employees.map(emp => (
+                                <option key={emp.employeeId} value={emp.employeeId}>
+                                    {emp.username} ({emp.email})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {selectedEmployee && (
+                        <>
+                            <div className="col-12 col-md-6">
+                                <label htmlFor="bankName" className="form-label">Bank Name<span>*</span></label>
+                                <input 
+                                    type="text" 
+                                    className="form-control" 
+                                    id="bankName" 
+                                    name="bankName" 
+                                    value={formData.bankName} 
+                                    onChange={handleChange} 
+                                    required
+                                />
+                            </div>
+                            <div className="col-12 col-md-6">
+                                <label htmlFor="accountNumber" className="form-label">Account Number<span>*</span></label>
+                                <input 
+                                    type="text" 
+                                    className="form-control" 
+                                    id="accountNumber" 
+                                    name="accountNumber" 
+                                    value={formData.accountNumber} 
+                                    onChange={handleChange} 
+                                    required
+                                />
+                            </div>
+                            <div className="col-12 col-md-6">
+                                <label htmlFor="ifscCode" className="form-label">IFSC Code<span>*</span></label>
+                                <input 
+                                    type="text" 
+                                    className="form-control" 
+                                    id="ifscCode" 
+                                    name="ifscCode" 
+                                    value={formData.ifscCode} 
+                                    onChange={handleChange} 
+                                    required
+                                />
+                            </div>
+                            <div className="col-12 col-md-6">
+                                <label htmlFor="panNumber" className="form-label">Pan Number<span>*</span></label>
+                                <input 
+                                    type="text" 
+                                    className="form-control" 
+                                    id="panNumber" 
+                                    name="panNumber" 
+                                    value={formData.panNumber} 
+                                    onChange={handleChange} 
+                                    required
+                                />
+                            </div>
+                            <div className="col-12 col-md-6">
+                                <label htmlFor="aadharNumber" className="form-label">Aadhar Number<span>*</span></label>
+                                <input 
+                                    type="text" 
+                                    className="form-control" 
+                                    id="aadharNumber" 
+                                    name="aadharNumber" 
+                                    value={formData.aadharNumber} 
+                                    onChange={handleChange} 
+                                    required
+                                />
+                            </div>
+                            <div className="col-12 col-md-6">
+                                <label htmlFor="pfNumber" className="form-label">PF Number<span>*</span></label>
+                                <input 
+                                    type="text" 
+                                    className="form-control" 
+                                    id="pfNumber" 
+                                    name="pfNumber" 
+                                    value={formData.pfNumber} 
+                                    onChange={handleChange} 
+                                    required
+                                />
+                            </div>
+                            <div className="col-12">
+                                <button 
+                                    type="submit" 
+                                    className="btn btn-primary"
+                                >
+                                    Submit
+                                </button>
+                            </div>
+                        </>
+                    )}
+                </form>
+            ) : (
+                <div className="alert alert-warning">
+                    Only administrators can edit bank details.
                 </div>
-                <div className="col-12 col-md-6">
-                    <label htmlFor="accountNumber" className="form-label">Account Number<span>*</span></label>
-                    <input type="text" className="form-control" id="accountNumber" name="accountNumber" value={formData.accountNumber} onChange={handleChange} disabled={!canEdit} />
-                </div>
-                <div className="col-12 col-md-6">
-                    <label htmlFor="ifscCode" className="form-label">IFSC Code<span>*</span></label>
-                    <input type="text" className="form-control" id="ifscCode" name="ifscCode" value={formData.ifscCode} onChange={handleChange} disabled={!canEdit} />
-                </div>
-                <div className="col-12 col-md-6">
-                    <label htmlFor="panNumber" className="form-label">Pan Number<span>*</span></label>
-                    <input type="text" className="form-control" id="panNumber" name="panNumber" value={formData.panNumber} onChange={handleChange} disabled={!canEdit} />
-                </div>
-                <div className="col-12 col-md-6">
-                    <label htmlFor="aadharNumber" className="form-label">Aadhar Number<span>*</span></label>
-                    <input type="text" className="form-control" id="aadharNumber" name="aadharNumber" value={formData.aadharNumber} onChange={handleChange} disabled={!canEdit} />
-                </div>
-                <div className="col-12 col-md-6">
-                    <label htmlFor="pfNumber" className="form-label">PF Number<span>*</span></label>
-                    <input type="text" className="form-control" id="pfNumber" name="pfNumber" value={formData.pfNumber} onChange={handleChange} disabled={!canEdit} />
-                </div>
-                <div className="col-12">
-                    <button type="submit" className="btn btn-primary" disabled={!canEdit}>Submit</button>
-                </div>
-            </form>
+            )}
         </div>
     );
 };

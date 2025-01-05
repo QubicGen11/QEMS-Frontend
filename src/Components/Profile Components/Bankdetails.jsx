@@ -2,36 +2,66 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import config from '../config';
+import { toast } from 'react-hot-toast';
 
 const Bankdetails = () => {
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState('');
+  const [employees, setEmployees] = useState([]);
+  const [bankDetails, setBankDetails] = useState({});
   const employee_id = Cookies.get('employee_id');
-  const [bankDetails, setBankDetails] = useState({
-    associateId: '',
-    bankName: '',
-    accountNumber: '',
-    ifscCode: '',
-    panNumber: '',
-    aadharNumber: '',
-    pfNumber: ''
-  });
 
+  useEffect(() => {
+    const checkAdminAndFetchEmployees = async () => {
+      try {
+        const userResponse = await axios.get(`${config.apiUrl}/qubinest/getemployees/${Cookies.get('email')}`);
+        const isUserAdmin = userResponse.data.users[0]?.role === 'Admin';
+        setIsAdmin(isUserAdmin);
+
+        if (isUserAdmin) {
+          const empResponse = await axios.get(`${config.apiUrl}/qubinest/allusers`);
+          setEmployees(empResponse.data);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+
+    checkAdminAndFetchEmployees();
+  }, []);
+
+  // Fetch bank details when selectedEmployee changes or for current user
   useEffect(() => {
     const fetchBankDetails = async () => {
       try {
-        const response = await axios.get(`${config.apiUrl}/api/bankdetails/${employee_id}`);
-        if (response.data) {
-          setBankDetails(response.data);
+        const id = isAdmin ? selectedEmployee : employee_id;
+        if (id) {
+          const response = await axios.get(`${config.apiUrl}/api/bankdetails/${id}`);
+          if (response.data) {
+            setBankDetails(response.data);
+          } else {
+            setBankDetails({
+              bankName: 'Not Available',
+              accountNumber: 'Not Available',
+              ifscCode: 'Not Available',
+              panNumber: 'Not Available',
+              aadharNumber: 'Not Available',
+              pfNumber: 'Not Available'
+            });
+          }
         }
       } catch (error) {
         console.error('Error fetching bank details:', error);
+        toast.error('Error fetching bank details');
       }
     };
 
     fetchBankDetails();
-  }, [employee_id]);
+  }, [selectedEmployee, employee_id, isAdmin]);
 
   return (
     <div>
+    
       <div
         className="tab-pane fade show active"
         id="email-tab-pane"
