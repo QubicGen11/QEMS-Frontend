@@ -175,16 +175,15 @@ const EmployeeProfile = () => {
                       <div>
                         <p className="text-sm text-gray-500">Join Date</p>
                         <p className="text-gray-800">
-                          {employee?.hireDate ? new Date(employee.hireDate).toLocaleDateString() : 'Not available'}
+                          {employee?.users?.[0]?.joiningDate 
+                            ? new Date(employee.users[0].joiningDate).toLocaleDateString() 
+                            : 'Not available'}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center">
-                      <FiBriefcase className="w-5 h-5 text-gray-500 mr-3" />
-                      <div>
-                        <p className="text-sm text-gray-500">Department</p>
-                        <p className="text-gray-800">{employee?.department || 'Not assigned'}</p>
-                      </div>
+                    <div className="flex flex-col gap-2">
+                      <h1 className="text-lg font-semibold">Position</h1>
+                      <p className="text-gray-600">{employee?.users[0]?.mainPosition || "Not Assigned"}</p>
                     </div>
                     {/* <div className="flex items-center">
                       <FiLinkedin className="w-5 h-5 text-gray-500 mr-3" />

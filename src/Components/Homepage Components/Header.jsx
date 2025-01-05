@@ -90,6 +90,34 @@ const NotificationItem = ({ notification, onRead, onSelect, isSelected, selected
     }
   };
 
+  // Format date for the timestamp display
+  const formatTimestamp = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    }).replace(/,/, ' at');
+  };
+
+  // Format date for leave request messages
+  const formatMessage = (message) => {
+    return message.replace(
+      /(\d{4}-\d{2}-\d{2})T\d{2}:\d{2}:\d{2}\.\d{3}Z/g,
+      (match, date) => {
+        const formattedDate = new Date(date).toLocaleDateString('en-US', {
+          month: '2-digit',
+          day: '2-digit',
+          year: 'numeric'
+        });
+        return formattedDate;
+      }
+    );
+  };
+
   return (
     <Box
       ref={containerRef}
@@ -157,7 +185,7 @@ const NotificationItem = ({ notification, onRead, onSelect, isSelected, selected
         }}
         component="div"
         dangerouslySetInnerHTML={{ 
-          __html: DOMPurify.sanitize(notification.message) 
+          __html: DOMPurify.sanitize(formatMessage(notification.message)) 
         }}
       />
       
@@ -170,7 +198,7 @@ const NotificationItem = ({ notification, onRead, onSelect, isSelected, selected
           fontSize: '0.75rem'
         }}
       >
-        {new Date(notification.createdAt).toLocaleString()}
+        {formatTimestamp(notification.createdAt)}
       </Typography>
       
       {isSelected && (
@@ -250,90 +278,7 @@ const Header = () => {
     }
   };
 
-  const clockIn = async () => {
-    const today = new Date().toLocaleDateString();
-    const currentTime = new Date().toLocaleTimeString();
-    
-    const timestamp = new Date().getTime();
-    const userClockInKey = `lastClockIn_${email}`;
-    const lastClockIn = JSON.parse(localStorage.getItem(userClockInKey));
 
-    if (lastClockIn && lastClockIn.date === today) {
-      toast.error('You have already clocked in today.');
-      return;
-    }
-
-    try {
-      console.log('Sending clock-in request...');
-      const response = await axios.post(`${config.apiUrl}/qubinest/clockin`, { email });
-      toast.success('Clock-in successful!');
-      setIsClockedIn(true);
-      setClockInTime(currentTime);
-      localStorage.setItem(userClockInKey, JSON.stringify({ date: today, time: currentTime, timestamp }));
-      return response.data;
-    } catch (error) {
-      if (error.response.status === 500) {
-        setIsModalOpen(true);
-      }
-      const errorMessage = error.response ? error.response.data.message : error.message;
-      toast.error(errorMessage);
-      console.error('Error clocking in:', error);
-      throw error;
-    }
-  };
-
-  const clockOut = async () => {
-    if (!isClockedIn) {
-      toast.error('You need to clock in first.');
-      return;
-    }
-
-    const today = new Date().toLocaleDateString();
-    const currentTime = new Date().toLocaleTimeString();
-    const timestamp = new Date().getTime();
-    const userClockOutKey = `lastClockOut_${email}`;
-    const lastClockOut = JSON.parse(localStorage.getItem(userClockOutKey));
-
-    if (lastClockOut && lastClockOut.date === today) {
-      toast.error('You have already clocked out today.');
-      return;
-    }
-
-    if (!isReportSubmitted) {
-      toast.error('Please submit your daily report before clocking out.');
-      return;
-    }
-
-    try {
-      console.log('Sending clock-out request...');
-      const response = await axios.post(`${config.apiUrl}/qubinest/clockout`, { email });
-      toast.success('Clock-out successful!');
-      setIsClockedIn(false);
-      setClockOutTime(currentTime);
-      localStorage.setItem(userClockOutKey, JSON.stringify({ date: today, time: currentTime, timestamp }));
-      localStorage.setItem('You have worked for : ', JSON.stringify(time));
-      setTime({ hours: 0, minutes: 0, seconds: 0 });
-
-      setTimeout(() => {
-        // Clear all local storage items except clock-in and clock-out data
-        const itemsToKeep = ['lastClockIn_', 'lastClockOut_', 'You have worked for : '];
-        const keys = Object.keys(localStorage);
-        for (let key of keys) {
-          if (!itemsToKeep.some(item => key.startsWith(item))) {
-            localStorage.removeItem(key);
-          }
-        }
-        toast.success('Data has been successfully reset.');
-      }, 10000);
-
-      return response.data;
-    } catch (error) {
-      const errorMessage = error.response ? error.response.data.message : error.message;
-      toast.error(errorMessage);
-      console.error('Error clocking out:', error);
-      throw error;
-    }
-  };
 
   // Fetch notifications
   const fetchNotifications = async () => {

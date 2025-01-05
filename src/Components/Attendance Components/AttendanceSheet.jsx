@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import Header from '../Homepage Components/Header';
@@ -16,13 +16,11 @@ const AttendanceSheet = () => {
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [filteredData, setFilteredData] = useState([]);
-  const [departments, setDepartments] = useState([]);
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const adminEmail = Cookies.get('email');
 
   useEffect(() => {
     fetchAttendanceData();
-    // fetchDepartments();
   }, [year, month]);
 
   const fetchAttendanceData = async () => {
@@ -116,22 +114,23 @@ const AttendanceSheet = () => {
     }
   };
 
-//   const fetchDepartments = async () => {
-//     try {
-//       const response = await axios.get(`${config.apiUrl}/qubinest/departments`);
-//       setDepartments(response.data);
-//     } catch (error) {
-//       console.error('Failed to fetch departments:', error);
-//       toast.error('Failed to load departments');
-//     }
-//   };
+  // Get unique departments from attendance data
+  const departments = useMemo(() => {
+    const uniqueDepartments = [...new Set(attendance.map(item => item.department))];
+    return uniqueDepartments
+      .filter(dept => dept) // Remove null/undefined values
+      .sort((a, b) => a.localeCompare(b)); // Sort alphabetically
+  }, [attendance]);
 
   const handleDepartmentFilter = (dept) => {
     setSelectedDepartment(dept);
     if (dept === 'all') {
       setFilteredData(attendance);
     } else {
-      setFilteredData(attendance.filter(item => item.department === dept));
+      const filtered = attendance.filter(item => 
+        item.department?.toLowerCase() === dept.toLowerCase()
+      );
+      setFilteredData(filtered);
     }
   };
 
@@ -286,21 +285,21 @@ const AttendanceSheet = () => {
             <h1 className="text-2xl font-bold text-gray-800">Attendance Sheet</h1>
             <button
               onClick={exportToExcel}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
-              <FiDownload className="w-5 h-5" />
+              <FiDownload className="mr-2" />
               Export to Excel
             </button>
           </div>
 
-          {/* Filters Section */}
+          {/* Updated Filters Section */}
           <div className="flex flex-wrap gap-4 mb-6">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center space-x-2">
               <FiCalendar className="text-gray-500" />
               <select
                 value={month}
                 onChange={(e) => setMonth(parseInt(e.target.value))}
-                className="p-2 border rounded-md"
+                className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {Array.from({ length: 12 }, (_, i) => (
                   <option key={i + 1} value={i + 1}>
@@ -311,7 +310,7 @@ const AttendanceSheet = () => {
               <select
                 value={year}
                 onChange={(e) => setYear(parseInt(e.target.value))}
-                className="p-2 border rounded-md"
+                className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {Array.from({ length: 5 }, (_, i) => (
                   <option key={i} value={new Date().getFullYear() - i}>
@@ -321,20 +320,36 @@ const AttendanceSheet = () => {
               </select>
             </div>
 
-            <div className="flex items-center gap-2">
-              <FiFilter className="text-gray-500" />
-              <select
-                value={selectedDepartment}
-                onChange={(e) => handleDepartmentFilter(e.target.value)}
-                className="p-2 border rounded-md"
-              >
-                <option value="all">All Departments</option>
-                {departments.map(dept => (
-                  <option key={dept.id} value={dept.name}>
-                    {dept.name}
-                  </option>
-                ))}
-              </select>
+            {/* Updated Department Filter */}
+            <div className="relative">
+              <div className="flex items-center space-x-2">
+                <FiFilter className="text-gray-500" />
+                <select
+                  value={selectedDepartment}
+                  onChange={(e) => handleDepartmentFilter(e.target.value)}
+                  className="p-2 pr-8 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">All Departments</option>
+                  {departments.map((dept) => (
+                    <option key={dept} value={dept}>
+                      {dept}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {selectedDepartment !== 'all' && (
+                <div className="mt-2">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
+                    {selectedDepartment}
+                    <button
+                      onClick={() => handleDepartmentFilter('all')}
+                      className="ml-2 focus:outline-none"
+                    >
+                      ×
+                    </button>
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
