@@ -21,14 +21,57 @@ const Register = () => {
   const [showOTPField, setShowOTPField] = useState(false);
   const [otp, setOTP] = useState('');
   const [registeredEmail, setRegisteredEmail] = useState('');
+  const [subDepartment, setSubDepartment] = useState('');
   const navigate = useNavigate();
+
+  const departmentStructure = {
+    "Information Technology": [
+      "Web Development",
+      "Mobile Development",
+      "DevOps",
+      "Cloud Computing",
+      "Cybersecurity",
+      "Software Testing",
+      "UI/UX Design",
+      "RPA Development"
+    ],
+    "Human Resources": [
+      "Recruitment",
+      "Employee Relations",
+      "Compensation & Benefits",
+      "Training & Development",
+      "HR Operations"
+    ],
+    "Finance": [
+      "Accounting",
+      "Financial Planning",
+      "Payroll",
+      "Treasury",
+      "Audit"
+    ],
+    "Sales and Marketing": [
+      "Digital Marketing",
+      "Content Marketing",
+      "Sales Operations",
+      "Business Development",
+      "Brand Management"
+    ],
+    "Operations": [
+      "Project Management",
+      "Quality Assurance",
+      "Facility Management",
+      "Supply Chain",
+      "Process Improvement"
+    ]
+  };
 
   const handleInitialRegistration = async (event) => {
     event.preventDefault();
     setIsLoading(true);
 
-    if (!username || !email || !password || !confirmPassword || !role || !salary || !mainPosition || !joiningDate || !department) {
-      toast.error('Please fill all the details');
+    if (!username || !email || !password || !confirmPassword || !role || !salary || !mainPosition || !joiningDate || !department || 
+        (departmentStructure[department] && !subDepartment)) {
+      toast.error('Please fill all the required details');
       setIsLoading(false);
       return;
     }
@@ -61,7 +104,8 @@ const Register = () => {
         salary: parseFloat(salary),
         mainPosition,
         joiningDate,
-        department
+        department,
+        subDepartment: subDepartment || null,
       });
 
       console.log('Registration Response:', response.data);
@@ -193,10 +237,13 @@ const Register = () => {
                     className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
                   >
                     <option value="">Select</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Human Resource Manager">Human Resource Manager</option>
+                    <option value="Manager">Manager</option>
                     <option value="Employee">Employee</option>
                     <option value="Intern">Intern</option>
-                    <option value="Manager">Manager</option>
-                    <option value="Admin">Admin</option>
+                    
+                   
                   </select>
                 </div>
 
@@ -309,16 +356,36 @@ const Register = () => {
                   </label>
                   <select
                     value={department}
-                    onChange={(e) => setDepartment(e.target.value)}
+                    onChange={(e) => {
+                      setDepartment(e.target.value);
+                      setSubDepartment(''); // Reset sub-department when main department changes
+                    }}
                     className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
                   >
                     <option value="">Select Department</option>
-                    <option value="Robotic Process Automation (RPA) Department">RPA Department</option>
-                    <option value="Web Development Department">Web Development</option>
-                    <option value="Training and Development Department">Training & Development</option>
-                    <option value="Administration Department">Administration</option>
+                    {Object.keys(departmentStructure).map((dept) => (
+                      <option key={dept} value={dept}>{dept}</option>
+                    ))}
                   </select>
                 </div>
+
+                {department && departmentStructure[department] && (
+                  <div>
+                    <label className="block text-gray-700 text-sm mb-1.5">
+                      Sub Department <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={subDepartment}
+                      onChange={(e) => setSubDepartment(e.target.value)}
+                      className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
+                    >
+                      <option value="">Select Sub Department</option>
+                      {departmentStructure[department].map((subDept) => (
+                        <option key={subDept} value={subDept}>{subDept}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 {/* Joining Date Input */}
                 <div>

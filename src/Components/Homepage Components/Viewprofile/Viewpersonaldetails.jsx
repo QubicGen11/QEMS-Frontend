@@ -126,6 +126,12 @@ const Viewpersonaldetails = () => {
         <div className="col-7 col-md-9 bg-light border-start border-bottom border-white border-3">
           <div className="p-2">{user?.department || 'N/A'}</div>
         </div>
+        <div className="col-5 col-md-3 bg-light border-bottom border-white border-3">
+          <div className="p-2">Sub Department</div>
+        </div>
+        <div className="col-7 col-md-9 bg-light border-start border-bottom border-white border-3">
+          <div className="p-2">{user?.subDepartment || 'N/A'}</div>
+        </div>
       </div>
     </>
   );

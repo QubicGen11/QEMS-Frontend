@@ -174,6 +174,8 @@ const TodaysAttendance = () => {
   const exportToExcel = () => {
     const dataToExport = attendance.map(record => ({
       'Employee ID': record.employeeId,
+      'Name': record.employeeName,
+      'Role': record.role || 'N/A',
       'Email': record.email,
       'Department': record.department || 'N/A',
       'Check-in Time': record.formattedCheckin,
@@ -363,8 +365,18 @@ const TodaysAttendance = () => {
                             )}
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{record.employeeName}</div>
-                            <div className="text-sm text-gray-500">{record.email}</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {record.employeeName}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-gray-500">{record.email}</span>
+                              <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600">
+                                {record.role || 'N/A'}
+                              </span>
+                            </div>
+                            <div className="text-xs text-gray-400">
+                              ID: {record.employeeId}
+                            </div>
                           </div>
                         </div>
                       </td>
