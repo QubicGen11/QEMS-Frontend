@@ -50,12 +50,34 @@ const Editbankdetails = ({ canEdit }) => {
             try {
                 if (selectedEmployee) {
                     const response = await axios.get(`${config.apiUrl}/api/bankdetails/${selectedEmployee}`);
-                    if (response.data) {
+                    
+                    // Check if response data exists and has content
+                    if (response.data && Object.keys(response.data).length > 0) {
                         setFormData(response.data);
+                    } else {
+                        // Reset form data if no bank details exist
+                        setFormData({
+                            bankName: '',
+                            accountNumber: '',
+                            ifscCode: '',
+                            panNumber: '',
+                            aadharNumber: '',
+                            pfNumber: ''
+                        });
+                        toast.info('No bank details found for this employee');
                     }
                 }
             } catch (error) {
                 console.error('Error fetching bank details:', error);
+                // Reset form data on error
+                setFormData({
+                    bankName: '',
+                    accountNumber: '',
+                    ifscCode: '',
+                    panNumber: '',
+                    aadharNumber: '',
+                    pfNumber: ''
+                });
                 toast.error('Error fetching bank details');
             }
         };

@@ -22,6 +22,13 @@ const Register = () => {
   const [otp, setOTP] = useState('');
   const [registeredEmail, setRegisteredEmail] = useState('');
   const [subDepartment, setSubDepartment] = useState('');
+  const [passwordValidation, setPasswordValidation] = useState({
+    minLength: false,
+    hasUpperCase: false,
+    hasLowerCase: false,
+    hasNumber: false,
+    hasSpecial: false
+  });
   const navigate = useNavigate();
 
   const departmentStructure = {
@@ -58,11 +65,52 @@ const Register = () => {
     ],
     "Operations": [
       "Project Management",
+      "General Administration",
       "Quality Assurance",
       "Facility Management",
       "Supply Chain",
       "Process Improvement"
     ]
+  };
+
+  const validatePassword = (password) => {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    if (password.length < minLength) {
+      toast.error('Password must be at least 8 characters long');
+      return false;
+    }
+    if (!hasUpperCase) {
+      toast.error('Password must contain at least one uppercase letter');
+      return false;
+    }
+    if (!hasLowerCase) {
+      toast.error('Password must contain at least one lowercase letter');
+      return false;
+    }
+    if (!hasNumbers) {
+      toast.error('Password must contain at least one number');
+      return false;
+    }
+    if (!hasSpecialChar) {
+      toast.error('Password must contain at least one special character');
+      return false;
+    }
+    return true;
+  };
+
+  const checkPasswordStrength = (password) => {
+    setPasswordValidation({
+      minLength: password.length >= 8,
+      hasUpperCase: /[A-Z]/.test(password),
+      hasLowerCase: /[a-z]/.test(password),
+      hasNumber: /\d/.test(password),
+      hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    });
   };
 
   const handleInitialRegistration = async (event) => {
@@ -78,6 +126,11 @@ const Register = () => {
 
     if (password !== confirmPassword) {
       toast.error('Passwords do not match');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!validatePassword(password)) {
       setIsLoading(false);
       return;
     }
@@ -250,7 +303,7 @@ const Register = () => {
                 {/* Username Input */}
                 <div>
                   <label className="block text-gray-700 text-sm mb-1.5">
-                    Username <span className="text-red-500">*</span>
+                    Full Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -284,9 +337,12 @@ const Register = () => {
                     <input
                       type={showPassword ? "text" : "password"}
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        checkPasswordStrength(e.target.value);
+                      }}
                       className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
-                      placeholder="Enter your password"
+                      placeholder="Enter password"
                     />
                     <button
                       type="button"
@@ -295,6 +351,61 @@ const Register = () => {
                     >
                       {showPassword ? "🙈" : "👁️"}
                     </button>
+                    <div className="mt-1 text-sm">
+                      <p className="font-medium mb-1">Password Requirements:</p>
+                      <ul className="space-y-1">
+                        <li className="flex items-center">
+                          {passwordValidation.minLength ? (
+                            <span className="text-black mr-2">✓</span>
+                          ) : (
+                            <span className="text-red-600 mr-2">✗</span>
+                          )}
+                          <span className={passwordValidation.minLength ? "text-black" : "text-red-600"}>
+                            At least 8 characters
+                          </span>
+                        </li>
+                        <li className="flex items-center">
+                          {passwordValidation.hasUpperCase ? (
+                            <span className="text-black mr-2">✓</span>
+                          ) : (
+                            <span className="text-red-600 mr-2">✗</span>
+                          )}
+                          <span className={passwordValidation.hasUpperCase ? "text-black" : "text-red-600"}>
+                            One uppercase letter
+                          </span>
+                        </li>
+                        <li className="flex items-center">
+                          {passwordValidation.hasLowerCase ? (
+                            <span className="text-black mr-2">✓</span>
+                          ) : (
+                            <span className="text-red-600 mr-2">✗</span>
+                          )}
+                          <span className={passwordValidation.hasLowerCase ? "text-black" : "text-red-600"}>
+                            One lowercase letter
+                          </span>
+                        </li>
+                        <li className="flex items-center">
+                          {passwordValidation.hasNumber ? (
+                            <span className="text-black mr-2">✓</span>
+                          ) : (
+                            <span className="text-red-600 mr-2">✗</span>
+                          )}
+                          <span className={passwordValidation.hasNumber ? "text-black" : "text-red-600"}>
+                            One number
+                          </span>
+                        </li>
+                        <li className="flex items-center">
+                          {passwordValidation.hasSpecial ? (
+                            <span className="text-black mr-2">✓</span>
+                          ) : (
+                            <span className="text-red-600 mr-2">✗</span>
+                          )}
+                          <span className={passwordValidation.hasSpecial ? "text-black" : "text-red-600"}>
+                            One special character
+                          </span>
+                        </li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
 

@@ -241,8 +241,8 @@ const Dashboard = () => {
       ['bold', 'italic', 'underline', 'strike'],
       ['blockquote', 'code-block'],
       [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      ['link', 'image', 'video'],
-      ['clean']
+      ['image'],
+      
     ],
   };
 
@@ -368,7 +368,7 @@ const Dashboard = () => {
       console.error('Error fetching attendance:', error);
       // Show error only on initial load
       if (isInitialLoad) {
-        toast.error('Failed to load timesheet data');
+        // toast.error('Failed to load timesheet data');
       }
     } finally {
       setLoading(false);

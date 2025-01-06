@@ -23,6 +23,7 @@ const Allemployees = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  const [employeeIdFilter, setEmployeeIdFilter] = useState('');
   const navigate = useNavigate();
 
   // Get unique roles
@@ -31,16 +32,22 @@ const Allemployees = () => {
   // Filter employees based on search and role
   const filteredEmployees = employees.filter(employee => {
     const searchString = searchTerm.toLowerCase();
-    const matchesSearch = (
+    const employeeIdString = employeeIdFilter.toLowerCase();
+
+    // Separate employee ID filter
+    const matchesEmployeeId = !employeeIdFilter || 
+      (employee.employeeId && employee.employeeId.toString().toLowerCase().includes(employeeIdString));
+
+    // Other search terms
+    const matchesOtherSearch = (
       employee.username?.toLowerCase().includes(searchString) ||
       employee.email?.toLowerCase().includes(searchString) ||
-      employee.employee_id?.toLowerCase().includes(searchString) ||
       employee.mainPosition?.toLowerCase().includes(searchString)
     );
     
     const matchesRole = !roleFilter || employee.role === roleFilter;
     
-    return matchesSearch && matchesRole;
+    return matchesEmployeeId && matchesOtherSearch && matchesRole;
   });
 
   // Export to Excel function
@@ -298,33 +305,51 @@ const Allemployees = () => {
             </div>
 
             <div className="mt-6 md:flex md:items-center md:justify-between">
-              <div className="relative flex items-center mt-4 md:mt-0">
-                <span className="absolute">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 mx-3 text-gray-400">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                  </svg>
-                </span>
-                <input
-                  type="text"
-                  placeholder="Search by name, email, ID..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-200 rounded-lg md:w-80 placeholder-gray-400/70 pl-11 rtl:pr-11 rtl:pl-5 focus:border-blue-400 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
-                />
-              </div>
+              <div className="flex flex-wrap gap-4 mb-4">
+                {/* Employee ID Filter */}
+                <div className="flex-1 min-w-[200px]">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Filter by Employee ID
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="Search by Employee ID..."
+                    value={employeeIdFilter}
+                    onChange={(e) => setEmployeeIdFilter(e.target.value)}
+                  />
+                </div>
 
-              <div className="relative flex items-center mt-4 md:mt-0">
-                <select
-                  value={roleFilter}
-                  onChange={(e) => setRoleFilter(e.target.value)}
-                  className="block w-full py-1.5 text-gray-700 bg-white border border-gray-200 rounded-lg md:w-80 placeholder-gray-400/70 pl-5 pr-11 rtl:pr-5 rtl:pl-11 focus:border-blue-400 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
-                >
-                  <option value="">All Roles</option>
-                  {uniqueRoles.map(role => (
-                    <option key={role} value={role}>{role}</option>
-                  ))}
-                </select>
-                <FiFilter className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                {/* Existing search input */}
+                <div className="flex-1 min-w-[200px]">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Search
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="Search by name, email, position..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+
+                {/* Role Filter (existing) */}
+                <div className="flex-1 min-w-[200px]">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Filter by Role
+                  </label>
+                  <select
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    value={roleFilter}
+                    onChange={(e) => setRoleFilter(e.target.value)}
+                  >
+                    <option value="">All Roles</option>
+                    {uniqueRoles.map(role => (
+                      <option key={role} value={role}>{role}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -353,6 +378,8 @@ const Allemployees = () => {
                           <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500">
                             Status
                           </th>
+                          <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500">
+                            Salary                          </th>
                           <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500">
                             Email
                           </th>
@@ -417,6 +444,9 @@ const Allemployees = () => {
                               <div className="inline-flex items-center px-3 py-1 rounded-full gap-x-2">
                                 <span>{employee.status}</span>
                               </div>
+                            </td>
+                            <td className="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
+                              {employee.salary}
                             </td>
                             <td className="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
                               {employee.email}

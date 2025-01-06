@@ -319,19 +319,23 @@ const Allemployeleaves = () => {
               </div>
 
               {/* Leave Type Filter */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Leave Type</label>
+              <div className="flex flex-col">
+                <label className="text-sm font-medium text-gray-700 mb-1">
+                  Leave Type
+                </label>
                 <select
                   name="leaveType"
                   value={filters.leaveType}
                   onChange={handleFilterChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  className="border rounded-md px-3 py-1.5 text-gray-700 w-full"
                 >
-                  {leaveTypes.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
+                  <option value="">All Types</option>
+                  <option value="Casual">Casual</option>
+                  <option value="Sick">Sick</option>
+                  <option value="Personal">Personal</option>
+                  {/* <option value="Maternity">Maternity</option>
+                  <option value="Paternity">Paternity</option>
+                  <option value="Loss of Pay">Loss of Pay</option> */}
                 </select>
               </div>
 
@@ -381,19 +385,19 @@ const Allemployeleaves = () => {
               </div>
 
               {/* Duration Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+              <div className="flex flex-col">
+                <label className="text-sm font-medium text-gray-700 mb-1">
                   Duration
                 </label>
                 <select
                   name="duration"
                   value={filters.duration}
                   onChange={handleFilterChange}
-                  className="w-full p-2 border rounded-md"
+                  className="border rounded-md px-3 py-1.5 text-gray-700 w-full"
                 >
-                  <option value="">All Duration</option>
-                  <option value="full day">Full Day</option>
-                  <option value="half day">Half Day</option>
+                  <option value="">All Durations</option>
+                  <option value="full">Full Day</option>
+                  <option value="half">Half Day</option>
                 </select>
               </div>
 

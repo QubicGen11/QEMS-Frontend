@@ -502,9 +502,7 @@ const AllEmployeeAttendance = () => {
                               <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Email address
                               </th>
-                              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Salary
-                              </th>
+                             
                               <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Position
                               </th>
@@ -556,11 +554,7 @@ const AllEmployeeAttendance = () => {
                                 <td className="px-4 py-4 whitespace-nowrap">
                                   <div className="text-sm text-gray-900">{employee.email}</div>
                                 </td>
-                                <td className="px-4 py-4 whitespace-nowrap">
-                                  <div className="text-sm text-gray-900">
-                                    {employee.salary ? `₹${employee.salary.toLocaleString()}` : 'N/A'}
-                                  </div>
-                                </td>
+                          
                                 <td className="px-4 py-4 whitespace-nowrap">
                                   <div className="text-sm text-gray-900">{employee.mainPosition || 'N/A'}</div>
                                 </td>

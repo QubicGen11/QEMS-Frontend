@@ -28,7 +28,7 @@ const TodaysAttendance = () => {
   });
   const [showFilters, setShowFilters] = useState(false);
   const [departments, setDepartments] = useState(['All']);
-  const [selectedDepartment, setSelectedDepartment] = useState('All');
+  // const [selectedDepartment, setSelectedDepartment] = useState('All');
 
   useEffect(() => {
     fetchTodaysAttendance();
@@ -212,6 +212,13 @@ const TodaysAttendance = () => {
     });
   }, [attendance, filters]);
 
+  // Add this helper function to check if any filters are active
+  const isAnyFilterActive = () => {
+    return filters.employeeId !== '' || 
+           filters.department !== '' || 
+           filters.status !== 'all';
+  };
+
   return (
     <>
       <Header />
@@ -240,15 +247,16 @@ const TodaysAttendance = () => {
         {/* Filters Section */}
         {showFilters && (
           <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
-            <div className="mb-4 space-y-4">
-              <div className="flex items-center gap-4">
-                {/* Employee ID Filter */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4">
+              {/* Employee ID Filter */}
+              <div className="flex flex-col">
+                <label className="text-sm font-medium text-gray-700 mb-1">
+                  Filter by Employee ID
+                </label>
                 <div className="flex items-center gap-2">
                   <FontAwesomeIcon icon={faSearch} className="text-gray-500" />
                   <input
-                    type="text"
-                    placeholder="Search by Employee ID"
-                    className="border rounded-md px-3 py-1.5 text-gray-700"
+                    className="border rounded-md px-3 py-1.5 text-gray-700 w-full"
                     value={filters.employeeId}
                     onChange={(e) => setFilters(prev => ({ 
                       ...prev, 
@@ -256,12 +264,17 @@ const TodaysAttendance = () => {
                     }))}
                   />
                 </div>
+              </div>
 
-                {/* Department Filter */}
+              {/* Department Filter */}
+              <div className="flex flex-col">
+                <label className="text-sm font-medium text-gray-700 mb-1">
+                  Filter by Department
+                </label>
                 <div className="flex items-center gap-2">
                   <FontAwesomeIcon icon={faFilter} className="text-gray-500" />
                   <select
-                    className="border rounded-md px-3 py-1.5 text-gray-700"
+                    className="border rounded-md px-3 py-1.5 text-gray-700 w-full"
                     value={filters.department}
                     onChange={(e) => setFilters(prev => ({ 
                       ...prev, 
@@ -275,12 +288,17 @@ const TodaysAttendance = () => {
                     ))}
                   </select>
                 </div>
+              </div>
 
-                {/* Status Filter */}
+              {/* Status Filter */}
+              <div className="flex flex-col">
+                <label className="text-sm font-medium text-gray-700 mb-1">
+                  Filter by Status
+                </label>
                 <div className="flex items-center gap-2">
                   <FontAwesomeIcon icon={faFilter} className="text-gray-500" />
                   <select
-                    className="border rounded-md px-3 py-1.5 text-gray-700"
+                    className="border rounded-md px-3 py-1.5 text-gray-700 w-full"
                     value={filters.status}
                     onChange={(e) => setFilters(prev => ({ 
                       ...prev, 
@@ -293,15 +311,21 @@ const TodaysAttendance = () => {
                     <option value="absent">Absent</option>
                   </select>
                 </div>
+              </div>
 
-                {/* Clear Filters Button */}
+              {/* Clear Filters Button */}
+              <div className="flex flex-col justify-end">
                 <button
                   onClick={() => setFilters({ 
                     department: '', 
                     status: 'all', 
                     employeeId: '' 
                   })}
-                  className="bg-gray-100 text-gray-600 px-4 py-2 rounded-md hover:bg-gray-200 flex items-center gap-2"
+                  disabled={!isAnyFilterActive()}
+                  className={`flex items-center gap-2 px-4 py-1.5 rounded-md transition-colors
+                    ${isAnyFilterActive() 
+                      ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' 
+                      : 'bg-gray-50 text-gray-400 cursor-not-allowed'}`}
                 >
                   <FontAwesomeIcon icon={faTimes} />
                   Clear Filters
