@@ -40,6 +40,7 @@
     "dom-to-pdf": "^0.3.2",
     "dompurify": "^3.1.7",
     "file-saver": "^2.0.5",
+    "framer-motion": "^11.16.0",
     "heroicons": "^2.1.4",
     "html-pdf": "^3.0.1",
     "html-react-parser": "^5.1.18",

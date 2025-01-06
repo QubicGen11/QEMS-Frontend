@@ -8,8 +8,45 @@ import Cookies from 'js-cookie';
 import { useUser } from "../context/UserContext";
 import config from "../config";
 import useEmployeeStore from "../../store/employeeStore";
+import { motion } from "framer-motion";
 
-const Login = ({name}) => {
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2,
+      delayChildren: 0.3
+    }
+  }
+};
+
+const letterVariants = {
+  hidden: { 
+    y: 50,
+    opacity: 0,
+    rotateX: -90
+  },
+  visible: {
+    y: 0,
+    opacity: 1,
+    rotateX: 0,
+    transition: {
+      type: "spring",
+      damping: 10,
+      stiffness: 100
+    }
+  },
+  hover: {
+    scale: 1.2,
+    rotate: [0, 5, -5, 0],
+    transition: {
+      duration: 0.3
+    }
+  }
+};
+
+const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -59,35 +96,74 @@ const Login = ({name}) => {
   };
 
   return (
-    <div className="Careersmain">
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
-      <div className="logo">
+    <div className="relative min-h-screen w-full overflow-hidden">
+      {/* Video Background */}
+      <div className="absolute inset-0 w-full h-full">
+        <video
+          autoPlay
+          loop
+          muted
+          className="absolute min-w-full min-h-full object-cover"
+        >
+          <source 
+            src="https://videos.pexels.com/video-files/853870/853870-hd_1920_1080_25fps.mp4" 
+            type="video/mp4" 
+          />
+          Your browser does not support the video tag.
+        </video>
+      </div>
+
+      {/* Black Overlay */}
+      <div className="absolute inset-0 bg-black/75" />
+
+      {/* Logo */}
+      <div className="absolute top-4 left-4 md:top-8 md:left-8 w-32 md:w-48 z-20">
         <img
-          className="w-6/12"
           src="https://res.cloudinary.com/defsu5bfc/image/upload/v1715348582/og_6_jqnrvf.png"
           alt="QubiNest Logo"
+          className="w-full"
         />
       </div>
 
-      <div className="login-left flex justify-around">
-        <div>
-          <h1 className="text-white text-4xl font-bold font-sans relative z-50 h-[100vh] w-[30vw] flex justify-center items-center" id="welcome">
-            WELCOME
-          </h1>
+      {/* Main Content */}
+      <div className="relative z-10 flex flex-col lg:flex-row min-h-screen">
+        {/* Left Side - Welcome Text */}
+        <div className="w-full lg:w-1/2 flex items-center justify-center lg:justify-start lg:pl-20 py-8 lg:py-0">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="flex space-x-2"
+          >
+            {[
+              { letter: 'W', gradient: 'from-yellow-400 via-red-500 to-pink-500' },
+              { letter: 'E', gradient: 'from-green-400 via-blue-500 to-purple-500' },
+              { letter: 'L', gradient: 'from-purple-400 via-pink-500 to-red-500' },
+              { letter: 'C', gradient: 'from-blue-400 via-indigo-500 to-purple-500' },
+              { letter: 'O', gradient: 'from-red-400 via-yellow-500 to-orange-500' },
+              { letter: 'M', gradient: 'from-teal-400 via-cyan-500 to-blue-500' },
+              { letter: 'E', gradient: 'from-pink-400 via-rose-500 to-red-500' }
+            ].map(({ letter, gradient }, index) => (
+              <motion.span
+                key={index}
+                variants={letterVariants}
+                whileHover="hover"
+                className={`text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r ${gradient} text-transparent bg-clip-text`}
+                style={{
+                  textShadow: '0 0 20px rgba(255,255,255,0.5)',
+                  display: 'inline-block'
+                }}
+              >
+                {letter}
+              </motion.span>
+            ))}
+          </motion.div>
         </div>
-        <div className='loginform z-40 flex justify-center items-center' data-aos="flip-left">
-          <div className="max-w-md relative flex flex-col rounded-lg text-black bg-[#EEF7FF] p-10" id="form">
+
+        {/* Right Side - Login Form */}
+        <div className="w-full lg:w-1/2 flex items-center justify-center px-4 lg:pr-8">
+          <div className="w-full max-w-[450px] rounded-lg p-4 md:p-7" 
+               style={{backgroundColor: 'rgba(255, 255, 255, 0.5)', backdropFilter: 'blur(10px)'}}>
             <div className="text-2xl font-bold mb-2 text-[#1e0e4b] text-center px-9">
               Welcome to <span className="text-yellow-400">QubiNest</span>
             </div>

@@ -322,9 +322,9 @@ const TodaysAttendance = () => {
                     employeeId: '' 
                   })}
                   disabled={!isAnyFilterActive()}
-                  className={`flex items-center gap-2 px-4 py-1.5 rounded-md transition-colors
+                  className={`flex items-center gap-2 px-4 py-1.5 rounded-md transition-colors w-40
                     ${isAnyFilterActive() 
-                      ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' 
+                      ? 'bg-blue-400 text-black hover:bg-blue-100' 
                       : 'bg-gray-50 text-gray-400 cursor-not-allowed'}`}
                 >
                   <FontAwesomeIcon icon={faTimes} />

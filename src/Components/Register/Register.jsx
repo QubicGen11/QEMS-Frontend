@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -29,7 +29,14 @@ const Register = () => {
     hasNumber: false,
     hasSpecial: false
   });
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const navigate = useNavigate();
+
+  const backgroundVideos = [
+"https://videos.pexels.com/video-files/3254006/3254006-uhd_2560_1440_25fps.mp4",
+"https://videos.pexels.com/video-files/853870/853870-hd_1920_1080_25fps.mp4"
+  ];
 
   const departmentStructure = {
     "Information Technology": [
@@ -213,8 +220,33 @@ const Register = () => {
     }
   };
 
+  const allRequirementsMet = useMemo(() => {
+    return (
+      passwordValidation.minLength &&
+      passwordValidation.hasUpperCase &&
+      passwordValidation.hasLowerCase &&
+      passwordValidation.hasNumber &&
+      passwordValidation.hasSpecial
+    );
+  }, [passwordValidation]);
+
   return (
-    <div className="relative min-h-screen w-full bg-[url('https://res.cloudinary.com/defsu5bfc/image/upload/v1715353343/Qubicnest/Loginpage/israel-andrade-YI_9SivVt_s-unsplash_i2ypfk.jpg')] bg-cover bg-center bg-fixed overflow-y-auto p-4 md:p-8">
+    <div className="relative min-h-screen w-full overflow-y-auto p-4 md:p-8">
+      {/* Video Background */}
+      <div className="fixed inset-0 w-full h-full">
+        <video
+          id="backgroundVideo"
+          autoPlay
+          muted
+          playsInline
+          loop
+          className="absolute inset-0 w-full h-full object-cover"
+          src={backgroundVideos[currentVideoIndex]}
+        >
+          Your browser does not support the video tag.
+        </video>
+      </div>
+
       {/* Black Overlay */}
       <div className="absolute inset-0 bg-black/75" />
 
@@ -310,7 +342,7 @@ const Register = () => {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
-                    placeholder="Enter your username"
+                    placeholder="Enter your full name"
                   />
                 </div>
 
@@ -341,6 +373,13 @@ const Register = () => {
                         setPassword(e.target.value);
                         checkPasswordStrength(e.target.value);
                       }}
+                      onFocus={() => setIsPasswordFocused(true)}
+                      onBlur={() => {
+                        if (!password) {
+                          setIsPasswordFocused(false);
+                        }
+                      }}
+                      autoComplete="new-password"
                       className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
                       placeholder="Enter password"
                     />
@@ -351,62 +390,66 @@ const Register = () => {
                     >
                       {showPassword ? "🙈" : "👁️"}
                     </button>
-                    <div className="mt-1 text-sm">
-                      <p className="font-medium mb-1">Password Requirements:</p>
-                      <ul className="space-y-1">
-                        <li className="flex items-center">
-                          {passwordValidation.minLength ? (
-                            <span className="text-black mr-2">✓</span>
-                          ) : (
-                            <span className="text-red-600 mr-2">✗</span>
-                          )}
-                          <span className={passwordValidation.minLength ? "text-black" : "text-red-600"}>
+                  </div>
+                  
+                  {/* Only show requirements when password field is focused and not all requirements are met */}
+                  {isPasswordFocused && !allRequirementsMet && (
+                    <div className="mt-2 bg-gray-900 text-white rounded-lg p-4 shadow-lg absolute z-10 w-80">
+                      <div className="flex items-center mb-3">
+                        <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12zm1-7a1 1 0 10-2 0v2a1 1 0 102 0V9z" clipRule="evenodd" />
+                        </svg>
+                        <span className="font-semibold">Password Requirements</span>
+                      </div>
+                      <ul className="space-y-2">
+                        <li className="flex items-center text-sm">
+                          <span className={`inline-flex items-center justify-center w-5 h-5 mr-2 rounded-full 
+                            ${passwordValidation.minLength ? 'bg-green-500' : 'bg-gray-600'}`}>
+                            {passwordValidation.minLength ? '✓' : ''}
+                          </span>
+                          <span className={passwordValidation.minLength ? 'text-green-400' : 'text-gray-300'}>
                             At least 8 characters
                           </span>
                         </li>
-                        <li className="flex items-center">
-                          {passwordValidation.hasUpperCase ? (
-                            <span className="text-black mr-2">✓</span>
-                          ) : (
-                            <span className="text-red-600 mr-2">✗</span>
-                          )}
-                          <span className={passwordValidation.hasUpperCase ? "text-black" : "text-red-600"}>
+                        <li className="flex items-center text-sm">
+                          <span className={`inline-flex items-center justify-center w-5 h-5 mr-2 rounded-full 
+                            ${passwordValidation.hasUpperCase ? 'bg-green-500' : 'bg-gray-600'}`}>
+                            {passwordValidation.hasUpperCase ? '✓' : ''}
+                          </span>
+                          <span className={passwordValidation.hasUpperCase ? 'text-green-400' : 'text-gray-300'}>
                             One uppercase letter
                           </span>
                         </li>
-                        <li className="flex items-center">
-                          {passwordValidation.hasLowerCase ? (
-                            <span className="text-black mr-2">✓</span>
-                          ) : (
-                            <span className="text-red-600 mr-2">✗</span>
-                          )}
-                          <span className={passwordValidation.hasLowerCase ? "text-black" : "text-red-600"}>
+                        <li className="flex items-center text-sm">
+                          <span className={`inline-flex items-center justify-center w-5 h-5 mr-2 rounded-full 
+                            ${passwordValidation.hasLowerCase ? 'bg-green-500' : 'bg-gray-600'}`}>
+                            {passwordValidation.hasLowerCase ? '✓' : ''}
+                          </span>
+                          <span className={passwordValidation.hasLowerCase ? 'text-green-400' : 'text-gray-300'}>
                             One lowercase letter
                           </span>
                         </li>
-                        <li className="flex items-center">
-                          {passwordValidation.hasNumber ? (
-                            <span className="text-black mr-2">✓</span>
-                          ) : (
-                            <span className="text-red-600 mr-2">✗</span>
-                          )}
-                          <span className={passwordValidation.hasNumber ? "text-black" : "text-red-600"}>
+                        <li className="flex items-center text-sm">
+                          <span className={`inline-flex items-center justify-center w-5 h-5 mr-2 rounded-full 
+                            ${passwordValidation.hasNumber ? 'bg-green-500' : 'bg-gray-600'}`}>
+                            {passwordValidation.hasNumber ? '✓' : ''}
+                          </span>
+                          <span className={passwordValidation.hasNumber ? 'text-green-400' : 'text-gray-300'}>
                             One number
                           </span>
                         </li>
-                        <li className="flex items-center">
-                          {passwordValidation.hasSpecial ? (
-                            <span className="text-black mr-2">✓</span>
-                          ) : (
-                            <span className="text-red-600 mr-2">✗</span>
-                          )}
-                          <span className={passwordValidation.hasSpecial ? "text-black" : "text-red-600"}>
+                        <li className="flex items-center text-sm">
+                          <span className={`inline-flex items-center justify-center w-5 h-5 mr-2 rounded-full 
+                            ${passwordValidation.hasSpecial ? 'bg-green-500' : 'bg-gray-600'}`}>
+                            {passwordValidation.hasSpecial ? '✓' : ''}
+                          </span>
+                          <span className={passwordValidation.hasSpecial ? 'text-green-400' : 'text-gray-300'}>
                             One special character
                           </span>
                         </li>
                       </ul>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Confirm Password Input */}
@@ -447,18 +490,7 @@ const Register = () => {
                 </div>
 
                 {/* Main Position Input */}
-                <div>
-                  <label className="block text-gray-700 text-sm mb-1.5">
-                    Main Position <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={mainPosition}
-                    onChange={(e) => setMainPosition(e.target.value)}
-                    className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
-                    placeholder="Enter your main position"
-                  />
-                </div>
+               
 
                 {/* Department Select */}
                 <div>
@@ -497,6 +529,19 @@ const Register = () => {
                     </select>
                   </div>
                 )}
+
+<div>
+                  <label className="block text-gray-700 text-sm mb-1.5">
+                    Main Position <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={mainPosition}
+                    onChange={(e) => setMainPosition(e.target.value)}
+                    className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
+                    placeholder="Enter your main position"
+                  />
+                </div>
 
                 {/* Joining Date Input */}
                 <div>
