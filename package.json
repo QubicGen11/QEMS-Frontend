@@ -27,6 +27,7 @@
     "@mui/icons-material": "^6.1.6",
     "@mui/material": "^6.1.9",
     "@mui/x-date-pickers": "^7.22.1",
+    "@react-spring/web": "^9.7.5",
     "@types/quill": "^2.0.14",
     "admin-lte": "^3.2.0",
     "aos": "^2.3.4",

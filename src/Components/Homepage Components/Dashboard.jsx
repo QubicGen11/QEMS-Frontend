@@ -7,22 +7,33 @@ import { Link } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { useUser } from '../context/UserContext';
 import UserDetailModal from './UserDetailModal';
-import { fetchAttendanceData } from './api';
+// import { fetchAttendanceData } from './api';
 import Loading from '../Loading Components/Loading';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import useEmployeeStore from '../../store/employeeStore';
-import { FiBriefcase, FiHash, FiLogIn, FiLogOut } from 'react-icons/fi';
+import { 
+  FaBriefcase as FiBriefcase, 
+  FaHashtag as FiHash,
+  FaLightbulb as FiLightbulb,
+  FaClock as FiClock,
+  FaSignInAlt as FiLogIn,
+  FaSignOutAlt as FiLogOut,
+  FaPalette
+} from 'react-icons/fa';
 import { ToastContainer } from 'react-toastify';
+import { motion, AnimatePresence } from 'framer-motion';
+import ProductivityTools from './ProductivityTools';
+import DailyTips from './DailyTips';
+import InterestWidget from './InterestWidget';
+import ThemeSelector from './ThemeSelector';
+// import { FiLightbulb, FiClock } from 'react-icons/fi'
 
-const CACHE_EXPIRY_TIME = 60 * 60 * 1000;
+// const CACHE_EXPIRY_TIME = 60 * 60 * 1000;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
 const TIMESHEET_CACHE_KEY = 'dashboard_timesheet';
 
-const apiCache = {
-  clockStatus: new Map(),
-  reports: new Map()
-};
+
 
 const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmittedReport, clockIn, clockOut }) => {
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
@@ -30,15 +41,7 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
   const [showReportTooltip, setShowReportTooltip] = useState(false);
 
   const backgroundImages = [
-    'https://images.pexels.com/photos/577585/pexels-photo-577585.jpeg?auto=compress&cs=tinysrgb&w=800',
-    'https://images.pexels.com/photos/270366/pexels-photo-270366.jpeg?auto=compress&cs=tinysrgb&w=800',
-    'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
-    'https://images.unsplash.com/photo-1607706189992-eae578626c86?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
-    'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
-    'https://images.pexels.com/photos/1933900/pexels-photo-1933900.jpeg?auto=compress&cs=tinysrgb&w=600',
-    'https://images.pexels.com/photos/3861958/pexels-photo-3861958.jpeg?auto=compress&cs=tinysrgb&w=600',
-    'https://images.pexels.com/photos/4974912/pexels-photo-4974912.jpeg?auto=compress&cs=tinysrgb&w=600',
-    'https://images.pexels.com/photos/4974920/pexels-photo-4974920.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
+"https://images.pexels.com/photos/189349/pexels-photo-189349.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
 
   ];
 
@@ -65,119 +68,376 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
           backgroundImage: `url(${backgroundImages[currentBgIndex]})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          filter: 'brightness(0.7)'
+          filter: 'brightness(0.7)',
+          backgroundVideo: 'https://videos.pexels.com/video-files/3099522/3099522-hd_1920_1080_25fps.mp4'
         }}
       />
 
       {/* Content */}
-      <div className="relative z-10 p-6 flex justify-between items-center">
-        {/* Greeting and Name */}
-        <div>
-          <h1 className="text-3xl font-bold text-white mb-2">
-            {greetingMessage}, {employeeData?.firstname} {employeeData?.lastname}
-          </h1>
-          <div className="flex items-center gap-4 text-white/80">
-            <span className="flex items-center gap-2">
-              <FiBriefcase className="w-4 h-4" />
-              {employeeData?.users?.[0]?.mainPosition || 'Web Developer'}
-            </span>
-            <span className="flex items-center gap-2">
-              <FiHash className="w-4 h-4" />
-              {employeeData?.employee_id}
-            </span>
+      <div className="relative z-10 p-6 flex flex-col">
+        <div className="flex justify-between items-start">
+          <div>
+            <motion.h1 
+              className="text-3xl font-bold text-white mb-2"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ 
+                duration: 0.7,
+                ease: "easeOut"
+              }}
+            >
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.7 }}
+                className="inline-block"
+              >
+                {greetingMessage.split('').map((char, index) => (
+                  <motion.span
+                    key={index}
+                    className="inline-block"
+                    animate={{
+                      y: [0, -15, 0],
+                      color: [
+                        'hsl(0, 100%, 75%)',
+                        'hsl(60, 100%, 75%)',
+                        'hsl(120, 100%, 75%)',
+                        'hsl(180, 100%, 75%)',
+                        'hsl(240, 100%, 75%)',
+                        'hsl(300, 100%, 75%)',
+                        'hsl(360, 100%, 75%)',
+                      ],
+                      textShadow: [
+                        '0 0 5px rgba(255,255,255,0.5)',
+                        '0 0 15px rgba(255,255,255,0.5)',
+                        '0 0 5px rgba(255,255,255,0.5)',
+                      ]
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      repeatDelay: 1,
+                      delay: index * 0.1,
+                      ease: [0.6, 0.01, -0.05, 0.95]
+                    }}
+                  >
+                    {char}
+                  </motion.span>
+                ))}, {' '}
+              </motion.span>
+              
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.7, delay: 0.2 }}
+                className="inline-block"
+              >
+                <motion.span className="inline-block">
+                  {(employeeData?.firstname || '').split('').map((char, index) => (
+                    <motion.span
+                      key={index}
+                      className="inline-block"
+                      animate={{
+                        y: [0, -10, 0],
+                        scale: [1, 1.05, 1],
+                    
+                    
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        repeatDelay: 1,
+                        delay: index * 0.1,
+                        ease: [0.4, 0, 0.2, 1]
+                      }}
+                    >
+                      {char}
+                    </motion.span>
+                  ))}
+                </motion.span>
+                {' '}
+                <motion.span className="inline-block">
+                  {(employeeData?.lastname || '').split('').map((char, index) => (
+                    <motion.span
+                      key={index}
+                      className="inline-block"
+                      animate={{
+                        y: [0, -10, 0],
+                        scale: [1, 1.05, 1],
+                    
+               
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        repeatDelay: 1,
+                        delay: index * 0.1,
+                        ease: "easeInOut"
+                      }}
+                    >
+                      {char}
+                    </motion.span>
+                  ))}
+                </motion.span>
+              </motion.span>
+            </motion.h1>
+            <div className="flex items-center gap-4 text-white/80">
+              <motion.span 
+                className="flex items-center gap-2"
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.3 }}
+              >
+                <motion.div
+                  animate={{
+                    y: [0, -2, 0],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                >
+                  <FiBriefcase className="w-4 h-4" />
+                </motion.div>
+                {employeeData?.users?.[0]?.mainPosition || 'Web Developer'}
+              </motion.span>
+              <motion.span 
+                className="flex items-center gap-2"
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.3 }}
+              >
+                <motion.div
+                  animate={{
+                    y: [0, -2, 0],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: 0.5
+                  }}
+                >
+                  <FiHash className="w-4 h-4" />
+                </motion.div>
+                {employeeData?.employee_id}
+              </motion.span>
+            </div>
+          </div>
+
+          {/* Logo */}
+          <div className="flex-shrink-0">
+            <motion.img 
+              src="https://res.cloudinary.com/defsu5bfc/image/upload/v1714828410/logo_3_jizb6b.png" 
+              alt="Company Logo" 
+              className="w-16 h-16 object-contain"
+              style={{
+                perspective: "1000px",
+                transformStyle: "preserve-3d"
+              }}
+              animate={{
+                rotateY: [0, 360],
+              }}
+              transition={{
+                duration: 3,
+                ease: "linear",
+                repeat: Infinity,
+                repeatDelay: 1
+              }}
+              whileHover={{ 
+                scale: 1.1,
+                rotateX: [0, 45, -45, 0],
+                rotateY: [0, 45, -45, 0],
+                rotateZ: [0, 45, -45, 0],
+              }}
+              drag
+              dragConstraints={{
+                top: -10,
+                left: -10,
+                right: 10,
+                bottom: 10,
+              }}
+              dragElastic={0.1}
+              dragTransition={{ bounceStiffness: 300, bounceDamping: 10 }}
+            />
           </div>
         </div>
 
-        {/* Logo */}
-        <div className="flex-shrink-0">
-          <img 
-            src="https://res.cloudinary.com/defsu5bfc/image/upload/v1714828410/logo_3_jizb6b.png" 
-            alt="Company Logo" 
-            className="w-16 h-16 object-contain"
-          />
-        </div>
+        {/* New Tip of the Day section */}
+     <DailyTips />
       </div>
 
-      {/* Clock In/Out Buttons */}
-      <div className="relative z-10 grid grid-cols-2 border-t border-white/10">
-        <button
+      {/* Clock In/Out Section with smoother animations */}
+      <motion.div 
+        className="relative z-10 grid grid-cols-2 border-t border-white/10"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ 
+          duration: 0.7,
+          delay: 1,
+          ease: "easeOut"
+        }}
+      >
+        <motion.button
           onClick={clockIn}
           disabled={isClockedIn}
-          className={`flex items-center justify-center gap-2 py-4 px-6 transition-colors ${
+          whileHover={!isClockedIn ? { 
+            scale: 1.01,
+            backgroundColor: "rgba(34, 197, 94, 0.1)",
+            transition: { duration: 0.3 }
+          } : {}}
+          whileTap={!isClockedIn ? { scale: 0.98 } : {}}
+          className={`flex items-center justify-center gap-2 py-4 px-6 transition-colors font-bold text-lg ${
             isClockedIn 
               ? 'bg-gray-800/50 text-gray-400 cursor-not-allowed'
-              : 'bg-black/50 text-white hover:bg-green-500/20'
+              : 'bg-black/50 text-white'
           }`}
         >
-          <FiLogIn className="w-5 h-5" />
-          Clock In
-          {clockInTime && <span className="text-sm opacity-75">({clockInTime})</span>}
-        </button>
-
-        <div className="relative">
-          <button 
-            onClick={() => {
-              if (!hasSubmittedReport && isClockedIn) {
-                setShowReportTooltip(true);
-                setTimeout(() => setShowReportTooltip(false), 3000);
-                toast.warning('Please submit your daily report before clocking out');
-              } else {
-                clockOut();
-              }
+          <motion.div
+            animate={!isClockedIn ? {
+              y: [0, -2, 0],
+            } : {}}
+            transition={{
+              duration: 1.5,
+              repeat: Infinity,
+              ease: "easeInOut"
             }}
-            onMouseEnter={() => !hasSubmittedReport && isClockedIn && setShowReportTooltip(true)}
-            onMouseLeave={() => setShowReportTooltip(false)}
-            disabled={!isClockedIn}
-            className={`flex items-center justify-center gap-2 py-4 px-6 transition-colors relative ${
-              !isClockedIn
-                ? 'bg-gray-800/50 text-gray-400 cursor-not-allowed'
-                : !hasSubmittedReport
-                ? 'bg-black/50 text-white hover:bg-yellow-500/20'
-                : 'bg-black/50 text-white hover:bg-red-500/20'
-            } border-l border-white/10`}
+          >
+            <FiLogIn className="w-5 h-5" />
+          </motion.div>
+          Clock In
+          {clockInTime && (
+            <motion.span 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.75 }}
+              transition={{ duration: 0.3 }}
+              className="text-md"
+            >
+              ({clockInTime})
+            </motion.span>
+          )}
+        </motion.button>
+
+        <motion.button
+          onClick={() => {
+            if (!hasSubmittedReport && isClockedIn) {
+              setShowReportTooltip(true);
+              setTimeout(() => setShowReportTooltip(false), 3000);
+              toast.warning('Please submit your daily report before clocking out');
+            } else {
+              clockOut();
+            }
+          }}
+          onMouseEnter={() => !hasSubmittedReport && isClockedIn && setShowReportTooltip(true)}
+          onMouseLeave={() => setShowReportTooltip(false)}
+          disabled={!isClockedIn}
+          whileHover={isClockedIn ? { 
+            scale: 1.01,
+            backgroundColor: hasSubmittedReport ? "rgba(239, 68, 68, 0.1)" : "rgba(234, 179, 8, 0.1)",
+            transition: { duration: 0.3 }
+          } : {}}
+          whileTap={isClockedIn ? { scale: 0.98 } : {}}
+          className={`flex items-center justify-center gap-2 py-4 px-6 transition-colors relative font-bold text-lg ${
+            !isClockedIn
+              ? 'bg-gray-800/50 text-gray-400 cursor-not-allowed'
+              : 'bg-black/50 text-white'
+          } border-l border-white/10`}
+        >
+          <motion.div
+            animate={isClockedIn ? {
+              y: [0, -2, 0],
+            } : {}}
+            transition={{
+              duration: 1.5,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
           >
             <FiLogOut className="w-5 h-5" />
-            Clock Out
-            {clockOutTime && <span className="text-sm opacity-75">({clockOutTime})</span>}
-          </button>
-
-          {/* Tooltip/Message for Report Submission */}
-          {showReportTooltip && isClockedIn && !hasSubmittedReport && (
-            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max">
-              <div className="bg-black text-white text-sm py-2 px-4 rounded-lg shadow-lg">
-                <div className="flex items-center gap-2">
-                  <svg 
-                    className="w-4 h-4 text-yellow-400" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth={2} 
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" 
-                    />
-                  </svg>
-                  <span>Please submit your daily report first</span>
-                </div>
-              </div>
-              {/* Arrow */}
-              <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-1">
-                <div className="border-8 border-transparent border-t-black"></div>
-              </div>
-            </div>
+          </motion.div>
+          Clock Out
+          {clockOutTime && (
+            <motion.span 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.75 }}
+              transition={{ duration: 0.3 }}
+              className="text-md"
+            >
+              ({clockOutTime})
+            </motion.span>
           )}
 
-          {/* Visual Indicator for Report Status */}
+          <AnimatePresence>
+            {showReportTooltip && isClockedIn && !hasSubmittedReport && (
+              <motion.div 
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 5 }}
+                transition={{ duration: 0.2 }}
+                className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max"
+              >
+                <motion.div 
+                  className="bg-black text-white text-sm py-2 px-4 rounded-lg shadow-lg"
+                  animate={{
+                    y: [0, -2, 0],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <motion.svg 
+                      className="w-4 h-4 text-yellow-400" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                      animate={{
+                        rotate: [0, 5, -5, 5, 0],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" 
+                      />
+                    </motion.svg>
+                    <span>Please submit your daily report first</span>
+                  </div>
+                </motion.div>
+                <motion.div 
+                  className="absolute left-1/2 transform -translate-x-1/2 -bottom-1"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="border-8 border-transparent border-t-black"></div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {isClockedIn && (
-            <div className={`absolute -top-2 -right-2 w-4 h-4 rounded-full ${
-              hasSubmittedReport ? 'bg-green-500' : 'bg-yellow-500'
-            }`}>
-            </div>
+            <motion.div 
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{
+                duration: 0.3,
+                ease: "easeOut"
+              }}
+              className={`absolute -top-2 -right-2 w-4 h-4 rounded-full ${
+                hasSubmittedReport ? 'bg-green-500' : 'bg-yellow-500'
+              }`}
+            />
           )}
-        </div>
-      </div>
+        </motion.button>
+      </motion.div>
     </div>
   );
 };
@@ -368,7 +628,7 @@ const Dashboard = () => {
       console.error('Error fetching attendance:', error);
       // Show error only on initial load
       if (isInitialLoad) {
-        // toast.error('Failed to load timesheet data');
+        toast.error('Failed to load timesheet data');
       }
     } finally {
       setLoading(false);
@@ -454,27 +714,7 @@ const Dashboard = () => {
   }, [isClockedIn]);
 
   // Function to handle image upload
-  const handleImageUpload = async (file) => {
-    try {
-      setUploadingMedia(true);
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', 'your_cloudinary_upload_preset');
-      
-      const response = await axios.post(
-        'https://api.cloudinary.com/v1_1/your_cloud_name/upload',
-        formData
-      );
 
-      return response.data.secure_url;
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      toast.error('Failed to upload image');
-      return null;
-    } finally {
-      setUploadingMedia(false);
-    }
-  };
 
   // Replace the existing textarea with ReactQuill
   const handleSubmit = async (event) => {
@@ -597,17 +837,7 @@ const Dashboard = () => {
     }
   };
 
-  const resetClockInStatus = () => {
-    const userClockInKey = `lastClockIn_${email}`;
-    const userClockOutKey = `lastClockOut_${email}`;
-    localStorage.removeItem(userClockInKey);
-    localStorage.removeItem(userClockOutKey);
-    setIsClockedIn(false);
-    setIsReportSubmitted(false);
-    setClockInTime('');
-    setClockOutTime('');
-    toast.success('Clock-in status has been reset!');
-  };
+
 
   const startGame = () => {
     const lastPlayed = localStorage.getItem('lastPlayed');
@@ -650,12 +880,7 @@ const Dashboard = () => {
     setMessage('');
   };
 
-  const stopGame = () => {
-    clearInterval(timer);
-    setMessage('Game stopped! Get back tomorrow.');
-    toast.success('Game stopped! Get back tomorrow.');
-    window.location.reload();
-  };
+
 
   const handleResetGame = () => {
     resetGame();
@@ -732,19 +957,13 @@ const Dashboard = () => {
     }
   };
 
-  const getGreeting = () => {
-    const hour = currentTime.getHours();
-    if (hour < 12) return 'Good Morning';
-    if (hour < 18) return 'Good Afternoon';
-    return 'Good Evening';
-  };
+
 
   const AssociateDetails = memo(() => {
     const displayData = useMemo(() => {
       const data = employeeData || employeeInfo || employeeDataRef.current;
       if (!data) return null;
       
-      // Combine user data with employee data
       return {
         ...data,
         mainPosition: data.users?.[0]?.mainPosition || 'Not Specified',
@@ -768,53 +987,59 @@ const Dashboard = () => {
         </div>
       );
     }
-  
+
     return (
-      <div className="card-body pt-0" bis_skin_checked={1}>
-        <div className="row" bis_skin_checked={1}>
-          <div className="col-7" bis_skin_checked={1}>
-            <h2 className="lead"><b>{displayData.firstname} {displayData.lastname}</b></h2>
-            <p className="text-muted text-sm">
-              <b>Role: </b> {displayData.users?.[0]?.role || 'Not Specified'}
-            </p>
-            <ul className="ml-4 mb-0 fa-ul text-muted">
-              <li className="small pt-2">
-                <span className="fa-li"><i className="fas fa-lg fa-id-card" /></span>
-                <span className='font-bold'> Emp Id:</span> {displayData.employee_id}
-              </li>
-              <li className="small pt-2">
-                <span className="fa-li"><i className="fas fa-lg fa-envelope" /></span>
-                <span className='font-bold'> Company Email:</span> {displayData.companyEmail}
-              </li>
-              <li className="small pt-2">
-                <span className="fa-li"><i className="fas fa-lg fa-briefcase" /></span>
-                <span className='font-bold'> Position:</span> {displayData.mainPosition || 'Not Specified'}
-              </li>
-              <li className="small pt-2">
-                <span className="fa-li"><i className="fas fa-lg fa-calendar" /></span>
-                <span className='font-bold'> Joining Date:</span> {new Date(displayData.joiningDate).toLocaleDateString()}
-              </li>
-              <li className="small pt-2">
-                <span className="fa-li"><i className="fas fa-lg fa-graduation-cap" /></span>
-                <span className='font-bold'> Education:</span> {displayData.education || 'Not Specified'}
-              </li>
-              <li className="small pt-2">
-                <span className="fa-li"><i className="fas fa-lg fa-code" /></span>
-                <span className='font-bold'> Skills:</span> {displayData.skills || 'Not Specified'}
-              </li>
-              <li className="small pt-2">
-                <span className="fa-li"><i className="fas fa-lg fa-user-check" /></span>
-                <span className='font-bold'> Status:</span> {displayData.users?.[0]?.status || 'Active'}
-              </li>
-              <li className="small pt-2">
-                <span className="fa-li"><i className="fas fa-lg fa-building" /></span>
-                <span className='font-bold'> Company:</span> QubicGen Software Solutions Pvt Ltd
-              </li>
-            </ul>
+      <div className="card-body h-auto p-4 rounded-lg shadow-xl bg-white/90">
+        <div className="grid grid-cols-3 h-full gap-4">
+          {/* Left Column - Details (using 2 columns) */}
+          <div className="col-span-2 h-full ">
+            {/* Static Content */}
+            <div className="mb-3">
+              <h2 className="text-xl font-bold text-gray-800 mb-2">
+                {displayData.firstname} {displayData.lastname}
+              </h2>
+              <p className="text-emerald-600 text-sm">
+                <span className="font-semibold">Role:</span> {displayData.users?.[0]?.role || 'Not Specified'}
+              </p>
+            </div>
+
+            {/* Scrollable Content - Fixed Height */}
+            <div 
+              className="h-[calc(100%-4rem)] overflow-y-auto" 
+              style={{ scrollBehavior: 'smooth' }}
+            >
+              <ul className="space-y-2">
+                {[
+                  { icon: "fa-id-card", label: "Emp Id", value: displayData.employee_id },
+                  { icon: "fa-envelope", label: "Company Email", value: displayData.companyEmail },
+                  { icon: "fa-briefcase", label: "Position", value: displayData.mainPosition },
+                  { icon: "fa-calendar", label: "Joining Date", value: new Date(displayData.joiningDate).toLocaleDateString() },
+                  { icon: "fa-graduation-cap", label: "Education", value: displayData.education },
+                  { icon: "fa-code", label: "Skills", value: displayData.skills },
+                  { icon: "fa-user-check", label: "Status", value: displayData.users?.[0]?.status },
+                  { icon: "fa-building", label: "Company", value: "QubicGen Software Solutions Pvt Ltd" }
+                ].map((item, index) => (
+                  <li 
+                    key={item.label}
+                    className="flex items-center text-sm hover:bg-gray-50 rounded-md p-1.5"
+                  >
+                    <span className="w-7 h-7 flex-shrink-0 flex items-center justify-center bg-emerald-100 rounded-full mr-2">
+                      <i className={`fas ${item.icon} text-emerald-600 text-xs`} />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <span className="font-medium text-gray-600 mr-2">{item.label}:</span>
+                      <span className="text-gray-700">{item.value || 'Not Specified'}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-          <div className="col-5 text-center pt-3" bis_skin_checked={1}>
+
+          {/* Right Column - Image */}
+          <div className="flex items-center justify-center">
             <img
-              className="profile-user-img img-fluid img-circle h-24"
+              className="w-24 h-24 rounded-full object-cover border-2 border-emerald-500 shadow-md"
               src={displayData.employeeImg}
               alt={`${displayData.firstname} avatar`}
               onError={(e) => {
@@ -838,13 +1063,18 @@ const Dashboard = () => {
   }, []);
 
   const TimesheetTable = memo(({ data, isLoading }) => {
+    // Use ref to track initial render
+
+
+ 
+
     if (isLoading && isInitialLoad) {
       return (
         <tr>
-          <td colSpan="4" className="text-center py-4">
-            <div className="flex justify-center items-center">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-              <span className="ml-2">Loading...</span>
+          <td colSpan="4" className="text-center py-8">
+            <div className="flex justify-center items-center space-x-3">
+              <div className="animate-spin rounded-full h-8 w-8 border-4 border-emerald-200 border-t-emerald-500"></div>
+              <span className="text-gray-600 text-sm font-medium animate-pulse">Loading timesheet data...</span>
             </div>
           </td>
         </tr>
@@ -854,21 +1084,49 @@ const Dashboard = () => {
     if (!data?.length) {
       return (
         <tr>
-          <td colSpan="4" className="text-center py-4">No records found</td>
+          <td colSpan="4" className="text-center py-8">
+            <div className="flex flex-col items-center justify-center text-gray-500">
+              <i className="fas fa-calendar-times text-2xl mb-2 text-gray-400"></i>
+              <span className="text-sm">No timesheet records found</span>
+            </div>
+          </td>
         </tr>
       );
     }
 
-    return data.map((attendance) => (
-      <tr key={attendance.id} className="hover:bg-gray-50">
-        <td className="py-2">{new Date(attendance.date).toLocaleDateString()}</td>
-        <td className="py-2">{formatTime(attendance.checkin_Time)}</td>
-        <td className="py-2">{formatTime(attendance.checkout_Time)}</td>
-        <td className="py-2">
+    return data.map((attendance, index) => (
+      <tr 
+        key={attendance.id} 
+       
+     
+      >
+        <td className="py-3 px-4">
+          <div className="flex items-center space-x-2">
+            <i className="fas fa-calendar-day text-emerald-500 text-xs"></i>
+            <span className="text-gray-700">{new Date(attendance.date).toLocaleDateString()}</span>
+          </div>
+        </td>
+        <td className="py-3 px-4">
+          <div className="flex items-center space-x-2">
+            <i className="fas fa-sign-in-alt text-blue-500 text-xs"></i>
+            <span className="text-gray-700">{formatTime(attendance.checkin_Time)}</span>
+          </div>
+        </td>
+        <td className="py-3 px-4">
+          <div className="flex items-center space-x-2">
+            <i className="fas fa-sign-out-alt text-red-500 text-xs"></i>
+            <span className="text-gray-700">{formatTime(attendance.checkout_Time)}</span>
+          </div>
+        </td>
+        <td className="py-3 px-4">
           <StatusBadge status={attendance.status} />
         </td>
       </tr>
     ));
+  }, (prevProps, nextProps) => {
+    // Implement deep comparison for data
+    return JSON.stringify(prevProps.data) === JSON.stringify(nextProps.data) &&
+           prevProps.isLoading === nextProps.isLoading;
   });
 
   const StatusBadge = memo(({ status }) => {
@@ -949,11 +1207,64 @@ const Dashboard = () => {
   }, [email]);
 
   // Add this state for tooltip
-  const [showReportTooltip, setShowReportTooltip] = useState(false);
+  // const [showReportTooltip, setShowReportTooltip] = useState(false);
+
+  // Add this CSS animation
+
+
+  const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState(() => {
+    // Initialize from localStorage with a default theme
+    const savedTheme = localStorage.getItem('dashboardTheme');
+    return savedTheme ? JSON.parse(savedTheme) : {
+      type: 'image',
+      value: ''
+    };
+  });
+
+  // Save theme to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('dashboardTheme', JSON.stringify(currentTheme));
+    } catch (error) {
+      console.error('Error saving theme to localStorage:', error);
+    }
+  }, [currentTheme]);
+
+  const handleThemeSelect = (theme) => {
+    try {
+      setCurrentTheme(theme);
+      localStorage.setItem('dashboardTheme', JSON.stringify(theme));
+      setIsThemeSelectorOpen(false);
+    } catch (error) {
+      console.error('Error handling theme selection:', error);
+    }
+  };
 
   return (
     <>
-      <div className="content-wrapper">
+      <div 
+        className="content-wrapper" 
+        style={{
+          background: currentTheme.type === 'image' 
+            ? `url('${currentTheme.value}')` 
+            : currentTheme.value,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          transition: "background 0.3s ease"
+        }}
+      >
+        {/* Add theme selector button somewhere in your header or navbar */}
+        <button
+          onClick={() => setIsThemeSelectorOpen(true)}
+          className="fixed bottom-4 right-4 p-3 bg-white/10 backdrop-blur-md rounded-full shadow-lg 
+                     hover:bg-white/20 transition-colors z-[9999] hover:scale-110 
+                     transform duration-200 border border-white/20"
+        >
+          <FaPalette className="w-5 h-5 text-white" />
+        </button>
+
         <UserDetailModal
           isOpen={isModalOpen}
           onRequestClose={handleCloseModal}
@@ -995,74 +1306,131 @@ const Dashboard = () => {
       </div>
 
               <div className="col-12 col-lg-6">
-                <div className="small-box bg-white">
-                  <div className="inner h-6/6">
-                    <p className='text-left' style={{ fontSize: '15px', height: '65px' }}>
-                      {currentTime.toLocaleDateString('en-US', { weekday: 'long' })}, {currentTime.toLocaleTimeString('en-US')}
-                      <p className='text-center text-lg my-2'>Work Time</p>
-                    </p>
-                    {/* <p className='text-center' style={{ fontSize: '20px', height: '30px' }}>{`${time.hours} Hrs : ${time.minutes} Min : ${time.seconds} Sec`}</p> */}
-
-                    <div className="card-footer p-0">
-                      <ul className="nav flex-column bg-white">
-                        <li className="nav-item flex justify-center align-middle items-center">
-                          <div className="bg-white h-4/6">
-                            <div className='flex justify-between'>
-                              <p className='text-left text-sm'>Task Reports</p>
-                              <p className="text-xs text-right mb-2">{reportText.length}/{MAX_CHAR_LIMIT}</p>
-                            </div>
-                            <div className="card-footer bg-w p-0">
-                              <div className="reports bg-white">
-                                <div className="card-footer bg-w p-0">
-                                  <div className="reports bg-white">
-                                    <form onSubmit={handleSubmit}>
-                                      <div className="quill-container mb-4">
-                                        <ReactQuill
-                                          value={reportContent}
-                                          onChange={setReportContent}
-                                          modules={modules}
-                                          formats={formats}
-                                          placeholder="Submit Your Daily Update...! (Required)"
-                                          className="bg-white"
-                                          style={{ height: '200px', marginBottom: '50px' }}
-                                          required
-                                        />
-                                        {!reportContent && (
-                                          <p className="text-red-500 text-sm mt-1">
-                                            * Daily report is required
-                                          </p>
-                                        )}
-                                      </div>
-                                      <div className="flex justify-center mt-16">
-                                        <button
-                                          type="submit"
-                                          disabled={uploadingMedia || !reportContent.trim()}
-                                          className={`inline-flex cursor-pointer items-center gap-1 rounded bg-yellow-300 border px-4 py-2 text-sm font-bold transform hover:scale-110 transition duration-400 ease-in-out hover:bg-yellow-500 ${
-                                            (uploadingMedia || !reportContent.trim()) ? 'opacity-50 cursor-not-allowed' : ''
-                                          }`}
-                                        >
-                                          {uploadingMedia ? 'Uploading...' : 'Submit Report'}
-                                        </button>
-                                      </div>
-                                    </form>
-                                  </div>
-                                </div>
-
-                              </div>
-                            </div>
-
-                          </div>
-                        </li>
-                      </ul>
+                <div className="small-box bg-white rounded-lg shadow-md transition-all duration-300 hover:shadow-lg">
+                  <div className="inner p-6">
+                    {/* Time Display Section */}
+                    <div className="mb-6 animate-fadeIn">
+                      <div className="flex justify-between items-center mb-4">
+                        <div className="flex items-center space-x-2">
+                          <i className="fas fa-clock text-emerald-500"></i>
+                          <span className="text-gray-700 font-medium">
+                            {currentTime.toLocaleDateString('en-US', { weekday: 'long' })}
+                          </span>
+                        </div>
+                        <span className="text-emerald-600 font-semibold animate-pulse">
+                          {currentTime.toLocaleTimeString('en-US')}
+                        </span>
+                      </div>
+                      <h3 className="text-xl font-bold text-center text-gray-800 mb-4">
+                        Work Time
+                      </h3>
                     </div>
 
+                    {/* Task Report Section */}
+                    <div className="card-footer p-0 animate-slideUp">
+                      <div className="bg-white rounded-lg">
+                        <div className="p-4">
+                          {/* Header */}
+                          <div className="flex justify-between items-center mb-3">
+                            <div className="flex items-center space-x-2">
+                              <i className="fas fa-tasks text-emerald-500"></i>
+                              <h4 className="text-gray-700 font-medium">Task Reports</h4>
+                            </div>
+                            <span className={`text-xs font-medium ${
+                              reportText.length >= MAX_CHAR_LIMIT ? 'text-red-500' : 'text-gray-500'
+                            }`}>
+                              {reportText.length}/{MAX_CHAR_LIMIT}
+                            </span>
+                          </div>
 
+                          {/* Report Form */}
+                          <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="transition-all duration-300 hover:shadow-md rounded-lg">
+                              <ReactQuill
+                                value={reportContent}
+                                onChange={setReportContent}
+                                modules={modules}
+                                formats={formats}
+                                placeholder="Submit Your Daily Update...! (Required)"
+                                className="bg-white rounded-lg"
+                                style={{
+                                  height: '200px',
+                                  marginBottom: '50px',
+                                  border: '1px solid #e2e8f0',
+                                  borderRadius: '0.5rem'
+                                }}
+                                required
+                              />
+                              {!reportContent && (
+                                <p className="text-red-500 text-sm mt-2 flex items-center">
+                                  <i className="fas fa-exclamation-circle mr-2"></i>
+                                  Daily report is required
+                                </p>
+                              )}
+                            </div>
 
-
-
-                    
+                            {/* Submit Button */}
+                            <div className="flex justify-center mt-16">
+                              <button
+                                type="submit"
+                                disabled={uploadingMedia || !reportContent.trim()}
+                                className={`
+                                  inline-flex items-center gap-2 px-6 py-2.5 
+                                  rounded-full font-semibold text-sm
+                                  transform transition-all duration-300
+                                  ${uploadingMedia || !reportContent.trim() 
+                                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
+                                    : 'bg-emerald-500 text-white hover:bg-emerald-600 hover:scale-105 active:scale-95'
+                                  }
+                                  shadow-md hover:shadow-lg
+                                `}
+                              >
+                                {uploadingMedia ? (
+                                  <>
+                                    <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                                    <span>Uploading...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <i className="fas fa-paper-plane"></i>
+                                    <span>Submit Report</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
+
+                {/* Add these animations to your global CSS */}
+                <style jsx>{`
+                  @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                  }
+
+                  @keyframes slideUp {
+                    from {
+                      opacity: 0;
+                      transform: translateY(20px);
+                    }
+                    to {
+                      opacity: 1;
+                      transform: translateY(0);
+                    }
+                  }
+
+                  .animate-fadeIn {
+                    animation: fadeIn 0.5s ease-out forwards;
+                  }
+
+                  .animate-slideUp {
+                    animation: slideUp 0.5s ease-out forwards;
+                  }
+                `}</style>
               </div>
 
               <div className="row mt-3" bis_skin_checked={1}  >
@@ -1145,7 +1513,10 @@ const Dashboard = () => {
 
 
 
-
+                <div className="col-12 col-lg-6  ">
+        <ProductivityTools />
+        {/* <InterestWidget /> */}
+      </div>
 
 
               </div>
@@ -1154,30 +1525,7 @@ const Dashboard = () => {
 
               
 
-              <div className="col-12 col-lg-12 mt-2 bg-white">
-                <h1 className='text-2xl'>Games</h1>
-                {gameSrc && <iframe src={gameSrc} frameBorder="0" style={{ width: '80vw', height: '70vh' }}></iframe>}
-
-                <button onClick={handleStartGame} className="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
-                  <span className="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
-                  Start Game
-                </button>
-                <button onClick={handleNextGame} className="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
-                  <span className="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
-                  Next Game
-                </button>
-                <button onClick={handleResetGame} className="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
-                  <span className="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
-                  Reset Game
-                </button>
-                <button onClick={handleResetStartGame} className="bg-red-950 text-red-400 border border-red-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
-                  <span className="bg-red-400 shadow-red-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
-                  Restart Game
-                </button>
-
-                <div>{timeLeft > 0 ? `Time left: ${Math.floor(timeLeft / 60)}:${timeLeft % 60}` : ''}</div>
-                <div>{message}</div>
-              </div>
+          
             </div>
           </div>
         </section>
@@ -1195,6 +1543,14 @@ const Dashboard = () => {
         pauseOnHover
         theme="light"
       />
+
+      <ThemeSelector
+        isOpen={isThemeSelectorOpen}
+        onClose={() => setIsThemeSelectorOpen(false)}
+        onSelectTheme={handleThemeSelect}
+        currentTheme={currentTheme} // Pass current theme to show active selection
+      />
+   
     </>
   );
 };
