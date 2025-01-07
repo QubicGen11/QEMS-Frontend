@@ -28,6 +28,7 @@ import SingleEmployeeAttendance from "./Components/Attendance Components/SingleE
 import EmployeeProfile from './Components/Employee Components/EmployeeProfile';
 import AttendanceSheet from "./Components/Attendance Components/AttendanceSheet";
 import TodaysAttendance from "./Components/Attendance Components/TodaysAttendance";
+import AnonymousSuggestion from "./Components/Homepage Components/AnonymousSuggestion";
 
 const router = createBrowserRouter([
   {
@@ -141,6 +142,10 @@ const router = createBrowserRouter([
   {
     path: "/attendancesheet",
     element: <AttendanceSheet />
+  },
+  {
+    path: "/anonymous-suggestion",
+    element: <AnonymousSuggestion />
   }
 ]);
 

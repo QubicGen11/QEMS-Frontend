@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, memo, useMemo } from 'react';
-import axios from 'axios';  
+import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import config from "../config";
@@ -12,8 +12,8 @@ import Loading from '../Loading Components/Loading';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import useEmployeeStore from '../../store/employeeStore';
-import { 
-  FaBriefcase as FiBriefcase, 
+import {
+  FaBriefcase as FiBriefcase,
   FaHashtag as FiHash,
   FaLightbulb as FiLightbulb,
   FaClock as FiClock,
@@ -27,6 +27,9 @@ import ProductivityTools from './ProductivityTools';
 import DailyTips from './DailyTips';
 import InterestWidget from './InterestWidget';
 import ThemeSelector from './ThemeSelector';
+import FAQChatbot from './FAQChatbot';
+import QuickNotes from './QuickNotes';
+import VirtualPet from './VirtualPet';
 // import { FiLightbulb, FiClock } from 'react-icons/fi'
 
 // const CACHE_EXPIRY_TIME = 60 * 60 * 1000;
@@ -41,7 +44,7 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
   const [showReportTooltip, setShowReportTooltip] = useState(false);
 
   const backgroundImages = [
-"https://images.pexels.com/photos/189349/pexels-photo-189349.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+    "https://images.pexels.com/photos/189349/pexels-photo-189349.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
 
   ];
 
@@ -62,7 +65,7 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
   return (
     <div className="relative w-full bg-black text-white rounded-lg overflow-hidden mb-6">
       {/* Background with overlay */}
-      <div 
+      <div
         className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/40"
         style={{
           backgroundImage: `url(${backgroundImages[currentBgIndex]})`,
@@ -77,11 +80,11 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
       <div className="relative z-10 p-6 flex flex-col">
         <div className="flex justify-between items-start">
           <div>
-            <motion.h1 
+            <motion.h1
               className="text-3xl font-bold text-white mb-2"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ 
+              transition={{
                 duration: 0.7,
                 ease: "easeOut"
               }}
@@ -125,7 +128,7 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
                   </motion.span>
                 ))}, {' '}
               </motion.span>
-              
+
               <motion.span
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -140,8 +143,8 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
                       animate={{
                         y: [0, -10, 0],
                         scale: [1, 1.05, 1],
-                    
-                    
+
+
                       }}
                       transition={{
                         duration: 2,
@@ -164,8 +167,8 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
                       animate={{
                         y: [0, -10, 0],
                         scale: [1, 1.05, 1],
-                    
-               
+
+
                       }}
                       transition={{
                         duration: 2,
@@ -182,7 +185,7 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
               </motion.span>
             </motion.h1>
             <div className="flex items-center gap-4 text-white/80">
-              <motion.span 
+              <motion.span
                 className="flex items-center gap-2"
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.3 }}
@@ -201,7 +204,7 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
                 </motion.div>
                 {employeeData?.users?.[0]?.mainPosition || 'Web Developer'}
               </motion.span>
-              <motion.span 
+              <motion.span
                 className="flex items-center gap-2"
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.3 }}
@@ -226,9 +229,9 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
 
           {/* Logo */}
           <div className="flex-shrink-0">
-            <motion.img 
-              src="https://res.cloudinary.com/defsu5bfc/image/upload/v1714828410/logo_3_jizb6b.png" 
-              alt="Company Logo" 
+            <motion.img
+              src="https://res.cloudinary.com/defsu5bfc/image/upload/v1714828410/logo_3_jizb6b.png"
+              alt="Company Logo"
               className="w-16 h-16 object-contain"
               style={{
                 perspective: "1000px",
@@ -243,7 +246,7 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
                 repeat: Infinity,
                 repeatDelay: 1
               }}
-              whileHover={{ 
+              whileHover={{
                 scale: 1.1,
                 rotateX: [0, 45, -45, 0],
                 rotateY: [0, 45, -45, 0],
@@ -263,15 +266,15 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
         </div>
 
         {/* New Tip of the Day section */}
-     <DailyTips />
+        <DailyTips />
       </div>
 
       {/* Clock In/Out Section with smoother animations */}
-      <motion.div 
+      <motion.div
         className="relative z-10 grid grid-cols-2 border-t border-white/10"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ 
+        transition={{
           duration: 0.7,
           delay: 1,
           ease: "easeOut"
@@ -280,17 +283,16 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
         <motion.button
           onClick={clockIn}
           disabled={isClockedIn}
-          whileHover={!isClockedIn ? { 
+          whileHover={!isClockedIn ? {
             scale: 1.01,
             backgroundColor: "rgba(34, 197, 94, 0.1)",
             transition: { duration: 0.3 }
           } : {}}
           whileTap={!isClockedIn ? { scale: 0.98 } : {}}
-          className={`flex items-center justify-center gap-2 py-4 px-6 transition-colors font-bold text-lg ${
-            isClockedIn 
+          className={`flex items-center justify-center gap-2 py-4 px-6 transition-colors font-bold text-lg ${isClockedIn
               ? 'bg-gray-800/50 text-gray-400 cursor-not-allowed'
               : 'bg-black/50 text-white'
-          }`}
+            }`}
         >
           <motion.div
             animate={!isClockedIn ? {
@@ -306,7 +308,7 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
           </motion.div>
           Clock In
           {clockInTime && (
-            <motion.span 
+            <motion.span
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.75 }}
               transition={{ duration: 0.3 }}
@@ -330,17 +332,16 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
           onMouseEnter={() => !hasSubmittedReport && isClockedIn && setShowReportTooltip(true)}
           onMouseLeave={() => setShowReportTooltip(false)}
           disabled={!isClockedIn}
-          whileHover={isClockedIn ? { 
+          whileHover={isClockedIn ? {
             scale: 1.01,
             backgroundColor: hasSubmittedReport ? "rgba(239, 68, 68, 0.1)" : "rgba(234, 179, 8, 0.1)",
             transition: { duration: 0.3 }
           } : {}}
           whileTap={isClockedIn ? { scale: 0.98 } : {}}
-          className={`flex items-center justify-center gap-2 py-4 px-6 transition-colors relative font-bold text-lg ${
-            !isClockedIn
+          className={`flex items-center justify-center gap-2 py-4 px-6 transition-colors relative font-bold text-lg ${!isClockedIn
               ? 'bg-gray-800/50 text-gray-400 cursor-not-allowed'
               : 'bg-black/50 text-white'
-          } border-l border-white/10`}
+            } border-l border-white/10`}
         >
           <motion.div
             animate={isClockedIn ? {
@@ -356,7 +357,7 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
           </motion.div>
           Clock Out
           {clockOutTime && (
-            <motion.span 
+            <motion.span
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.75 }}
               transition={{ duration: 0.3 }}
@@ -368,14 +369,14 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
 
           <AnimatePresence>
             {showReportTooltip && isClockedIn && !hasSubmittedReport && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 5 }}
                 transition={{ duration: 0.2 }}
                 className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max"
               >
-                <motion.div 
+                <motion.div
                   className="bg-black text-white text-sm py-2 px-4 rounded-lg shadow-lg"
                   animate={{
                     y: [0, -2, 0],
@@ -387,10 +388,10 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
                   }}
                 >
                   <div className="flex items-center gap-2">
-                    <motion.svg 
-                      className="w-4 h-4 text-yellow-400" 
-                      fill="none" 
-                      stroke="currentColor" 
+                    <motion.svg
+                      className="w-4 h-4 text-yellow-400"
+                      fill="none"
+                      stroke="currentColor"
                       viewBox="0 0 24 24"
                       animate={{
                         rotate: [0, 5, -5, 5, 0],
@@ -401,17 +402,17 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
                         ease: "easeInOut"
                       }}
                     >
-                      <path 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        strokeWidth={2} 
-                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" 
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                       />
                     </motion.svg>
                     <span>Please submit your daily report first</span>
                   </div>
                 </motion.div>
-                <motion.div 
+                <motion.div
                   className="absolute left-1/2 transform -translate-x-1/2 -bottom-1"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -424,16 +425,15 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
           </AnimatePresence>
 
           {isClockedIn && (
-            <motion.div 
+            <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{
                 duration: 0.3,
                 ease: "easeOut"
               }}
-              className={`absolute -top-2 -right-2 w-4 h-4 rounded-full ${
-                hasSubmittedReport ? 'bg-green-500' : 'bg-yellow-500'
-              }`}
+              className={`absolute -top-2 -right-2 w-4 h-4 rounded-full ${hasSubmittedReport ? 'bg-green-500' : 'bg-yellow-500'
+                }`}
             />
           )}
         </motion.button>
@@ -444,7 +444,7 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
 
 const Dashboard = () => {
   const { employeeData, isLoading, updateEmployeeData } = useEmployeeStore();
-  
+
   const [attendance, setAttendance] = useState([]);
   const [userAttendance, setUserAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -500,9 +500,9 @@ const Dashboard = () => {
       [{ 'header': [1, 2, false] }],
       ['bold', 'italic', 'underline', 'strike'],
       ['blockquote', 'code-block'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
       ['image'],
-      
+
     ],
   };
 
@@ -527,10 +527,10 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       if (!email || fetchAttempted.current) return;
-      
+
       try {
         setEmployeeInfoLoading(true);
-        
+
         // Clear any cached data for other users
         const storedEmail = localStorage.getItem('currentUserEmail');
         if (storedEmail !== email) {
@@ -540,7 +540,7 @@ const Dashboard = () => {
 
         // Fetch fresh data
         const data = await updateEmployeeData(email);
-        
+
         if (!data || Object.keys(data).length === 0) {
           toast.error("Please fill up the details");
           setIsModalOpen(true);
@@ -602,10 +602,10 @@ const Dashboard = () => {
       }
 
       setIsRefreshing(true);
-      
+
       // Fetch only last 7 days of data for dashboard
       const response = await axios.get(
-        `${config.apiUrl}/qubinest/attendance/${email}?limit=7`, 
+        `${config.apiUrl}/qubinest/attendance/${email}?limit=7`,
         {
           withCredentials: true,
           headers: {
@@ -616,7 +616,7 @@ const Dashboard = () => {
       );
 
       const data = response.data;
-      
+
       // Cache the response
       localStorage.setItem(TIMESHEET_CACHE_KEY, JSON.stringify({
         data,
@@ -653,7 +653,7 @@ const Dashboard = () => {
     const checkClockStatus = async () => {
       try {
         console.log('Making request to:', `${config.apiUrl}/qubinest/clockstatus/${email}`);
-        
+
         const response = await axios.get(`${config.apiUrl}/qubinest/clockstatus/${email}`, {
           withCredentials: true, // Include credentials
           headers: {
@@ -661,10 +661,10 @@ const Dashboard = () => {
             'Content-Type': 'application/json'
           }
         });
-        
+
         console.log('Response:', response.data);
         const { isClockedIn: clockedIn, clockInTime, clockOutTime } = response.data;
-        
+
         setIsClockedIn(clockedIn);
         if (clockInTime) setClockInTime(new Date(clockInTime).toLocaleTimeString());
         if (clockOutTime) setClockOutTime(new Date(clockOutTime).toLocaleTimeString());
@@ -719,7 +719,7 @@ const Dashboard = () => {
   // Replace the existing textarea with ReactQuill
   const handleSubmit = async (event) => {
     event.preventDefault();
-    
+
     if (!reportContent.trim()) {
       toast.error('Report cannot be empty');
       return;
@@ -727,17 +727,17 @@ const Dashboard = () => {
 
     try {
       setLoading(true);
-      
+
       const response = await axios.post(`${config.apiUrl}/qubinest/report`, {
         email,
         reportText: reportContent,
       });
-      
+
       setIsReportSubmitted(true);
       setHasSubmittedReport(true); // Update the submission status
       setReportContent('');
       toast.success('Daily report submitted successfully!');
-      
+
     } catch (error) {
       setIsReportSubmitted(false);
       setReportContent(reportContent);
@@ -766,28 +766,28 @@ const Dashboard = () => {
     try {
       // Check if already clocked in today
       const dailyStatus = await checkDailyClockStatus(email);
-      
+
       if (dailyStatus.hasClockedInToday) {
         toast.warning('You have already clocked in today. Only one clock-in per day is allowed.');
         return;
       }
 
       setLoading(true);
-      const response = await axios.post(`${config.apiUrl}/qubinest/clockin`, { 
+      const response = await axios.post(`${config.apiUrl}/qubinest/clockin`, {
         email,
         date: new Date().toISOString()
       });
-      
+
       const { isClockedIn: clockedIn, clockInTime } = response.data;
-      
+
       setIsClockedIn(clockedIn);
       setClockInTime(new Date(clockInTime).toLocaleTimeString());
       setHasSubmittedReport(false);
       toast.success('Clock-in successful!');
-      
+
       // Store clock-in status in localStorage
       localStorage.setItem(`lastClockIn_${email}`, new Date().toISOString());
-      
+
       return response.data;
     } catch (error) {
       toast.error(error.response?.data?.message || 'Error clocking in');
@@ -806,7 +806,7 @@ const Dashboard = () => {
 
     try {
       const dailyStatus = await checkDailyClockStatus(email);
-      
+
       if (dailyStatus.hasClockedOutToday) {
         toast.warning('You have already clocked out today. Only one clock-out per day is allowed.');
         return;
@@ -818,17 +818,17 @@ const Dashboard = () => {
         return;
       }
 
-      const response = await axios.post(`${config.apiUrl}/qubinest/clockout`, { 
+      const response = await axios.post(`${config.apiUrl}/qubinest/clockout`, {
         email,
         date: new Date().toISOString()
       });
-      
+
       const { isClockedIn: clockedIn, clockOutTime } = response.data;
-      
+
       setIsClockedIn(clockedIn);
       setClockOutTime(new Date(clockOutTime).toLocaleTimeString());
       toast.success('Clock-out successful!');
-      
+
       // Store clock-out status in localStorage
       localStorage.setItem(`lastClockOut_${email}`, new Date().toISOString());
     } catch (error) {
@@ -937,7 +937,7 @@ const Dashboard = () => {
 
   const refreshAttendance = async () => {
     if (isRefreshing) return;
-    
+
     const refreshToast = toast.loading('Refreshing...');
     try {
       await fetchAttendance(true);
@@ -963,7 +963,7 @@ const Dashboard = () => {
     const displayData = useMemo(() => {
       const data = employeeData || employeeInfo || employeeDataRef.current;
       if (!data) return null;
-      
+
       return {
         ...data,
         mainPosition: data.users?.[0]?.mainPosition || 'Not Specified',
@@ -971,7 +971,7 @@ const Dashboard = () => {
         joiningDate: data.users?.[0]?.joiningDate || data.hireDate
       };
     }, [employeeData, employeeInfo]);
-  
+
     if (employeeInfoLoading && !displayData) {
       return (
         <div className="card-body d-flex justify-center align-items-center h-64">
@@ -979,7 +979,7 @@ const Dashboard = () => {
         </div>
       );
     }
-  
+
     if (!displayData) {
       return (
         <div className="card-body d-flex justify-center align-items-center h-64">
@@ -1004,8 +1004,8 @@ const Dashboard = () => {
             </div>
 
             {/* Scrollable Content - Fixed Height */}
-            <div 
-              className="h-[calc(100%-4rem)] overflow-y-auto" 
+            <div
+              className="h-[calc(100%-4rem)] overflow-y-auto"
               style={{ scrollBehavior: 'smooth' }}
             >
               <ul className="space-y-2">
@@ -1019,7 +1019,7 @@ const Dashboard = () => {
                   { icon: "fa-user-check", label: "Status", value: displayData.users?.[0]?.status },
                   { icon: "fa-building", label: "Company", value: "QubicGen Software Solutions Pvt Ltd" }
                 ].map((item, index) => (
-                  <li 
+                  <li
                     key={item.label}
                     className="flex items-center text-sm hover:bg-gray-50 rounded-md p-1.5"
                   >
@@ -1054,7 +1054,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentBgIndex((prevIndex) => 
+      setCurrentBgIndex((prevIndex) =>
         prevIndex === headerBackgrounds.length - 1 ? 0 : prevIndex + 1
       );
     }, 5000); // Change background every 5 seconds
@@ -1066,7 +1066,7 @@ const Dashboard = () => {
     // Use ref to track initial render
 
 
- 
+
 
     if (isLoading && isInitialLoad) {
       return (
@@ -1095,10 +1095,10 @@ const Dashboard = () => {
     }
 
     return data.map((attendance, index) => (
-      <tr 
-        key={attendance.id} 
-       
-     
+      <tr
+        key={attendance.id}
+
+
       >
         <td className="py-3 px-4">
           <div className="flex items-center space-x-2">
@@ -1126,7 +1126,7 @@ const Dashboard = () => {
   }, (prevProps, nextProps) => {
     // Implement deep comparison for data
     return JSON.stringify(prevProps.data) === JSON.stringify(nextProps.data) &&
-           prevProps.isLoading === nextProps.isLoading;
+      prevProps.isLoading === nextProps.isLoading;
   });
 
   const StatusBadge = memo(({ status }) => {
@@ -1145,9 +1145,9 @@ const Dashboard = () => {
 
   const formatTime = (timestamp) => {
     if (!timestamp) return 'N/A';
-    return new Date(timestamp).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    return new Date(timestamp).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit'
     });
   };
 
@@ -1188,15 +1188,15 @@ const Dashboard = () => {
       try {
         const dailyStatus = await checkDailyClockStatus(email);
         setIsClockedIn(dailyStatus.hasClockedInToday && !dailyStatus.hasClockedOutToday);
-        
+
         if (dailyStatus.clockInTime) {
           setClockInTime(new Date(dailyStatus.clockInTime).toLocaleTimeString());
         }
-        
+
         if (dailyStatus.clockOutTime) {
           setClockOutTime(new Date(dailyStatus.clockOutTime).toLocaleTimeString());
         }
-        
+
         setHasSubmittedReport(dailyStatus.hasSubmittedReport || false);
       } catch (error) {
         console.error('Error checking initial clock status:', error);
@@ -1243,11 +1243,11 @@ const Dashboard = () => {
 
   return (
     <>
-      <div 
-        className="content-wrapper" 
+      <div
+        className="content-wrapper"
         style={{
-          background: currentTheme.type === 'image' 
-            ? `url('${currentTheme.value}')` 
+          background: currentTheme.type === 'image'
+            ? `url('${currentTheme.value}')`
             : currentTheme.value,
           backgroundSize: "cover",
           backgroundPosition: "center",
@@ -1258,11 +1258,27 @@ const Dashboard = () => {
         {/* Add theme selector button somewhere in your header or navbar */}
         <button
           onClick={() => setIsThemeSelectorOpen(true)}
-          className="fixed bottom-4 right-4 p-3 bg-white/10 backdrop-blur-md rounded-full shadow-lg 
-                     hover:bg-white/20 transition-colors z-[9999] hover:scale-110 
-                     transform duration-200 border border-white/20"
+          className="fixed bottom-4 right-4 p-3 
+                     bg-gray-900/80 dark:bg-white/80 
+                     backdrop-blur-md rounded-full 
+                     shadow-lg hover:scale-110 
+                     transform duration-200 
+                     border border-white/20
+                     group
+                     z-[9999]"
         >
-          <FaPalette className="w-5 h-5 text-white" />
+          <FaPalette
+            className="w-5 h-5 
+                       text-black dark:text-gray-800 
+                       group-hover:rotate-12 transition-transform"
+          />
+          <div className="absolute -top-8 right-0 
+                          bg-black/75 text-white text-xs 
+                          px-2 py-1 rounded-md opacity-0 
+                          group-hover:opacity-100 transition-opacity
+                          whitespace-nowrap">
+            Change Theme
+          </div>
         </button>
 
         <UserDetailModal
@@ -1272,7 +1288,7 @@ const Dashboard = () => {
         />
         <div className="content-header">
           <div className="container-fluid">
-            <Header 
+            <Header
               employeeData={employeeData}
               isClockedIn={isClockedIn}
               clockInTime={clockInTime}
@@ -1287,23 +1303,23 @@ const Dashboard = () => {
         <section className="content">
           <div className="container-fluid">
             <div className="row">
-      
+
 
               <div className="col-12 col-sm-12 col-md-12 col-lg-6 d-flex align-items-stretch flex-column " bis_skin_checked={1} style={{ height: 'auto' }}>
-        <div className="card bg-light d-flex flex-fill bg-white" bis_skin_checked={1}>
-          <div className='flex justify-between bg-white'>
-            <div className="card-header text-muted border-bottom-0 bg-white" bis_skin_checked={1}>
-              Associate Details
-            </div>
-            <div className="card-header text-muted border-bottom-0 bg-white" bis_skin_checked={1}>
-              <Link to="/viewprofile" className="btn btn-sm btn-primary text-white" cursorshover="true">
-                <i className="fas fa-user text-white" /> View Profile
-              </Link>
-            </div>
-          </div>
-          <AssociateDetails />
-        </div>
-      </div>
+                <div className="card bg-light d-flex flex-fill bg-white" bis_skin_checked={1}>
+                  <div className='flex justify-between bg-white'>
+                    <div className="card-header text-muted border-bottom-0 bg-white" bis_skin_checked={1}>
+                      Associate Details
+                    </div>
+                    <div className="card-header text-muted border-bottom-0 bg-white" bis_skin_checked={1}>
+                      <Link to="/viewprofile" className="btn btn-sm btn-primary text-white" cursorshover="true">
+                        <i className="fas fa-user text-white" /> View Profile
+                      </Link>
+                    </div>
+                  </div>
+                  <AssociateDetails />
+                </div>
+              </div>
 
               <div className="col-12 col-lg-6">
                 <div className="small-box bg-white rounded-lg shadow-md transition-all duration-300 hover:shadow-lg">
@@ -1336,9 +1352,8 @@ const Dashboard = () => {
                               <i className="fas fa-tasks text-emerald-500"></i>
                               <h4 className="text-gray-700 font-medium">Task Reports</h4>
                             </div>
-                            <span className={`text-xs font-medium ${
-                              reportText.length >= MAX_CHAR_LIMIT ? 'text-red-500' : 'text-gray-500'
-                            }`}>
+                            <span className={`text-xs font-medium ${reportText.length >= MAX_CHAR_LIMIT ? 'text-red-500' : 'text-gray-500'
+                              }`}>
                               {reportText.length}/{MAX_CHAR_LIMIT}
                             </span>
                           </div>
@@ -1378,8 +1393,8 @@ const Dashboard = () => {
                                   inline-flex items-center gap-2 px-6 py-2.5 
                                   rounded-full font-semibold text-sm
                                   transform transition-all duration-300
-                                  ${uploadingMedia || !reportContent.trim() 
-                                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
+                                  ${uploadingMedia || !reportContent.trim()
+                                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                                     : 'bg-emerald-500 text-white hover:bg-emerald-600 hover:scale-105 active:scale-95'
                                   }
                                   shadow-md hover:shadow-lg
@@ -1452,7 +1467,7 @@ const Dashboard = () => {
                           >
 
                             View More
-                          
+
                           </button>
                         </Link>
 
@@ -1461,7 +1476,7 @@ const Dashboard = () => {
                           onClick={refreshAttendance}
                         >
                           Refresh
-                          
+
                         </button>
                       </div>
                     </div>
@@ -1483,9 +1498,9 @@ const Dashboard = () => {
                             </tr>
                           </thead>
                           <tbody>
-                            <TimesheetTable 
-                              data={userAttendance} 
-                              isLoading={loading} 
+                            <TimesheetTable
+                              data={userAttendance}
+                              isLoading={loading}
                             />
                           </tbody>
                         </table>
@@ -1504,7 +1519,7 @@ const Dashboard = () => {
 
                 <div className="col-12 col-lg-6  " >
 
-               
+
 
                   <iframe src="https://qubic-gen.blogspot.com/" frameborder="0" className="relative  h-[40vh] rounded-lg w-full"></iframe>
 
@@ -1513,22 +1528,36 @@ const Dashboard = () => {
 
 
 
-                <div className="col-12 col-lg-6  ">
-        <ProductivityTools />
-        {/* <InterestWidget /> */}
-      </div>
 
 
+                <div className='z-[1200]'>
+                  <FAQChatbot />
+                </div>
               </div>
 
 
 
-              
 
-          
+
+
             </div>
           </div>
         </section>
+
+        <div className="grid grid-cols-2 gap-6 p-4">
+          {/* Productivity Tools */}
+          <div className="w-full">
+            <ProductivityTools />
+          </div>
+
+          {/* Quick Notes & Todo */}
+          <div className="w-full">
+            <QuickNotes />
+          </div>
+        </div>
+   
+
+
       </div>
       <ToastContainer
         position="top-right"
@@ -1550,7 +1579,7 @@ const Dashboard = () => {
         onSelectTheme={handleThemeSelect}
         currentTheme={currentTheme} // Pass current theme to show active selection
       />
-   
+
     </>
   );
 };

@@ -30,6 +30,7 @@ import Cookies from 'js-cookie';
 import { Link, useNavigate } from 'react-router-dom';
 import useEmployeeStore from '../../store/employeeStore';
 import DOMPurify from 'dompurify';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Styled components
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
@@ -230,6 +231,12 @@ const NotificationItem = ({ notification, onRead, onSelect, isSelected, selected
   );
 };
 
+// Add this styled component near your other styled components
+const AnimatedIconButton = styled(motion.div)({
+  display: 'inline-flex',
+  position: 'relative'
+});
+
 const Header = () => {
   const { employeeData, isLoading, updateEmployeeData } = useEmployeeStore();
   const { email } = useUser();
@@ -362,9 +369,21 @@ const Header = () => {
     setSelectedNotification(notification);
   };
 
+  const bellAnimation = {
+    initial: { rotate: 0 },
+    animate: { 
+      rotate: [-10, 10, -10, 10, 0],
+      transition: {
+        duration: 1,
+        repeat: Infinity,
+        repeatDelay: 2
+      }
+    }
+  };
+
   return (
-    <StyledAppBar>
-      <Toolbar sx={{ minHeight: '56px !important' }}>
+    <StyledAppBar position="fixed">
+      <Toolbar>
         {/* Mobile menu icon - only visible on mobile */}
         <IconButton
           edge="start"
@@ -408,15 +427,21 @@ const Header = () => {
 
         {/* Notifications */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <IconButton
-            color="inherit"
-            onClick={() => setOpenNotifications(true)}
-            sx={{ position: 'relative' }}
+          <AnimatedIconButton
+            initial="initial"
+            animate={unreadCount > 0 ? "animate" : "initial"}
+            variants={bellAnimation}
           >
-            <StyledBadge badgeContent={unreadCount} color="error">
-              <NotificationsIcon />
-            </StyledBadge>
-          </IconButton>
+            <IconButton
+              color="inherit"
+              onClick={() => setOpenNotifications(true)}
+              sx={{ position: 'relative' }}
+            >
+              <StyledBadge badgeContent={unreadCount} color="error">
+                <NotificationsIcon />
+              </StyledBadge>
+            </IconButton>
+          </AnimatedIconButton>
 
           {/* Profile Avatar */}
           <IconButton

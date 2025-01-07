@@ -66,7 +66,7 @@ const Sidemenu = () => {
 
   return (
     <>
-      <aside className="main-sidebar sidebar-dark-primary elevation-4" style={{backgroundColor: "rgba(0,0,0,0.9)", backdropFilter: "blur(30px)"}}>
+      <aside className="main-sidebar sidebar-dark-primary elevation-4" style={{ backgroundColor: "rgba(0,0,0,0.9)", backdropFilter: "blur(30px)" }}>
         <div className="sidebar">
           <div className="w-40 mt-3 pb-3 mb-3 d-flex">
             <div className="flex gap-9">
@@ -312,8 +312,8 @@ const Sidemenu = () => {
                           <p>Employee Leaves</p>
                         </Link>
                       </li>
-                   
-                     
+
+
                     </ul>
                   </li>
                 </>
@@ -347,18 +347,7 @@ const Sidemenu = () => {
                 </ul>
               </li>
 
-              <li className="nav-item">
-                <a
-                  href="#"
-                  className="nav-link"
-                  onClick={() => toggleDropdown(setIsFormsOpen, isFormsOpen)}
-                >
-                  <FontAwesomeIcon icon={faEdit} className="nav-icon" />
-                  <p>
-                    Trainings
-                  </p>
-                </a>
-              </li>
+              <li className="nav-item"><a href="/anonymous-suggestion" className="nav-link" onClick={() => toggleDropdown(setIsFormsOpen, isFormsOpen)}><FontAwesomeIcon icon={faEdit} className="nav-icon" /><p className='w-48'>Suggestions</p></a></li>
 
               <li className="nav-item">
                 <a
