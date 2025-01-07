@@ -5,6 +5,8 @@ import { Tooltip } from 'react-tooltip';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import config from '../config';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const AnonymousSuggestion = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -341,6 +343,20 @@ const AnonymousSuggestion = () => {
       >
         Your suggestion will be submitted anonymously. No identifying information is stored.
       </Tooltip>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        className="mt-16"
+      />
     </>
   );
 };
