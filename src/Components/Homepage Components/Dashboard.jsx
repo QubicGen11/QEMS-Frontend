@@ -289,7 +289,7 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
             transition: { duration: 0.3 }
           } : {}}
           whileTap={!isClockedIn ? { scale: 0.98 } : {}}
-          className={`flex items-center justify-center gap-2 py-4 px-6 transition-colors font-bold text-lg ${isClockedIn
+          className={`flex items-center justify-center gap-2 py-4 px-6 transition-colors font-bold text-sm md:text-lg ${isClockedIn
               ? 'bg-gray-800/50 text-gray-400 cursor-not-allowed'
               : 'bg-black/50 text-white'
             }`}
@@ -312,7 +312,7 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.75 }}
               transition={{ duration: 0.3 }}
-              className="text-md"
+              className="text-sm md:text-lg"
             >
               ({clockInTime})
             </motion.span>
@@ -338,7 +338,7 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
             transition: { duration: 0.3 }
           } : {}}
           whileTap={isClockedIn ? { scale: 0.98 } : {}}
-          className={`flex items-center justify-center gap-2 py-4 px-6 transition-colors relative font-bold text-lg ${!isClockedIn
+          className={`flex items-center justify-center gap-2 py-4 px-6 transition-colors relative font-bold text-sm md:text-lg ${!isClockedIn
               ? 'bg-gray-800/50 text-gray-400 cursor-not-allowed'
               : 'bg-black/50 text-white'
             } border-l border-white/10`}
@@ -361,7 +361,7 @@ const Header = ({ employeeData, isClockedIn, clockInTime, clockOutTime, hasSubmi
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.75 }}
               transition={{ duration: 0.3 }}
-              className="text-md"
+              className="text-sm md:text-lg"
             >
               ({clockOutTime})
             </motion.span>
@@ -839,80 +839,12 @@ const Dashboard = () => {
 
 
 
-  const startGame = () => {
-    const lastPlayed = localStorage.getItem('lastPlayed');
-    const today = new Date().toISOString().slice(0, 10);
-    const currentTime = new Date().getTime();
 
-    if (lastPlayed === today && currentTime - parseInt(localStorage.getItem('lastPlayedTime')) < 24 * 60 * 60 * 1000) {
-      toast.success('You have already played the game today! Please come back tomorrow.');
-      return;
-    }
 
-    setGameSrc(games[currentGameIndex]);
-    const countdown = 600;
-    setTimeLeft(countdown);
-    const interval = setInterval(() => {
-      setTimeLeft(prevTime => prevTime - 1);
-    }, 1000);
-    setTimer(interval);
-
-    setTimeout(() => {
-      clearInterval(interval);
-      setMessage('Time is up!');
-      toast.success("Time is Up! Get Back Tomorrow");
-      localStorage.setItem('lastPlayed', today);
-      localStorage.setItem('lastPlayedTime', currentTime.toString());
-
-      if (window.opener) {
-        window.close();
-      }
-      window.location.reload();
-    }, countdown * 1000);
-  };
-
-  const resetGame = () => {
-    localStorage.removeItem('lastPlayed');
-    localStorage.removeItem('lastPlayedTime');
-    setGameSrc('');
-    clearInterval(timer);
-    setTimeLeft(0);
-    setMessage('');
-  };
+ 
 
 
 
-  const handleResetGame = () => {
-    resetGame();
-    toast.success('Game data has been reset!');
-  };
-
-  const handleStartGame = () => {
-    const lastGameStartedDate = localStorage.getItem('lastGameStartedDate');
-    const today = new Date().toISOString().slice(0, 10);
-
-    if (lastGameStartedDate === today) {
-      toast.error('You have already started the game today!');
-      return;
-    }
-
-    startGame();
-    setMessage('Game started!');
-    localStorage.setItem('lastGameStartedDate', today);
-  };
-
-  const handleResetStartGame = () => {
-    localStorage.removeItem('lastGameStartedDate');
-    toast.success('Game reset successfully!');
-  };
-
-  const handleNextGame = () => {
-    setCurrentGameIndex(prevIndex => prevIndex === games.length - 1 ? 0 : prevIndex + 1);
-    setGameSrc('');
-    clearInterval(timer);
-    setTimeLeft(0);
-    setMessage('');
-  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -1544,7 +1476,7 @@ const Dashboard = () => {
           </div>
         </section>
 
-        <div className="grid grid-cols-2 gap-6 p-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-4">
           {/* Productivity Tools */}
           <div className="w-full">
             <ProductivityTools />

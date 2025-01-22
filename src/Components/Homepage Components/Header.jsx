@@ -56,12 +56,18 @@ const NotificationModal = styled(Box)(({ theme }) => ({
   position: 'absolute',
   top: '80px',
   right: '20px',
-  width: 400,
-  maxHeight: '60vh',
+  width: '90vw', // Mobile first approach
+  maxWidth: '400px', // Maximum width on larger screens
+  maxHeight: '80vh', // Taller on mobile
   backgroundColor: theme.palette.background.paper,
   boxShadow: theme.shadows[5],
   borderRadius: theme.shape.borderRadius,
-  overflow: 'hidden'
+  overflow: 'hidden',
+  '@media (max-width: 600px)': {
+    right: '50%',
+    transform: 'translateX(50%)',
+    top: '70px',
+  }
 }));
 
 const NotificationItem = ({ notification, onRead, onSelect, isSelected, selectedNotification }) => {
@@ -426,175 +432,189 @@ const Header = () => {
         </Typography>
 
         {/* Notifications */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <AnimatedIconButton
-            initial="initial"
-            animate={unreadCount > 0 ? "animate" : "initial"}
-            variants={bellAnimation}
-          >
-            <IconButton
-              color="inherit"
-              onClick={() => setOpenNotifications(true)}
-              sx={{ position: 'relative' }}
-            >
-              <StyledBadge badgeContent={unreadCount} color="error">
-                <NotificationsIcon />
-              </StyledBadge>
-            </IconButton>
-          </AnimatedIconButton>
-
-          {/* Profile Avatar */}
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center',
+          gap: { xs: 1, sm: 2 }, // Responsive spacing
+          ml: { xs: 1, sm: 2 } 
+        }}>
           <IconButton
-            onClick={handleProfileClick}
-            size="small"
-            aria-controls={open ? 'account-menu' : undefined}
-            aria-haspopup="true"
-            aria-expanded={open ? 'true' : undefined}
+            color="inherit"
+            onClick={() => {
+              setOpenNotifications(true);
+              setSelectedNotification(null);
+            }}
+            sx={{ 
+              position: 'relative',
+              padding: { xs: '4px', sm: '8px' } // Smaller padding on mobile
+            }}
           >
-            <Avatar
-              src={employeeData?.employeeImg}
-              alt={`${employeeData?.firstname || 'User'}`}
-              sx={{ width: 32, height: 32 }}
-            />
+            <StyledBadge
+              badgeContent={notifications.filter(n => !n.isRead).length}
+              max={99}
+            >
+              <NotificationsIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' } }} />
+            </StyledBadge>
           </IconButton>
-        </Box>
 
-        {/* Notification Modal */}
-        <Modal
-          open={openNotifications}
-          onClose={() => {
-            setOpenNotifications(false);
-            setSelectedNotification(null);
-          }}
-          BackdropProps={{ invisible: true }}
-        >
-          <NotificationModal>
-            <Box sx={{ 
-              p: 2, 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center', 
-              bgcolor: 'grey.100',
-              position: 'sticky',
-              top: 0,
-              zIndex: 3,
-            }}>
-              <Typography variant="h6">Notifications</Typography>
-              <Box>
-                {notifications.length > 0 && (
+          {/* Notification Modal */}
+          <Modal
+            open={openNotifications}
+            onClose={() => {
+              setOpenNotifications(false);
+              setSelectedNotification(null);
+            }}
+            BackdropProps={{ invisible: true }}
+          >
+            <NotificationModal>
+              <Box sx={{ 
+                p: { xs: 1.5, sm: 2 }, 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                bgcolor: 'grey.100',
+                position: 'sticky',
+                top: 0,
+                zIndex: 3,
+              }}>
+                <Typography variant="h6" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+                  Notifications
+                </Typography>
+                <Box>
+                  {notifications.length > 0 && (
+                    <IconButton
+                      size="small"
+                      onClick={markAllAsRead}
+                      sx={{ 
+                        mr: { xs: 0.5, sm: 1 }, 
+                        color: 'primary.main', 
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' } 
+                      }}
+                    >
+                      Mark all as read
+                    </IconButton>
+                  )}
                   <IconButton
                     size="small"
-                    onClick={markAllAsRead}
-                    sx={{ mr: 1, color: 'primary.main', fontSize: '0.875rem' }}
+                    onClick={() => {
+                      setOpenNotifications(false);
+                      setSelectedNotification(null);
+                    }}
                   >
-                    Mark all as read
+                    <CloseIcon fontSize="small" />
                   </IconButton>
-                )}
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    setOpenNotifications(false);
-                    setSelectedNotification(null);
-                  }}
-                >
-                  <CloseIcon fontSize="small" />
-                </IconButton>
-              </Box>
-            </Box>
-            <Divider />
-            <Box 
-              sx={{ 
-                maxHeight: 'calc(60vh - 60px)',
-                overflow: 'auto',
-                '&::-webkit-scrollbar': {
-                  width: '6px',
-                },
-                '&::-webkit-scrollbar-thumb': {
-                  backgroundColor: 'rgba(0,0,0,0.2)',
-                  borderRadius: '3px',
-                },
-                position: 'relative',
-                padding: selectedNotification ? 0 : '8px 0',
-                scrollBehavior: 'smooth',
-              }}
-            >
-              {notifications.length === 0 ? (
-                <Box sx={{ p: 2, textAlign: 'center', color: 'text.secondary' }}>
-                  No notifications
                 </Box>
-              ) : (
-                notifications.map(notification => (
-                  <NotificationItem
-                    key={notification.id}
-                    notification={notification}
-                    onRead={markAsRead}
-                    onSelect={handleNotificationSelect}
-                    isSelected={selectedNotification?.id === notification.id}
-                    selectedNotification={selectedNotification}
-                  />
-                ))
-              )}
-            </Box>
-          </NotificationModal>
-        </Modal>
+              </Box>
+              <Divider />
+              <Box 
+                sx={{ 
+                  maxHeight: { xs: 'calc(70vh - 60px)', sm: 'calc(60vh - 60px)' },
+                  overflow: 'auto',
+                  '&::-webkit-scrollbar': {
+                    width: '6px',
+                  },
+                  '&::-webkit-scrollbar-thumb': {
+                    backgroundColor: 'rgba(0,0,0,0.2)',
+                    borderRadius: '3px',
+                  },
+                  position: 'relative',
+                  padding: selectedNotification ? 0 : { xs: '4px 0', sm: '8px 0' },
+                  scrollBehavior: 'smooth',
+                }}
+              >
+                {notifications.length === 0 ? (
+                  <Box sx={{ p: 2, textAlign: 'center', color: 'text.secondary' }}>
+                    No notifications
+                  </Box>
+                ) : (
+                  notifications.map(notification => (
+                    <NotificationItem
+                      key={notification.id}
+                      notification={notification}
+                      onRead={markAsRead}
+                      onSelect={handleNotificationSelect}
+                      isSelected={selectedNotification?.id === notification.id}
+                      selectedNotification={selectedNotification}
+                    />
+                  ))
+                )}
+              </Box>
+            </NotificationModal>
+          </Modal>
+        </Box>
 
-        {/* Profile Menu */}
-        <Menu
-          anchorEl={anchorEl}
-          id="account-menu"
-          open={open}
-          onClose={handleProfileClose}
-          onClick={handleProfileClose}
-          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-          PaperProps={{
-            elevation: 0,
-            sx: {
-              overflow: 'visible',
-              filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
-              mt: 1.5,
-              '& .MuiAvatar-root': {
-                width: 32,
-                height: 32,
-                ml: -0.5,
-                mr: 1,
-              },
-              '&:before': {
-                content: '""',
-                display: 'block',
-                position: 'absolute',
-                top: 0,
-                right: 14,
-                width: 10,
-                height: 10,
-                bgcolor: 'background.paper',
-                transform: 'translateY(-50%) rotate(45deg)',
-                zIndex: 0,
-              },
-            },
-          }}
+        {/* Profile Avatar */}
+        <IconButton
+          onClick={handleProfileClick}
+          size="small"
+          aria-controls={open ? 'account-menu' : undefined}
+          aria-haspopup="true"
+          aria-expanded={open ? 'true' : undefined}
         >
-          <MenuItem onClick={() => navigate('/viewprofile')}>
-            <ListItemIcon>
-              <PersonIcon fontSize="small" />
-            </ListItemIcon>
-            View Profile
-          </MenuItem>
-          <MenuItem>
-            <ListItemIcon>
-              <SettingsIcon fontSize="small" />
-            </ListItemIcon>
-            Settings
-          </MenuItem>
-          <Divider />
-          <MenuItem onClick={handleLogout}>
-            <ListItemIcon>
-              <LogoutIcon fontSize="small" />
-            </ListItemIcon>
-            Logout
-          </MenuItem>
-        </Menu>
+          <Avatar
+            src={employeeData?.employeeImg}
+            alt={`${employeeData?.firstname || 'User'}`}
+            sx={{ width: 32, height: 32 }}
+          />
+        </IconButton>
       </Toolbar>
+
+      {/* Profile Menu */}
+      <Menu
+        anchorEl={anchorEl}
+        id="account-menu"
+        open={open}
+        onClose={handleProfileClose}
+        onClick={handleProfileClose}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        PaperProps={{
+          elevation: 0,
+          sx: {
+            overflow: 'visible',
+            filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+            mt: 1.5,
+            '& .MuiAvatar-root': {
+              width: 32,
+              height: 32,
+              ml: -0.5,
+              mr: 1,
+            },
+            '&:before': {
+              content: '""',
+              display: 'block',
+              position: 'absolute',
+              top: 0,
+              right: 14,
+              width: 10,
+              height: 10,
+              bgcolor: 'background.paper',
+              transform: 'translateY(-50%) rotate(45deg)',
+              zIndex: 0,
+            },
+          },
+        }}
+      >
+        <MenuItem onClick={() => navigate('/viewprofile')}>
+          <ListItemIcon>
+            <PersonIcon fontSize="small" />
+          </ListItemIcon>
+          View Profile
+        </MenuItem>
+        <MenuItem>
+          <ListItemIcon>
+            <SettingsIcon fontSize="small" />
+          </ListItemIcon>
+          Settings
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={handleLogout}>
+          <ListItemIcon>
+            <LogoutIcon fontSize="small" />
+          </ListItemIcon>
+          Logout
+        </MenuItem>
+      </Menu>
     </StyledAppBar>
   );
 };

@@ -66,7 +66,12 @@ const Sidemenu = () => {
 
   return (
     <>
-      <aside className="main-sidebar sidebar-dark-primary elevation-4" style={{ backgroundColor: "rgba(0,0,0,0.9)", backdropFilter: "blur(30px)" }}>
+      <aside className="main-sidebar sidebar-dark-primary elevation-4 fixed top-0 left-0 h-full" 
+        style={{ 
+          backgroundColor: "rgba(0,0,0,0.9)", 
+          backdropFilter: "blur(30px)",
+          zIndex: 1040  // This ensures sidebar appears above content but below header
+        }}>
         <div className="sidebar">
           <div className="w-40 mt-3 pb-3 mb-3 d-flex">
             <div className="flex gap-9">

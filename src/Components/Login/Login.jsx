@@ -63,7 +63,17 @@ const Login = () => {
       clearStore();
       localStorage.clear();
 
-      const response = await axios.post(`${config.apiUrl}/qubinest/login`, { email, password });
+      const response = await axios.post(
+        `${config.apiUrl}/qubinest/login`, 
+        { email, password },
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        }
+      );
       console.log(response);
       Cookies.set('email', email, { secure: true, sameSite: 'Strict' });
       setUserEmail(email);

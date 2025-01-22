@@ -39,45 +39,59 @@ const Register = () => {
   ];
 
   const departmentStructure = {
-    "Information Technology": [
-      "Web Development",
-      "Mobile Development",
-      "DevOps",
-      "Cloud Computing",
-      "Cybersecurity",
-      "Software Testing",
-      "UI/UX Design",
-      "RPA Development"
-    ],
-    "Human Resources": [
-      "Recruitment",
-      "Employee Relations",
-      "Compensation & Benefits",
-      "Training & Development",
-      "HR Operations"
-    ],
-    "Finance": [
-      "Accounting",
-      "Financial Planning",
-      "Payroll",
-      "Treasury",
-      "Audit"
-    ],
-    "Sales and Marketing": [
-      "Digital Marketing",
-      "Content Marketing",
-      "Sales Operations",
-      "Business Development",
-      "Brand Management"
-    ],
-    "Operations": [
-      "Project Management",
-      "General Administration",
-      "Quality Assurance",
-      "Facility Management",
-      "Supply Chain",
-      "Process Improvement"
-    ]
+    "Operations": {
+      "General Administration": ["Office Manager", "Administrative Assistant", "Facility Manager"],
+      "Facility Management": ["Facilities Supervisor", "Maintenance Technician", "Security Officer"],
+      "Travel Coordination": ["Travel Coordinator", "Travel Assistant"],
+      "Event Coordination": ["Event Coordinator", "Event Planner"],
+      "Records Management": ["Records Manager", "Document Controller"],
+      "Procurement": ["Procurement Officer", "Purchasing Agent"]
+    },
+    "Human Resources": {
+      "Recruitment and Onboarding": ["Recruitment Manager", "HR Recruiter"],
+      "Employee Relations": ["Employee Relations Specialist", "HR Generalist"],
+      "Training and Development": ["Training Manager", "Learning and Development Specialist"],
+      "Compensation and Benefits": ["Compensation Analyst", "Benefits Coordinator"]
+    },
+    "Information Technology": {
+      "IT Support and Helpdesk": ["IT Support Specialist", "Helpdesk Technician"],
+      "Network Administration": ["Network Administrator", "Systems Engineer"],
+      "Cybersecurity": ["Cybersecurity Analyst", "Information Security Manager"],
+      "Software Maintenance": ["Software Engineer", "Maintenance Technician"]
+    },
+    "Development and Engineering": {
+      "Software Development": ["Software Developer", "Frontend Developer", "Backend Developer"],
+      "Quality Assurance (QA)": ["QA Engineer", "Test Analyst"],
+      "DevOps": ["DevOps Engineer", "Build and Release Manager"],
+      "Research and Development (R&D)": ["R&D Manager", "Research Analyst"]
+    },
+    "Sales and Marketing": {
+      "Sales Operations": ["Sales Manager", "Account Executive"],
+      "Marketing and Advertising": ["Marketing Manager", "Digital Marketing Specialist"],
+      "Customer Relationship Management (CRM)": ["CRM Manager", "Customer Success Manager"],
+      "Content Creation and Social Media": ["Content Manager", "Social Media Specialist"]
+    },
+    "Finance and Accounting": {
+      "Budgeting and Forecasting": ["Financial Analyst", "Budget Analyst"],
+      "Payroll": ["Payroll Manager", "Payroll Specialist"],
+      "Accounts Payable and Receivable": ["Accounts Payable Clerk", "Accounts Receivable Clerk"],
+      "Financial Reporting": ["Financial Controller", "Accountant"]
+    },
+    "Product Management": {
+      "Product Development": ["Product Manager", "Product Owner"],
+      "User Experience (UX) and Design": ["UX Designer", "UI Designer"],
+      "Market Research": ["Market Research Analyst", "Business Analyst"]
+    },
+    "Customer Support": {
+      "Technical Support": ["Technical Support Engineer", "Helpdesk Support"],
+      "Customer Service": ["Customer Service Representative", "Call Center Agent"],
+      "Client Success Management": ["Client Success Manager", "Account Manager"]
+    },
+    "Legal and Compliance": {
+      "Contract Management": ["Contracts Manager", "Legal Counsel"],
+      "Compliance and Regulatory Affairs": ["Compliance Officer", "Regulatory Affairs Specialist"],
+      "Intellectual Property Management": ["IP Manager", "Patent Analyst"]
+    },
   };
 
   const validatePassword = (password) => {
@@ -323,7 +337,7 @@ const Register = () => {
                   >
                     <option value="">Select</option>
                     <option value="Admin">Admin</option>
-                    <option value="Human Resource Manager">Human Resource Manager</option>
+                   
                     <option value="Manager">Manager</option>
                     <option value="Employee">Employee</option>
                     <option value="Intern">Intern</option>
@@ -501,7 +515,8 @@ const Register = () => {
                     value={department}
                     onChange={(e) => {
                       setDepartment(e.target.value);
-                      setSubDepartment(''); // Reset sub-department when main department changes
+                      setSubDepartment('');
+                      setMainPosition('');
                     }}
                     className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
                   >
@@ -512,36 +527,44 @@ const Register = () => {
                   </select>
                 </div>
 
-                {department && departmentStructure[department] && (
+                {department && (
                   <div>
                     <label className="block text-gray-700 text-sm mb-1.5">
                       Sub Department <span className="text-red-500">*</span>
                     </label>
                     <select
                       value={subDepartment}
-                      onChange={(e) => setSubDepartment(e.target.value)}
+                      onChange={(e) => {
+                        setSubDepartment(e.target.value);
+                        setMainPosition('');
+                      }}
                       className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
                     >
                       <option value="">Select Sub Department</option>
-                      {departmentStructure[department].map((subDept) => (
+                      {Object.keys(departmentStructure[department] || {}).map((subDept) => (
                         <option key={subDept} value={subDept}>{subDept}</option>
                       ))}
                     </select>
                   </div>
                 )}
 
-<div>
-                  <label className="block text-gray-700 text-sm mb-1.5">
-                    Main Position <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={mainPosition}
-                    onChange={(e) => setMainPosition(e.target.value)}
-                    className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
-                    placeholder="Enter your main position"
-                  />
-                </div>
+                {subDepartment && (
+                  <div>
+                    <label className="block text-gray-700 text-sm mb-1.5">
+                      Main Position <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={mainPosition}
+                      onChange={(e) => setMainPosition(e.target.value)}
+                      className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
+                    >
+                      <option value="">Select Position</option>
+                      {(departmentStructure[department]?.[subDepartment] || []).map((position) => (
+                        <option key={position} value={position}>{position}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 {/* Joining Date Input */}
                 <div>
