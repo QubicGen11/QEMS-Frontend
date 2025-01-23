@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -31,6 +31,8 @@ const Register = () => {
   });
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+  const [resendTimer, setResendTimer] = useState(30);
+  const [canResendOTP, setCanResendOTP] = useState(false);
   const navigate = useNavigate();
 
   const backgroundVideos = [
@@ -78,7 +80,7 @@ const Register = () => {
       "Financial Reporting": ["Financial Controller", "Accountant"]
     },
     "Product Management": {
-      "Product Development": ["Product Manager", "Product Owner"],
+      "Product Development": ["Product Manager", "Product Owner" , "Sales Lead", "Sales Manager","Team Lead","Lead Generation" , "Executive"],
       "User Experience (UX) and Design": ["UX Designer", "UI Designer"],
       "Market Research": ["Market Research Analyst", "Business Analyst"]
     },
@@ -233,6 +235,46 @@ const Register = () => {
       setIsLoading(false);
     }
   };
+
+  const handleResendOTP = async () => {
+    if (!canResendOTP) return;
+    
+    setIsLoading(true);
+    try {
+      await axios.post(`${config.apiUrl}/qubinest/resend-otp`, {
+        email: registeredEmail
+      });
+      
+      toast.success('New OTP sent to your email!');
+      setResendTimer(30);
+      setCanResendOTP(false);
+      
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error(error.response?.data?.message || 'Failed to resend OTP!');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    let timer;
+    if (showOTPField && resendTimer > 0) {
+      timer = setInterval(() => {
+        setResendTimer((prev) => {
+          if (prev <= 1) {
+            setCanResendOTP(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [showOTPField, resendTimer]);
 
   const allRequirementsMet = useMemo(() => {
     return (
@@ -640,6 +682,24 @@ const Register = () => {
                     className="w-full p-2.5 bg-gray-50 rounded border border-gray-200 focus:outline-none focus:border-gray-300 text-sm"
                     placeholder="Enter OTP"
                   />
+                </div>
+
+                {/* Timer and Resend Button */}
+                <div className="text-center mt-4 mb-4">
+                  {resendTimer > 0 ? (
+                    <p className="text-gray-600 font-medium">
+                      Resend OTP available in <span className="text-yellow-600">{resendTimer}</span> seconds
+                    </p>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleResendOTP}
+                      disabled={!canResendOTP || isLoading}
+                      className="text-yellow-600 hover:text-yellow-700 font-medium disabled:opacity-50 underline"
+                    >
+                      Resend OTP
+                    </button>
+                  )}
                 </div>
 
                 <button
