@@ -1,5 +1,5 @@
 import React from "react";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import Login from "./Components/Login/Login";
 import Dashboardmain from "./Components/Dashboard Components/Dashboardmain";
 import Nopage from "./Components/Error Page/Nopage";
@@ -29,6 +29,35 @@ import EmployeeProfile from './Components/Employee Components/EmployeeProfile';
 import AttendanceSheet from "./Components/Attendance Components/AttendanceSheet";
 import TodaysAttendance from "./Components/Attendance Components/TodaysAttendance";
 import AnonymousSuggestion from "./Components/Homepage Components/AnonymousSuggestion";
+import Cookies from 'js-cookie';
+import Swal from 'sweetalert2';
+
+// Add this authentication check function
+const requireAuth = () => {
+  const email = Cookies.get('email');
+ 
+
+  if (!email ) {
+    Swal.fire({
+      title: 'Authentication Required',
+      text: 'Please login to access this page',
+      icon: 'warning',
+      confirmButtonText: 'Go to Login',
+      confirmButtonColor: '#3085d6'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = '/';
+      }
+    });
+    return false;
+  }
+  return true;
+};
+
+// Protected Route Component
+const ProtectedRoute = ({ element }) => {
+  return requireAuth() ? element : <Navigate to="/" />;
+};
 
 const router = createBrowserRouter([
   {
@@ -39,13 +68,14 @@ const router = createBrowserRouter([
     path: "/qubicgenregistrationpageabcdefghijklmnopqrstuvwxyz",
     element: <Register />
   },
+  // Protect all other routes
   {
     path: "/dashboard",
-    element: <Dashboardmain />
+    element: <ProtectedRoute element={<Dashboardmain />} />
   },
   {
     path: "/viewtimesheets",
-    element: <ViewTimesheets />,
+    element: <ProtectedRoute element={<ViewTimesheets />} />,
     loader: async ({ request }) => {
       const url = new URL(request.url);
       const fromDashboard = url.searchParams.get('fromDashboard');
@@ -65,31 +95,31 @@ const router = createBrowserRouter([
   },
   {
     path: "/viewprofile/*",
-    element: <Viewprofile />
+    element: <ProtectedRoute element={<Viewprofile />} />
   },
   {
     path: "/employeeattendance",
-    element: <AllEmployeeAttendance />
+    element: <ProtectedRoute element={<AllEmployeeAttendance />} />
   },
   {
     path: "/singleemployeeattendance/:employeeId",
-    element: <SingleEmployeeAttendance />
+    element: <ProtectedRoute element={<SingleEmployeeAttendance />} />
   },
   {
     path: "/createTeam",
-    element: <CreateTeamComponent />
+    element: <ProtectedRoute element={<CreateTeamComponent />} />
   },
   {
     path: "/holiday",
-    element: <Holiday />
+    element: <ProtectedRoute element={<Holiday />} />
   },
   {
     path: "/booktimeoff",
-    element: <Booktimeoff />
+    element: <ProtectedRoute element={<Booktimeoff />} />
   },
   {
     path: "/documents",
-    element: <Documents />
+    element: <ProtectedRoute element={<Documents />} />
   },
   {
     path: "/loading",
@@ -97,55 +127,55 @@ const router = createBrowserRouter([
   },
   {
     path: "/documentsnewone",
-    element: <Documentsnewone />
+    element: <ProtectedRoute element={<Documentsnewone />} />
   },
   {
     path: "/payslips",
-    element: <Payslips />
+    element: <ProtectedRoute element={<Payslips />} />
   },
   {
     path: "/payslipsnewone",
-    element: <Payslipsnewone />
+    element: <ProtectedRoute element={<Payslipsnewone />} />
   },
   {
     path: "/profile/*",
-    element: <Profile />
+    element: <ProtectedRoute element={<Profile />} />
   },
   {
     path: "/allemployees",
-    element: <Allemployees />
+    element: <ProtectedRoute element={<Allemployees />} />
   },
   {
     path: "/allemployeleaverequests",
-    element: <Allemployeleaves />
+    element: <ProtectedRoute element={<Allemployeleaves />} />
   },
   {
     path: "/todaysattendance",
-    element: <TodaysAttendance />
+    element: <ProtectedRoute element={<TodaysAttendance />} />
   },
   {
     path: "/allemployeleaves",
-    element: <EmployeeLeaves />
+    element: <ProtectedRoute element={<EmployeeLeaves />} />
   },
   {
     path: "/leavebalance",
-    element: <Leavebalance />
+    element: <ProtectedRoute element={<Leavebalance />} />
   },
   {
     path: "/leavetype",
-    element: <Leavetype />
+    element: <ProtectedRoute element={<Leavetype />} />
   },
   {
     path: "/employee-profile/:email",
-    element: <EmployeeProfile />
+    element: <ProtectedRoute element={<EmployeeProfile />} />
   },
   {
     path: "/attendancesheet",
-    element: <AttendanceSheet />
+    element: <ProtectedRoute element={<AttendanceSheet />} />
   },
   {
     path: "/anonymous-suggestion",
-    element: <AnonymousSuggestion />
+    element: <ProtectedRoute element={<AnonymousSuggestion />} />
   }
 ]);
 
