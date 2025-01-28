@@ -15,12 +15,42 @@ const Viewpassword = () => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const email = Cookies.get('email');
 
+    const [passwordValidation, setPasswordValidation] = useState({
+        minLength: false,
+        hasUpperCase: false,
+        hasLowerCase: false,
+        hasNumber: false,
+        hasSpecial: false
+    });
+    const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+
+    // Regex to enforce password complexity
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+    const validatePassword = (password) => {
+        const validations = {
+            minLength: password.length >= 8,
+            hasUpperCase: /[A-Z]/.test(password),
+            hasLowerCase: /[a-z]/.test(password),
+            hasNumber: /\d/.test(password),
+            hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+        };
+        setPasswordValidation(validations);
+        return Object.values(validations).every(Boolean);
+    };
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         setIsLoading(true);
 
         if (!currentPassword || !newPassword || !confirmPassword) {
             toast.error('Please fill all password fields');
+            setIsLoading(false);
+            return;
+        }
+
+        if (!validatePassword(newPassword)) {
+            toast.error('Password does not meet requirements');
             setIsLoading(false);
             return;
         }
@@ -99,7 +129,12 @@ const Viewpassword = () => {
                                 className="form-control"
                                 id="newPassword"
                                 value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
+                                onChange={(e) => {
+                                    setNewPassword(e.target.value);
+                                    validatePassword(e.target.value);
+                                }}
+                                onFocus={() => setIsPasswordFocused(true)}
+                                onBlur={() => setIsPasswordFocused(false)}
                                 required
                                 disabled={isLoading}
                             />
@@ -111,6 +146,35 @@ const Viewpassword = () => {
                                 {showNewPassword ? "🙈" : "👁️"}
                             </span>
                         </div>
+                        
+                        {/* Password Requirements Checklist */}
+                        {isPasswordFocused && (
+                            <div className="password-requirements mt-2 small">
+                                <p className="mb-1 text-muted">Password must contain:</p>
+                                <ul className="list-unstyled">
+                                    <li className={passwordValidation.minLength ? "text-success" : "text-danger"}>
+                                        <i className={`fas fa-${passwordValidation.minLength ? 'check' : 'times'} me-2`}></i>
+                                        At least 8 characters
+                                    </li>
+                                    <li className={passwordValidation.hasUpperCase ? "text-success" : "text-danger"}>
+                                        <i className={`fas fa-${passwordValidation.hasUpperCase ? 'check' : 'times'} me-2`}></i>
+                                        One uppercase letter
+                                    </li>
+                                    <li className={passwordValidation.hasLowerCase ? "text-success" : "text-danger"}>
+                                        <i className={`fas fa-${passwordValidation.hasLowerCase ? 'check' : 'times'} me-2`}></i>
+                                        One lowercase letter
+                                    </li>
+                                    <li className={passwordValidation.hasNumber ? "text-success" : "text-danger"}>
+                                        <i className={`fas fa-${passwordValidation.hasNumber ? 'check' : 'times'} me-2`}></i>
+                                        One number
+                                    </li>
+                                    <li className={passwordValidation.hasSpecial ? "text-success" : "text-danger"}>
+                                        <i className={`fas fa-${passwordValidation.hasSpecial ? 'check' : 'times'} me-2`}></i>
+                                        One special character
+                                    </li>
+                                </ul>
+                            </div>
+                        )}
                     </div>
                     <div className="col-12">
                         <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>

@@ -47,7 +47,7 @@ const Allemployeleaves = () => {
     const year = date.getFullYear();
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${day}/${month}/${year} ${hours}:${minutes}`;
+    return `${day}/${month}/${year} `;
   };
 
   const uniqueLeaveTypes = useMemo(() => {
@@ -385,7 +385,7 @@ const Allemployeleaves = () => {
               </div>
 
               {/* Duration Filter */}
-              <div className="flex flex-col">
+              {/* <div className="flex flex-col">
                 <label className="text-sm font-medium text-gray-700 mb-1">
                   Duration
                 </label>
@@ -399,7 +399,7 @@ const Allemployeleaves = () => {
                   <option value="full">Full Day</option>
                   <option value="half">Half Day</option>
                 </select>
-              </div>
+              </div> */}
 
               {/* Number of Days Filter */}
               <div>
@@ -471,7 +471,7 @@ const Allemployeleaves = () => {
                     <th className="py-3 px-6">Employee ID</th>
                     <th className="py-3 px-6">Email</th>
                     <th className="py-3 px-6">Leave Type</th>
-                    <th className="py-3 px-6">Duration</th>
+                    {/* <th className="py-3 px-6">Duration</th> */}
                     <th className="py-3 px-6">From</th>
                     <th className="py-3 px-6">To</th>
                     <th className="py-3 px-6">Days</th>
@@ -498,7 +498,7 @@ const Allemployeleaves = () => {
                       <td className="py-4 px-6">{request.employee_id}</td>
                       <td className="py-4 px-6">{request.employeeEmail}</td>
                       <td className="py-4 px-6">{request.leaveType}</td>
-                      <td className="py-4 px-6">{request.duration}</td>
+                      {/* <td className="py-4 px-6">{request.duration}</td> */}
                       <td className="py-4 px-6">{formatDateTime(request.leaveFrom)}</td>
                       <td className="py-4 px-6">{formatDateTime(request.leaveTo)}</td>
                       <td className="py-4 px-6">{request.noOfDays}</td>

@@ -16,6 +16,8 @@ import { FiFilter } from 'react-icons/fi';
 import { HiDownload } from 'react-icons/hi';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const Tooltip = ({ children, content }) => {
   const [showTooltip, setShowTooltip] = useState(false);
@@ -95,6 +97,8 @@ const AllEmployeeAttendance = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const getStatusClasses = (status) => {
     switch (status) {
@@ -394,16 +398,22 @@ const AllEmployeeAttendance = () => {
     navigate(`/singleemployeeattendance/${employee.employeeId}`);
   };
 
+  // Add pagination logic
+  const indexOfLastRecord = currentPage * rowsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - rowsPerPage;
+  const currentRecords = filteredEmployees.slice(indexOfFirstRecord, indexOfLastRecord);
+  const totalPages = Math.ceil(filteredEmployees.length / rowsPerPage);
+
   return (
     <>
       <div>
         <Header />
         <Sidemenu />
         <div className="content-wrapper">
-          <section className="container px-4 mx-auto">
-            <div className="flex items-center gap-x-3">
+          <section className=" ">
+            <div className="flex items-center">
               <h2 className="text-lg font-medium text-gray-800 text-black:text-white">
-                All Employees
+                Employees Attedance
               </h2>
               <span className="px-3 py-1 text-xs text-blue-600 bg-blue-100 rounded-full text-black:bg-gray-800 text-black:text-blue-400">
                 {employees.length} users
@@ -487,92 +497,144 @@ const AllEmployeeAttendance = () => {
                           <p className="text-gray-500">No employees found</p>
                         </div>
                       ) : (
-                        <table className="min-w-full divide-y divide-gray-200 text-black:divide-gray-700">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Name
-                              </th>
-                              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Employee ID
-                              </th>
-                              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Status
-                              </th>
-                              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Email address
-                              </th>
-                             
-                              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Position
-                              </th>
-                              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Actions
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200 text-black:divide-gray-700 text-black:bg-gray-900">
-                            {filteredEmployees.map((employee) => (
-                              <tr key={employee.email} className="hover:bg-gray-50">
-                                <td className="px-4 py-4 whitespace-nowrap">
-                                  <div className="flex items-center">
-                                    <div className={`h-10 w-10 rounded-full ${getRandomGradient(employee.email)} flex items-center justify-center text-white font-semibold`}>
-                                      {getInitials(employee.username)}
-                                    </div>
-                                    <div className="ml-3">
-                                      <div className="text-sm font-medium text-gray-900">{employee.username}</div>
-                                      <div className="flex items-center mt-1">
-                                        <Tooltip content={`Role: ${employee.role || 'Unassigned'}`}>
-                                          <div 
-                                            className={`w-4 h-4 rounded-full ${getRandomColor(employee.email)} flex items-center justify-center cursor-help`}
-                                          >
-                                            <span className="text-[8px] text-white font-medium">
-                                              {employee.role?.charAt(0) || 'U'}
-                                            </span>
-                                          </div>
-                                        </Tooltip>
+                        <div className="overflow-x-auto">
+                          <table className="min-w-full divide-y divide-gray-200 text-black:divide-gray-700">
+                            <thead className="bg-gray-50">
+                              <tr>
+                                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Name
+                                </th>
+                                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Employee ID
+                                </th>
+                                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Status
+                                </th>
+                                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Email address
+                                </th>
+                               
+                                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Position
+                                </th>
+                                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Actions
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200 text-black:divide-gray-700 text-black:bg-gray-900">
+                              {currentRecords.map((employee) => (
+                                <tr key={employee.email} className="hover:bg-gray-50">
+                                  <td className="px-4 py-2 whitespace-nowrap">
+                                    <div className="flex items-center">
+                                      <div className={`h-10 w-10 rounded-full ${getRandomGradient(employee.email)} flex items-center justify-center text-white font-semibold`}>
+                                        {getInitials(employee.username)}
+                                      </div>
+                                      <div className="ml-3">
+                                        <div className="text-sm font-medium text-gray-900">{employee.username}</div>
+                                        <div className="flex items-center mt-1">
+                                          <Tooltip content={`Role: ${employee.role || 'Unassigned'}`}>
+                                            <div 
+                                              className={`w-4 h-4 rounded-full ${getRandomColor(employee.email)} flex items-center justify-center cursor-help`}
+                                            >
+                                              <span className="text-[8px] text-white font-medium">
+                                                {employee.role?.charAt(0) || 'U'}
+                                              </span>
+                                            </div>
+                                          </Tooltip>
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
-                                </td>
-                                <td className="px-4 py-4 whitespace-nowrap">
-                                  <div className="text-sm text-gray-900">
-                                    {employee.department || 'N/A'}
-                                  </div>
-                                  <div className="text-xs text-gray-500">
-                                    {employee.subDepartment || 'N/A'}
-                                  </div>
-                                  <div className="text-xs text-gray-400">
-                                    ID: {employee.employeeId || 'Not Assigned'}
-                                  </div>
-                                </td>
-                                <td className="px-4 py-4 whitespace-nowrap">
-                                  <span className={`px-2 py-1 text-xs rounded-full ${getStatusClasses(employee.status)}`}>
-                                    {employee.status || 'Active'}
-                                  </span>
-                                </td>
-                                <td className="px-4 py-4 whitespace-nowrap">
-                                  <div className="text-sm text-gray-900">{employee.email}</div>
-                                </td>
-                          
-                                <td className="px-4 py-4 whitespace-nowrap">
-                                  <div className="text-sm text-gray-900">{employee.mainPosition || 'N/A'}</div>
-                                </td>
-                                <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                  <button 
-                                    className="bg-blue-50 text-blue-600 px-3 py-1 rounded-md hover:bg-blue-100 flex items-center gap-2"
-                                    onClick={() => handleViewAttendance(employee)}
-                                  >
-                                    <span className="text-sm">View Attendance</span>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                    </svg>
-                                  </button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                                  </td>
+                                  <td className="px-4 py-4 whitespace-nowrap">
+                                    <div className="text-sm text-gray-900">
+                                      {employee.department || 'N/A'}
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                      {employee.subDepartment || 'N/A'}
+                                    </div>
+                                    <div className="text-xs text-gray-400">
+                                      ID: {employee.employeeId || 'Not Assigned'}
+                                    </div>
+                                  </td>
+                                  <td className="px-4 py-4 whitespace-nowrap">
+                                    <span className={`px-2 py-1 text-xs rounded-full ${getStatusClasses(employee.status)}`}>
+                                      {employee.status || 'Active'}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-4 whitespace-nowrap">
+                                    <div className="text-sm text-gray-900">{employee.email}</div>
+                                  </td>
+                                
+                                  <td className="px-4 py-4 whitespace-nowrap">
+                                    <div className="text-sm text-gray-900">{employee.mainPosition || 'N/A'}</div>
+                                  </td>
+                                  <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <button 
+                                      className="bg-blue-50 text-blue-600 px-3 py-1 rounded-md hover:bg-blue-100 flex items-center gap-2"
+                                      onClick={() => handleViewAttendance(employee)}
+                                    >
+                                      <span className="text-sm">View Attendance</span>
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                      </svg>
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+
+                          {/* Pagination Controls */}
+                          <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
+                            <div className="flex items-center">
+                              <span className="text-sm text-gray-700 mr-4">Rows per page:</span>
+                              <select
+                                value={rowsPerPage}
+                                onChange={(e) => {
+                                  setRowsPerPage(Number(e.target.value));
+                                  setCurrentPage(1);
+                                }}
+                                className="border border-gray-300 rounded px-2 py-1 text-sm"
+                              >
+                                {[10, 25, 50].map((pageSize) => (
+                                  <option key={pageSize} value={pageSize}>
+                                    {pageSize}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-gray-700">
+                                Page {currentPage} of {totalPages} ({filteredEmployees.length} total records)
+                              </span>
+                              <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                                <button
+                                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                  disabled={currentPage === 1}
+                                  className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
+                                    currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
+                                  }`}
+                                >
+                                  <span className="sr-only">Previous</span>
+                                  <FontAwesomeIcon icon={faChevronLeft} className="h-3 w-3" />
+                                </button>
+
+                                <button
+                                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                                  disabled={currentPage === totalPages}
+                                  className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
+                                    currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
+                                  }`}
+                                >
+                                  <span className="sr-only">Next</span>
+                                  <FontAwesomeIcon icon={faChevronRight} className="h-3 w-3" />
+                                </button>
+                              </nav>
+                            </div>
+                          </div>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -580,92 +642,7 @@ const AllEmployeeAttendance = () => {
               </div>
             )}
 
-            <div className="flex items-center justify-between mt-6">
-              <a
-                href="#"
-                className="flex items-center px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md gap-x-2 hover:bg-gray-100 text-black:bg-gray-900 text-black:text-gray-200 text-black:border-gray-700 text-black:hover:bg-gray-800"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  className="w-5 h-5 rtl:-scale-x-100"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18"
-                  />
-                </svg>
-                <span>Previous</span>
-              </a>
-              <div className="items-center hidden lg:flex gap-x-3">
-                <a
-                  href="#"
-                  className="px-2 py-1 text-sm text-blue-500 rounded-md text-black:bg-gray-800 bg-blue-100/60"
-                >
-                  1
-                </a>
-                <a
-                  href="#"
-                  className="px-2 py-1 text-sm text-gray-500 rounded-md text-black:hover:bg-gray-800 text-black:text-gray-300 hover:bg-gray-100"
-                >
-                  2
-                </a>
-                <a
-                  href="#"
-                  className="px-2 py-1 text-sm text-gray-500 rounded-md text-black:hover:bg-gray-800 text-black:text-gray-300 hover:bg-gray-100"
-                >
-                  3
-                </a>
-                <a
-                  href="#"
-                  className="px-2 py-1 text-sm text-gray-500 rounded-md text-black:hover:bg-gray-800 text-black:text-gray-300 hover:bg-gray-100"
-                >
-                  ...
-                </a>
-                <a
-                  href="#"
-                  className="px-2 py-1 text-sm text-gray-500 rounded-md text-black:hover:bg-gray-800 text-black:text-gray-300 hover:bg-gray-100"
-                >
-                  12
-                </a>
-                <a
-                  href="#"
-                  className="px-2 py-1 text-sm text-gray-500 rounded-md text-black:hover:bg-gray-800 text-black:text-gray-300 hover:bg-gray-100"
-                >
-                  13
-                </a>
-                <a
-                  href="#"
-                  className="px-2 py-1 text-sm text-gray-500 rounded-md text-black:hover:bg-gray-800 text-black:text-gray-300 hover:bg-gray-100"
-                >
-                  14
-                </a>
-              </div>
-              <a
-                href="#"
-                className="flex items-center px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md gap-x-2 hover:bg-gray-100 text-black:bg-gray-900 text-black:text-gray-200 text-black:border-gray-700 text-black:hover:bg-gray-800"
-              >
-                <span>Next</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  className="w-5 h-5 rtl:-scale-x-100"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3"
-                  />
-                </svg>
-              </a>
-            </div>
+           
           </section>
         </div>
         <Footer />

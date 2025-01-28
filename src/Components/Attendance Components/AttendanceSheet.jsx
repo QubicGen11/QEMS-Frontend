@@ -9,6 +9,8 @@ import * as XLSX from 'xlsx';
 import LoadingSkeleton from './LoadingSkeleton';
 import config from '../config';
 import Cookies from 'js-cookie';
+import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const AttendanceSheet = () => {
   const [attendance, setAttendance] = useState([]);
@@ -18,6 +20,8 @@ const AttendanceSheet = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const adminEmail = Cookies.get('email');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     fetchAttendanceData();
@@ -262,23 +266,17 @@ const AttendanceSheet = () => {
     );
   };
 
-  // Add a useEffect to restore filters when coming back from single view
-//   useEffect(() => {
-//     const savedFilters = localStorage.getItem('attendanceFilters');
-//     if (savedFilters) {
-//       const { year: savedYear, month: savedMonth, selectedDepartment: savedDept } = JSON.parse(savedFilters);
-//       setYear(savedYear);
-//       setMonth(savedMonth);
-//       setSelectedDepartment(savedDept);
-//       localStorage.removeItem('attendanceFilters'); // Clear after restoring
-//     }
-//   }, []);
+  // Add pagination logic
+  const indexOfLastRecord = currentPage * rowsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - rowsPerPage;
+  const currentRecords = filteredData.slice(indexOfFirstRecord, indexOfLastRecord);
+  const totalPages = Math.ceil(filteredData.length / rowsPerPage);
 
   return (
     <>
       <Header />
       <Sidemenu />
-      <div className="content-wrapper p-4">
+      <div className="content-wrapper ">
         <div className="bg-white rounded-lg shadow-lg p-6">
           {/* Header Section */}
           <div className="flex justify-between items-center mb-6">
@@ -383,9 +381,59 @@ const AttendanceSheet = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredData.map(renderAttendanceRow)}
+                  {currentRecords.map(renderAttendanceRow)}
                 </tbody>
               </table>
+
+              {/* Pagination Controls */}
+              <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
+                <div className="flex items-center">
+                  <span className="text-sm text-gray-700 mr-4">Rows per page:</span>
+                  <select
+                    value={rowsPerPage}
+                    onChange={(e) => {
+                      setRowsPerPage(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                  >
+                    {[10, 25, 50].map((pageSize) => (
+                      <option key={pageSize} value={pageSize}>
+                        {pageSize}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-700">
+                    Page {currentPage} of {totalPages} ({filteredData.length} total records)
+                  </span>
+                  <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                    <button
+                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
+                        currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      <span className="sr-only">Previous</span>
+                      <FontAwesomeIcon icon={faChevronLeft} className="h-3 w-3" />
+                    </button>
+
+                    <button
+                      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
+                        currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      <span className="sr-only">Next</span>
+                      <FontAwesomeIcon icon={faChevronRight} className="h-3 w-3" />
+                    </button>
+                  </nav>
+                </div>
+              </div>
             </div>
           )}
         </div>

@@ -152,7 +152,7 @@ const Sidemenu = () => {
                 </li>
               )}
 
-              {(userRole === 'Admin' || userRole === 'Manager') && (
+              {/* {(userRole === 'Admin' || userRole === 'Manager') && (
                 <li className="nav-item">
                   <a
                     href="#"
@@ -180,7 +180,7 @@ const Sidemenu = () => {
                     </li>
                   </ul>
                 </li>
-              )}
+              )} */}
 
               <li className="nav-item">
                 <a
@@ -324,7 +324,7 @@ const Sidemenu = () => {
                 </>
               )}
 
-              <li className="nav-item">
+              {/* <li className="nav-item">
                 <a
                   href="#"
                   className="nav-link"
@@ -350,7 +350,7 @@ const Sidemenu = () => {
                     </a>
                   </li>
                 </ul>
-              </li>
+              </li> */}
 
               <li className="nav-item"><a href="/anonymous-suggestion" className="nav-link" onClick={() => toggleDropdown(setIsFormsOpen, isFormsOpen)}><FontAwesomeIcon icon={faEdit} className="nav-icon" /><p className='w-48'>Suggestions</p></a></li>
 

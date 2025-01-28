@@ -4,13 +4,13 @@ import { toast } from 'react-toastify';
 import Header from '../Homepage Components/Header';
 import Sidemenu from '../Homepage Components/Sidemenu';
 import Footer from '../Homepage Components/Footer';
-import { FiClock, FiCalendar, FiUsers, FiAlertCircle, FiSearch } from 'react-icons/fi';
+import { FiClock, FiCalendar, FiUsers, FiAlertCircle, FiSearch, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import LoadingSkeleton from './LoadingSkeleton';
 import config from '../config';
 import Cookies from 'js-cookie';
 import * as XLSX from 'xlsx';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFileExcel, faFilter, faTimes, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faFileExcel, faFilter, faTimes, faSearch, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 
 const TodaysAttendance = () => {
   const [attendance, setAttendance] = useState([]);
@@ -28,7 +28,8 @@ const TodaysAttendance = () => {
   });
   const [showFilters, setShowFilters] = useState(false);
   const [departments, setDepartments] = useState(['All']);
-  // const [selectedDepartment, setSelectedDepartment] = useState('All');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     fetchTodaysAttendance();
@@ -219,6 +220,12 @@ const TodaysAttendance = () => {
            filters.status !== 'all';
   };
 
+  // Add this pagination logic
+  const indexOfLastRecord = currentPage * rowsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - rowsPerPage;
+  const currentRecords = filteredAttendance.slice(indexOfFirstRecord, indexOfLastRecord);
+  const totalPages = Math.ceil(filteredAttendance.length / rowsPerPage);
+
   return (
     <>
       <Header />
@@ -340,92 +347,144 @@ const TodaysAttendance = () => {
           {loading ? (
             <LoadingSkeleton />
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Employee
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Department
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Check-in Time
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Check-out Time
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Total Working Time
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Check-in Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Check-out Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Position
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredAttendance.map((record) => (
-                    <tr key={record.employeeId}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10">
-                            {record.profileImage ? (
-                              <img
-                                className="h-10 w-10 rounded-full object-cover"
-                                src={record.profileImage}
-                                alt=""
-                              />
-                            ) : (
-                              <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
-                                {record.employeeName?.charAt(0)}
-                              </div>
-                            )}
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">
-                              {record.employeeName}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-gray-500">{record.email}</span>
-                              <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600">
-                                {record.role || 'N/A'}
-                              </span>
-                            </div>
-                            <div className="text-xs text-gray-400">
-                              ID: {record.employeeId}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">{record.department || 'N/A'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">{record.formattedCheckin}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">{record.formattedCheckout}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">{calculateWorkingHours(record.checkin_Time, record.checkout_Time)}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(record.checkinStatus)}`}>
-                          {record.checkinStatus}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(getCheckoutStatus(record.checkout_Time))}`}>
-                          {getCheckoutStatus(record.checkout_Time)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {record.mainPosition || 'N/A'}
-                      </td>
+            <>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Employee
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Department
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Check-in Time
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Check-out Time
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Total Working Time
+                      </th>
+                      {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Check-in Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Check-out Status
+                      </th> */}
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Position
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {currentRecords.map((record) => (
+                      <tr key={record.employeeId}>
+                        <td className="px-6 py-3 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-10 w-10">
+                              {record.profileImage ? (
+                                <img
+                                  className="h-10 w-10 rounded-full object-cover"
+                                  src={record.profileImage}
+                                  alt=""
+                                />
+                              ) : (
+                                <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
+                                  {record.employeeName?.charAt(0)}
+                                </div>
+                              )}
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900">
+                                {record.employeeName}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm text-gray-500">{record.email}</span>
+                                <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600">
+                                  {record.role || 'N/A'}
+                                </span>
+                              </div>
+                              <div className="text-xs text-gray-400">
+                                ID: {record.employeeId}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">{record.department || 'N/A'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{record.formattedCheckin}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{record.formattedCheckout}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{calculateWorkingHours(record.checkin_Time, record.checkout_Time)}</td>
+                        {/* <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(record.checkinStatus)}`}>
+                            {record.checkinStatus}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(getCheckoutStatus(record.checkout_Time))}`}>
+                            {getCheckoutStatus(record.checkout_Time)}
+                          </span>
+                        </td> */}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {record.mainPosition || 'N/A'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination Controls */}
+              <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
+                <div className="flex items-center">
+                  <span className="text-sm text-gray-700 mr-4">Rows per page:</span>
+                  <select
+                    value={rowsPerPage}
+                    onChange={(e) => {
+                      setRowsPerPage(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                  >
+                    {[10, 25, 50].map((pageSize) => (
+                      <option key={pageSize} value={pageSize}>
+                        {pageSize}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-700">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                    <button
+                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
+                        currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      <span className="sr-only">Previous</span>
+                      <FontAwesomeIcon icon={faChevronLeft} className="h-3 w-3" />
+                    </button>
+
+                    <button
+                      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
+                        currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      <span className="sr-only">Next</span>
+                      <FontAwesomeIcon icon={faChevronRight} className="h-3 w-3" />
+                    </button>
+                  </nav>
+                </div>
+              </div>
+            </>
           )}
         </div>
       </div>

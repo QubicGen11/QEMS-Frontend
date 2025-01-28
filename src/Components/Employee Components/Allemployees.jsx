@@ -11,6 +11,8 @@ import { ThreeDots } from 'react-loader-spinner';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import SendNotificationModal from "./SendNotificationModal";
+import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 
 const Allemployees = () => {
@@ -25,6 +27,8 @@ const Allemployees = () => {
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [employeeIdFilter, setEmployeeIdFilter] = useState('');
   const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // Get unique roles
   const uniqueRoles = [...new Set(employees.map(emp => emp.role))].filter(Boolean);
@@ -49,6 +53,12 @@ const Allemployees = () => {
     
     return matchesEmployeeId && matchesOtherSearch && matchesRole;
   });
+
+  // Add pagination logic
+  const indexOfLastRecord = currentPage * rowsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - rowsPerPage;
+  const currentRecords = filteredEmployees.slice(indexOfFirstRecord, indexOfLastRecord);
+  const totalPages = Math.ceil(filteredEmployees.length / rowsPerPage);
 
   // Export to Excel function
   const exportToExcel = () => {
@@ -392,7 +402,7 @@ const Allemployees = () => {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {filteredEmployees.map((employee) => (
+                        {currentRecords.map((employee) => (
                           <tr key={employee.employeeId}>
                             <td className="px-4 py-4 text-sm font-medium text-gray-700 whitespace-nowrap">
                               <div className="inline-flex items-center gap-x-3">
@@ -477,6 +487,56 @@ const Allemployees = () => {
                         ))}
                       </tbody>
                     </table>
+
+                    {/* Pagination Controls */}
+                    <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+                      <div className="flex items-center">
+                        <span className="text-sm text-gray-700 mr-4">Rows per page:</span>
+                        <select
+                          value={rowsPerPage}
+                          onChange={(e) => {
+                            setRowsPerPage(Number(e.target.value));
+                            setCurrentPage(1);
+                          }}
+                          className="border border-gray-300 rounded px-2 py-1 text-sm"
+                        >
+                          {[10, 25, 50].map((pageSize) => (
+                            <option key={pageSize} value={pageSize}>
+                              {pageSize}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-700">
+                          Page {currentPage} of {totalPages} ({filteredEmployees.length} total records)
+                        </span>
+                        <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                          <button
+                            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                            className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
+                              currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                          >
+                            <span className="sr-only">Previous</span>
+                            <FontAwesomeIcon icon={faChevronLeft} className="h-3 w-3" />
+                          </button>
+
+                          <button
+                            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                            className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
+                              currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                          >
+                            <span className="sr-only">Next</span>
+                            <FontAwesomeIcon icon={faChevronRight} className="h-3 w-3" />
+                          </button>
+                        </nav>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
