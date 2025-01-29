@@ -226,7 +226,7 @@ const Login = () => {
                 </div>
               </div>
               <div>
-                <a className="text-sm text-[#7747ff]" href="#">
+                <a className="text-sm text-[#7747ff]" href="/forgot-password">
                   Forgot your password?
                 </a>
 

@@ -31,6 +31,7 @@ import TodaysAttendance from "./Components/Attendance Components/TodaysAttendanc
 import AnonymousSuggestion from "./Components/Homepage Components/AnonymousSuggestion";
 import Cookies from 'js-cookie';
 import Swal from 'sweetalert2';
+import ForgotPassword from "./Components/Login/ForgotPassword";
 
 // Add this authentication check function
 const requireAuth = () => {
@@ -63,6 +64,10 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <Login />
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPassword />
   },
   {
     path: "/qubicgenregistrationpageabcdefghijklmnopqrstuvwxyz",
@@ -176,7 +181,8 @@ const router = createBrowserRouter([
   {
     path: "/anonymous-suggestion",
     element: <ProtectedRoute element={<AnonymousSuggestion />} />
-  }
+  },
+
 ]);
 
 const App = () => {
@@ -200,6 +206,8 @@ const App = () => {
       <UserProvider>
         <RouterProvider router={router} />
       </UserProvider>
+
+      
     </div>
   );
 };
