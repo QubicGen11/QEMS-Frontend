@@ -165,11 +165,11 @@ const Register = () => {
       return;
     }
 
-    if (!email.endsWith('@qubicgen.com')) {
-      toast.error('Please use an email address with @qubicgen.com domain.');
-      setIsLoading(false);
-      return;
-    }
+    // if (!email.endsWith('@qubicgen.com')) {
+    //   toast.error('Please use an email address with @qubicgen.com domain.');
+    //   setIsLoading(false);
+    //   return;
+    // }
 
     try {
       const response = await axios.post(`${config.apiUrl}/qubinest/register`, {

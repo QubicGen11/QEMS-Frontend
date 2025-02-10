@@ -32,6 +32,7 @@ import AnonymousSuggestion from "./Components/Homepage Components/AnonymousSugge
 import Cookies from 'js-cookie';
 import Swal from 'sweetalert2';
 import ForgotPassword from "./Components/Login/ForgotPassword";
+import CMS_Main from "./Components/CMS/CMS_Main";
 
 // Add this authentication check function
 const requireAuth = () => {
@@ -181,6 +182,10 @@ const router = createBrowserRouter([
   {
     path: "/anonymous-suggestion",
     element: <ProtectedRoute element={<AnonymousSuggestion />} />
+  },
+  {
+    path: "/cms",
+    element: <ProtectedRoute element={<CMS_Main />} />
   },
 
 ]);

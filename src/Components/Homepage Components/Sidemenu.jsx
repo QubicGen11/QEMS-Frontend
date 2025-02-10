@@ -26,7 +26,8 @@ import {
   faPersonThroughWindow,
   faClock,
   faClipboardList,
-  faPiggyBank
+  faPiggyBank,
+  faAngleRight
 } from '@fortawesome/free-solid-svg-icons';
 import config from '../config';
 import { CiBank } from 'react-icons/ci';
@@ -90,7 +91,7 @@ const Sidemenu = () => {
           <div className="form-inline">
             <div className="input-group" data-widget="sidebar-search">
               <input
-                className="form-control form-control-sidebar"
+                className="form-control form-control-sidebar bg-white"
                 type="search"
                 placeholder="Search"
                 aria-label="Search"
@@ -152,6 +153,23 @@ const Sidemenu = () => {
                 </li>
               )}
 
+              
+                <li className="nav-item">
+                  <a
+                    href="/cms"
+                    className="nav-link"
+                    onClick={() => toggleDropdown(setIsAttendanceOpen, isAttendanceOpen)}
+                  >
+                    <FontAwesomeIcon icon={faClock} className="nav-icon" />
+                    <p>
+                      CMC
+                      <FontAwesomeIcon icon={faAngleRight} className="right" />
+                    </p>
+                  </a>
+               
+                </li>
+         
+
               {/* {(userRole === 'Admin' || userRole === 'Manager') && (
                 <li className="nav-item">
                   <a
@@ -191,7 +209,7 @@ const Sidemenu = () => {
                   <FontAwesomeIcon icon={faCopy} className="nav-icon" />
                   <p>
                     Time Sheets
-                    <FontAwesomeIcon icon={faAngleLeft} className="right" />
+                    <FontAwesomeIcon icon={faAngleRight} className="right" />
                   </p>
                 </a>
                 <ul className={`nav nav-treeview ${isTimeSheetsOpen ? 'd-block' : 'd-none'}`}>
@@ -219,7 +237,7 @@ const Sidemenu = () => {
                   <FontAwesomeIcon icon={faChartPie} className="nav-icon" />
                   <p>
                     Earnings
-                    <FontAwesomeIcon icon={faAngleLeft} className="right" />
+                    <FontAwesomeIcon icon={faAngleRight} className="right" />
                   </p>
                 </a>
                 <ul className={`nav nav-treeview ${isEarningsOpen ? 'd-block' : 'd-none'}`}>

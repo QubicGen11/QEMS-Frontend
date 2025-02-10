@@ -58,11 +58,11 @@ const Login = () => {
   const onSubmit = async (event) => {
     event.preventDefault();
     setIsLoading(true);
-
+  
     try {
       clearStore();
       localStorage.clear();
-
+  
       const response = await axios.post(
         `${config.apiUrl}/qubinest/login`, 
         { email, password },
@@ -75,6 +75,13 @@ const Login = () => {
         }
       );
       console.log(response);
+  
+      // Extract token from response
+      const { token } = response.data;
+  
+      // Store token in cookie
+      Cookies.set('token', token, { secure: true, sameSite: 'Strict' });
+  
       Cookies.set('email', email, { secure: true, sameSite: 'Strict' });
       setUserEmail(email);
       
@@ -83,10 +90,10 @@ const Login = () => {
         existingEmails.push(email);
       }
       localStorage.setItem('userEmails', JSON.stringify(existingEmails));
-
+  
       localStorage.setItem('currentUserEmail', email);
       localStorage.setItem('loginTimestamp', Date.now().toString());
-
+  
       setEmail('');
       setPassword('');
       toast.success(response.data.message || 'Login successful!');
