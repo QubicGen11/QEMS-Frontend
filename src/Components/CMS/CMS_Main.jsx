@@ -11,9 +11,11 @@ const CMS_Main = () => {
 
                 <Header />
 
-                <div className="content-wrapper">
+                <div className="content-wrapper bg-gray-50 "
+                
+                >
                     <div className="content-header">
-                        <div className="container-fluid">
+                        <div className="container-fluid ">
 
                             <CMS_Content/>
                         </div>

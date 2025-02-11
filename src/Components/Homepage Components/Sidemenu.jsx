@@ -45,6 +45,10 @@ const Sidemenu = () => {
   const [userRole, setUserRole] = useState(null);
 
   const companyEmail = Cookies.get('email'); // Assuming the email of the current user is stored in cookies
+  const token = Cookies.get('token');
+  const decodedToken = token ? JSON.parse(atob(token.split('.')[1])) : null;
+  const mainPosition = decodedToken?.mainPosition;
+
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -154,20 +158,21 @@ const Sidemenu = () => {
               )}
 
               
-                <li className="nav-item">
-                  <a
-                    href="/cms"
-                    className="nav-link"
-                    onClick={() => toggleDropdown(setIsAttendanceOpen, isAttendanceOpen)}
-                  >
-                    <FontAwesomeIcon icon={faClock} className="nav-icon" />
-                    <p>
-                      CMC
-                      <FontAwesomeIcon icon={faAngleRight} className="right" />
-                    </p>
-                  </a>
-               
-                </li>
+                {(userRole === 'Admin' || mainPosition === 'Lead Generation' || mainPosition === 'Executive') && (
+                  <li className="nav-item">
+                    <a
+                      href="/cms"
+                      className="nav-link"
+                      onClick={() => toggleDropdown(setIsAttendanceOpen, isAttendanceOpen)}
+                    >
+                      <FontAwesomeIcon icon={faClock} className="nav-icon" />
+                      <p>
+                        CMC
+                        <FontAwesomeIcon icon={faAngleRight} className="right" />
+                      </p>
+                    </a>
+                  </li>
+                )}
          
 
               {/* {(userRole === 'Admin' || userRole === 'Manager') && (

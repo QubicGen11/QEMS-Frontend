@@ -1,23 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { 
- 
-  PlusCircle, 
-  Edit, 
-  Trash2, 
-  Search, 
+import {
+
+  PlusCircle,
+  Edit,
+  Trash2,
+  Search,
   X,
   ChevronDown,
   FileText,
   Upload,
-  Columns
+  Columns,
+  Download
 } from 'lucide-react';
 import cookie from 'js-cookie';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
+import InfoTiles from './InfoTiles';
+import config from '../config';
 
-const API_BASE_URL = 'http://localhost:3000/qems/cms';
+const API_BASE_URL = `${config.apiUrl}/qems/cms`;
+// const Api = `{${config.apiUrl}/`
+
 
 const CMSDashboard = () => {
   const [entries, setEntries] = useState([]);
@@ -26,98 +31,148 @@ const CMSDashboard = () => {
   const [activeTab, setActiveTab] = useState('active');
   const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState({
-    name: '', contact: '', email: '', 
-    branch: '', comfortableLanguage: '', 
+    name: '', contact: '', email: '',
+    branch: '', comfortableLanguage: '',
     assignedTo: '', callStatus: '', status: '', comment: ''
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentEditId, setCurrentEditId] = useState(null);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [uploadFile, setUploadFile] = useState(null);
-  const [validationResult, setValidationResult] = useState(null);
+  const [validationResult, setValidationResult] = useState({ validEntries: [], invalidEntries: [] });
   const [user, setUser] = useState(null);
+  const [isFiltersDropdownOpen, setIsFiltersDropdownOpen] = useState(null);
   const [comments, setComments] = useState([]);
   const [isCommentsModalOpen, setIsCommentsModalOpen] = useState(false);
   const [currentComments, setCurrentComments] = useState([]);
   const [logs, setLogs] = useState([]);
-  const callStatusOptions = ["ANSWERED", "UNANSWERED", "SWITCH_OFF", "BUSY", "NOT_REACHABLE"];
-const followUpStatusOptions = ["INTERESTED", "NOT_INTERESTED", "FOLLOW_UP", "COMPLETE"];
-const [logCurrentPage, setLogCurrentPage] = useState(1);
-const [logEntriesPerPage] = useState(5); // Set the number of logs per page
+  const callStatusOptions = ["NEW","ANSWERED", "UNANSWERED", "SWITCH_OFF", "BUSY", "NOT_REACHABLE" ];
+  const followUpStatusOptions = ["NONE","INTERESTED", "NOT_INTERESTED", "FOLLOW_UP", "COMPLETE"];
+  const [rowsPerPage, setRowsPerPage] = useState(25); // Default to 25 rows per page
+  const [logCurrentPage, setLogCurrentPage] = useState(1);
+  const [logEntriesPerPage] = useState(5); // Set the number of logs per page
 
-const [executives, setExecutives] = useState([]);
-const [searchExecutive, setSearchExecutive] = useState('');
-const [filteredExecutives, setFilteredExecutives] = useState([]);
-const [disabledFields, setDisabledFields] = useState({
-  name: false,
-  contact: false,
-  email: false,
-  branch: false,
-  comfortableLanguage: false,
-  assignedTo: false,
-  callStatus: false,
-  status: false,
-  comment: false
-});
-const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-const [filters, setFilters] = useState({
-  status: '',
-  callStatus: '',
-  assignedTo: '',
-  branch: ''
-});
-const [sortConfig, setSortConfig] = useState({
-  key: null,
-  direction: 'asc'
-});
-const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
-const [visibleColumns, setVisibleColumns] = useState({
-  name: true,
-  contact: true,
-  email: true,
-  branch: true,
-  comfortableLanguage: true,
-  assignedTo: true,
-  callStatus: true,
-  status: true,
-  createdByUserId: true,
-  createdAt: true,
-  comments: true,
-  updatedAt: true,
-  actions: true
-});
-const [currentPage, setCurrentPage] = useState(1);
-const [entriesPerPage] = useState(5);
+  const [executives, setExecutives] = useState([]);
+  const [searchExecutive, setSearchExecutive] = useState('');
+  const [filteredExecutives, setFilteredExecutives] = useState([]);
 
-// Column definitions
-const columns = [
-  { id: 'name', label: 'Name' },
-  { id: 'contact', label: 'Contact' },
-  { id: 'email', label: 'Email' },
-  { id: 'branch', label: 'Branch' },
-  { id: 'comfortableLanguage', label: 'Language' },
-  { id: 'assignedTo', label: 'Assigned To' },
-  { id: 'callStatus', label: 'Call Status' },
-  { id: 'status', label: 'Status' },
-  { id: 'createdByUserId', label: 'Created By' },
-  { id: 'createdAt', label: 'Created At' },
-  { id: 'comments', label: 'Comments' },
-  { id: 'updatedAt', label: 'Updated At' },
-  { id: 'actions', label: 'Actions' }
-];
+  const [stats, setStats] = useState({
+    totalCompleted: 0,
+    activeContacts: 0,
+    pendingFollowUp: 0,
+    assignedLeads: 0,
+    totalLeads: 0
+  });
 
-// Toggle column visibility
-const toggleColumn = (columnId) => {
-  setVisibleColumns(prev => ({
-    ...prev,
-    [columnId]: !prev[columnId]
-  }));
-};
 
-const indexOfLastLog = logCurrentPage * logEntriesPerPage;
-const indexOfFirstLog = indexOfLastLog - logEntriesPerPage;
-const currentLogs = logs.slice(indexOfFirstLog, indexOfLastLog);
-const totalLogPages = Math.ceil(logs.length / logEntriesPerPage);
+  const [disabledFields, setDisabledFields] = useState({
+    name: false,
+    contact: false,
+    email: false,
+    branch: false,
+    comfortableLanguage: false,
+    assignedTo: false,
+    callStatus: false,
+    status: false,
+    comment: false
+  });
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    status: '',
+    callStatus: '',
+    assignedTo: '',
+    branch: ''
+  });
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: 'asc'
+  });
+  const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
+  const [visibleColumns, setVisibleColumns] = useState({
+    actions: true,
+    name: true,
+    email: true,
+    contact: false,
+    branch: false,
+    comfortableLanguage: false,
+    assignedTo: false,
+    callStatus: false,
+    status: false,
+    createdByUserId: false,
+    createdAt: false,
+    comments: false,
+    updatedAt: false,
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [entriesPerPage] = useState(5);
+
+  // Column definitions
+  const columns = [
+    { id: 'actions', label: 'Actions' },
+    { id: 'name', label: 'Name' },
+    { id: 'contact', label: 'Contact' },
+    { id: 'email', label: 'Email' },
+    { id: 'branch', label: 'Branch' },
+    { id: 'comfortableLanguage', label: 'Language' },
+    { id: 'assignedTo', label: 'Assigned To' },
+    { id: 'callStatus', label: 'Call Status' },
+    { id: 'status', label: 'Status' },
+    { id: 'createdByUserId', label: 'Created By' },
+    { id: 'createdAt', label: 'Created At' },
+    { id: 'comments', label: 'Comments' },
+    { id: 'updatedAt', label: 'Updated At' },
+
+  ];
+
+  // Toggle column visibility
+  const toggleColumn = (columnId) => {
+    setVisibleColumns((prev) => ({
+      ...prev,
+      [columnId]: !prev[columnId],
+    }));
+  };
+
+  // Effect to reset column visibility based on screen size
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 400) {
+        // Mobile view: Force Actions, Name, and Email to be visible
+        setVisibleColumns((prev) => ({
+          ...prev,
+          actions: true,
+          name: true,
+          email: true,
+        }));
+      } else {
+        // Medium and larger views: Allow all columns to be customizable
+        setVisibleColumns((prev) => ({
+          ...prev,
+          actions: prev.actions,
+          name: prev.name,
+          email: prev.email,
+          comfortableLanguage: true,
+          assignedTo: true,
+          callStatus: true,
+          status: true,
+          createdByUserId: true,
+        }));
+      }
+    };
+
+    // Add event listener for window resize
+    window.addEventListener('resize', handleResize);
+
+    // Initial call to set the correct visibility
+    handleResize();
+
+    // Cleanup event listener
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const indexOfLastLog = logCurrentPage * logEntriesPerPage;
+  const indexOfFirstLog = indexOfLastLog - logEntriesPerPage;
+  const currentLogs = logs.slice(indexOfFirstLog, indexOfLastLog);
+  const totalLogPages = Math.ceil(logs.length / logEntriesPerPage);
 
 
   // Fetch user details
@@ -127,7 +182,7 @@ const totalLogPages = Math.ceil(logs.length / logEntriesPerPage);
       if (!token) {
         throw new Error('No token found');
       }
-  
+
       const decodedToken = jwtDecode(token);
       setUser(decodedToken);
     } catch (err) {
@@ -141,12 +196,12 @@ const totalLogPages = Math.ceil(logs.length / logEntriesPerPage);
       const token = cookie.get('token'); // Assuming token is stored
       const response = await fetch(`${API_BASE_URL}/entries`, {
         method: 'GET',
-        headers: { 
+        headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
-    
+
 
       if (!response.ok) {
         throw new Error('Failed to fetch entries');
@@ -170,7 +225,7 @@ const totalLogPages = Math.ceil(logs.length / logEntriesPerPage);
       }
 
       const response = await axios.get(`${API_BASE_URL}/entries/${entryId}/comments`, {
-        headers: { 
+        headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
@@ -190,7 +245,7 @@ const totalLogPages = Math.ceil(logs.length / logEntriesPerPage);
       // Don't throw error, just set empty comments
     }
   };
-  
+
   // Create entry
   const handleCreateEntry = async (e) => {
     e.preventDefault();
@@ -201,13 +256,19 @@ const totalLogPages = Math.ceil(logs.length / logEntriesPerPage);
         return;
       }
 
+      // Ensure assignedTo is included in the payload
+      const payload = {
+        ...formData,
+        assignedTo: formData.assignedTo || user.email // Fallback to user.email if not set
+      };
+
       const response = await fetch(`${API_BASE_URL}/entries`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
@@ -218,6 +279,12 @@ const totalLogPages = Math.ceil(logs.length / logEntriesPerPage);
       setIsModalOpen(false);
       resetForm();
       toast.success('Entry created successfully! 🎉');
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+  
+
     } catch (err) {
       console.error('Create error:', err);
       toast.error(`Failed to create entry: ${err.message}`);
@@ -336,12 +403,15 @@ const totalLogPages = Math.ceil(logs.length / logEntriesPerPage);
 
     const user = jwtDecode(token);
 
-    if (entry.assignedTo !== user.email && 
-        user.role !== 'Admin' && 
-        user.mainPosition !== 'Lead Generation') {
+    if (entry.assignedTo !== user.email &&
+      user.role !== 'Admin' &&
+      user.mainPosition !== 'Lead Generation') {
       toast.warning('You do not have permission to edit this entry');
       return;
     }
+
+    // Set the default value for assignedTo based on the user's role
+    const assignedToValue = user.mainPosition === "Executive" ? user.email : entry.assignedTo;
 
     setCurrentEditId(entry.id);
     setFormData({
@@ -350,7 +420,7 @@ const totalLogPages = Math.ceil(logs.length / logEntriesPerPage);
       email: entry.email,
       branch: entry.branch,
       comfortableLanguage: entry.comfortableLanguage,
-      assignedTo: entry.assignedTo,
+      assignedTo: assignedToValue, // Ensure assignedTo is set here
       callStatus: entry.callStatus || '',
       status: entry.status || '',
       comment: ''
@@ -364,7 +434,7 @@ const totalLogPages = Math.ceil(logs.length / logEntriesPerPage);
         email: true,
         branch: true,
         comfortableLanguage: true,
-        assignedTo: true,
+        assignedTo: true, // Disable assignedTo for Executives
         callStatus: false, // Allow executives to update call status
         status: false, // Allow executives to update status
         comment: false // Allow executives to add comments
@@ -377,7 +447,7 @@ const totalLogPages = Math.ceil(logs.length / logEntriesPerPage);
         branch: false,
         comfortableLanguage: false,
         assignedTo: false,
-        callStatus: false,
+        callStatus:false,
         status: false,
         comment: false
       });
@@ -386,108 +456,145 @@ const totalLogPages = Math.ceil(logs.length / logEntriesPerPage);
     fetchComments(entry.id);
     setIsModalOpen(true);
     toast.info('Edit mode activated 📝');
-};
+  };
 
 
   // Reset form
   const resetForm = () => {
     setFormData({
-      name: '', contact: '', email: '', 
-      branch: '', comfortableLanguage: '', 
+      name: '', contact: '', email: '',
+      branch: '', comfortableLanguage: '',
       assignedTo: '', callStatus: '', status: '', comment: ''
     });
     setCurrentEditId(null);
     setComments([]);
   };
 
-  // Handle file upload
+
   const handleFileUpload = async (e) => {
     e.preventDefault();
+    console.log('File upload initiated');
+
     try {
-        if (!uploadFile) {
-            toast.warning('Please select a file to upload');
-            return;
-        }
+      if (!uploadFile) {
+        console.warn('No file selected for upload');
+        toast.warning('Please select a file to upload');
+        return;
+      }
 
-        const formData = new FormData();
-        formData.append('file', uploadFile);
+      const formData = new FormData();
+      formData.append('file', uploadFile);
+      console.log('File appended to formData:', uploadFile.name);
 
-        const token = cookie.get('token');
-        if (!token) {
-            toast.error('Authentication token not found');
-            return;
-        }
+      const token = cookie.get('token');
+      if (!token) {
+        console.error('Authentication token not found');
+        toast.error('Authentication token not found');
+        return;
+      }
 
-        // Call the validation API (importData=false)
-        const response = await fetch(`${API_BASE_URL}/entries/validateAndImport?importData=false`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` },
-            body: formData
-        });
+      // Validate the file (importData=false)
+      const response = await fetch(`${API_BASE_URL}/entries/validateAndImport?importData=false`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+      console.log("form data is: "+formData);
 
-        if (!response.ok) {
-            throw new Error('File validation failed');
-        }
+      if (!response.ok) {
+        console.error('File validation failed with status:', response.status);
+        throw new Error('File validation failed');
+      }
 
-        const result = await response.json();
-        setValidationResult(result);
+      const result = await response.json();
+      console.log('Validation result:', result);
+      setValidationResult(result);
 
-        if (result.validEntries.length === 0) {
-            toast.error(`No valid entries found. Check the errors.`);
-        } else {
-            toast.info(`File validated: ${result.validEntries.length} valid entries found`);
-        }
+      if (result.validEntries.length === 0) {
+        toast.error(`No valid entries found. Check the errors.`);
+      } else {
+        toast.info(`File validated: ${result.validEntries.length} valid entries found`);
+
+        // **Save file temporarily in local storage**
+        localStorage.setItem('uploadedFile', JSON.stringify({
+          name: uploadFile.name,
+          type: uploadFile.type,
+          data: await uploadFile.arrayBuffer() // Convert file to array buffer for storage
+        }));
+      }
 
     } catch (err) {
-        console.error('Upload error:', err);
-        toast.error(`File validation failed: ${err.message}`);
+      console.error('Upload error:', err);
+      toast.error(`File validation failed: ${err.message}`);
     }
-};
+  };
 
-const handleFileImport = async () => {
+  // **Handle Import with File Retrieval**
+  const handleFileImport = async () => {
     try {
-        if (!validationResult || validationResult.validEntries.length === 0) {
-            toast.warning('No valid entries to import');
-            return;
-        }
+      if (!validationResult?.validEntries?.length) {
+        toast.warning('No valid entries to import');
+        return;
+      }
 
-        const token = cookie.get('token');
-        if (!token) {
-            toast.error('Authentication token not found');
-            return;
-        }
+      const token = cookie.get('token');
+      if (!token) {
+        toast.error('Authentication token not found');
+        return;
+      }
 
-        // Call the import API (importData=true)
-        const response = await fetch(`${API_BASE_URL}/entries/validateAndImport?importData=true`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(validationResult.validEntries)
-        });
+      // Get the actual file, not the stored data
+      if (!uploadFile) {
+        toast.error('No file selected');
+        return;
+      }
 
-        if (!response.ok) {
-            throw new Error('Import failed');
-        }
+      const formData = new FormData();
+      formData.append('file', uploadFile); // Append actual file object
+      formData.append('validEntries', JSON.stringify(validationResult.validEntries));
 
-        await fetchEntries();  // Refresh the table with new data
-        setIsUploadModalOpen(false);
-        setValidationResult(null);
-        setUploadFile(null);
-        toast.success('Entries imported successfully! 📥');
+      const response = await fetch(`${API_BASE_URL}/entries/validateAndImport?importData=true`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+          // Remove Content-Type header - let browser set it with boundary
+        },
+        body: formData
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(responseData.message || 'Import failed');
+      }
+
+      await fetchEntries();
+      setIsUploadModalOpen(false);
+      setValidationResult({ validEntries: [], invalidEntries: [] });
+      setUploadFile(null);
+      localStorage.removeItem('uploadedFile');
+
+      toast.success('Entries imported successfully!');
 
     } catch (err) {
-        console.error('Import error:', err);
-        toast.error(`Import failed: ${err.message}`);
+      console.error('Import error:', err);
+      toast.error(`Import failed: ${err.message}`);
     }
-};
+  };
+
+
+
+
+  // ... existing code ...
+
+  // ... existing code ...
+
 
   const fetchExecutives = async () => {
     try {
       const token = cookie.get('token');
       const response = await fetch('http://localhost:3000/qems/cms/users/lead-gen-executives', {
-        headers: { 
+        headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
@@ -501,33 +608,7 @@ const handleFileImport = async () => {
       toast.error('Failed to fetch executives');
     }
   };
-  const getFilteredContacts = () => {
-    if (activeTab === 'logs') {
-        console.log("Logs before filtering:", logs);
-        return logs?.length ? logs : []; // Ensure logs are an array
-    }
-
-    const token = cookie.get('token');
-    const currentUser = token ? jwtDecode(token) : null;
-    const isExecutive = currentUser?.mainPosition?.toLowerCase() === 'executive';
-
-    let filteredContacts = [...entries];
-
-    if (isExecutive) {
-        filteredContacts = filteredContacts.filter(entry => entry.assignedTo === currentUser.email);
-    }
-
-    if (activeTab === 'active') {
-        console.log("Filtering active entries");
-        filteredContacts = filteredContacts.filter(entry => {
-            console.log("Entry status:", entry.status);
-            return entry.status !== 'COMPLETE';
-        });
-    }
-
-    console.log("Filtered contacts:", filteredContacts);
-    return filteredContacts;
-};
+ 
 
 
   // Add function to fetch logs
@@ -535,7 +616,7 @@ const handleFileImport = async () => {
     try {
       const token = cookie.get('token');
       const response = await fetch('http://localhost:3000/qems/cms/logs', {
-        headers: { 
+        headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
@@ -565,7 +646,7 @@ const handleFileImport = async () => {
       console.log("Logs are commng")
       fetchLogs();
     }
-    
+
 
   }, [activeTab]);
 
@@ -599,8 +680,8 @@ const handleFileImport = async () => {
       const bVal = b[sortConfig.key];
 
       if (sortConfig.key === 'createdAt' || sortConfig.key === 'updatedAt') {
-        return sortConfig.direction === 'asc' 
-          ? new Date(aVal) - new Date(bVal) 
+        return sortConfig.direction === 'asc'
+          ? new Date(aVal) - new Date(bVal)
           : new Date(bVal) - new Date(aVal);
       }
 
@@ -608,35 +689,59 @@ const handleFileImport = async () => {
         ? String(aVal).localeCompare(String(bVal))
         : String(bVal).localeCompare(String(aVal));
     });
-};
+  };
 
-const filteredAndSortedEntries = React.useMemo(() => {
-  let result = getFilteredContacts();  // Apply filters first
-  return sortEntries(result);          // Then apply sorting
-}, [entries, activeTab, filters, sortConfig]);
-
-  // Filter and sort entries
   // const filteredAndSortedEntries = React.useMemo(() => {
-  //   let result = entries.filter(entry => {
-  //     const matchesSearch = Object.values(entry).some(val => 
-  //       val?.toString().toLowerCase().includes(searchTerm.toLowerCase())
-  //     );
+  //   let result = getFilteredContacts();  // Apply filters first
+  //   return sortEntries(result);          // Then apply sorting
+  // }, [entries, activeTab, filters, sortConfig]);
 
-  //     const matchesFilters = Object.entries(filters).every(([key, value]) => 
-  //       !value || entry[key]?.toString().toLowerCase() === value.toLowerCase()
-  //     );
+  //   // Filter and sort entries
+  //   const filteredAndSortedEntries = React.useMemo(() => {
+  //     let result = entries.filter(entry => {
+  //       const matchesSearch = Object.values(entry).some(val => 
+  //         val?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+  //       );
 
-  //     return matchesSearch && matchesFilters;
-  //   });
+  //       const matchesFilters = Object.entries(filters).every(([key, value]) => 
+  //         !value || entry[key]?.toString().toLowerCase() === value.toLowerCase()
+  //       );
 
-  //   return sortEntries(result);
-  // }, [entries, searchTerm, filters, sortConfig]);
+  //       return matchesSearch && matchesFilters;
+  //     });
 
-  // Pagination calculations
-  const indexOfLastEntry = currentPage * entriesPerPage;
-  const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
+  //     return sortEntries(result);
+  //   }, [entries, searchTerm, filters, sortConfig]);
+
+  const filteredAndSortedEntries = React.useMemo(() => {
+    let result = entries.filter(entry => {
+      // Active tab filter
+      if (activeTab === 'active' && entry.status === 'COMPLETE') {
+        return false;
+      }
+
+      // Search filter
+      const matchesSearch = searchTerm ?
+        Object.values(entry).some(val =>
+          val?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+        ) : true;
+
+      // Custom filters
+      const matchesFilters = Object.entries(filters).every(([key, value]) =>
+        !value || entry[key]?.toString().toLowerCase() === value.toLowerCase()
+      );
+
+      return matchesSearch && matchesFilters;
+    });
+
+    return sortEntries(result);
+  }, [entries, activeTab, searchTerm, filters, sortConfig]);
+
+  // Calculate current entries and total pages based on rowsPerPage
+  const indexOfLastEntry = currentPage * rowsPerPage;
+  const indexOfFirstEntry = indexOfLastEntry - rowsPerPage;
   const currentEntries = filteredAndSortedEntries.slice(indexOfFirstEntry, indexOfLastEntry);
-  const totalPages = Math.ceil(filteredAndSortedEntries.length / entriesPerPage);
+  const totalPages = Math.ceil(filteredAndSortedEntries.length / rowsPerPage);
 
   // Pagination controls
   const nextPage = () => {
@@ -650,6 +755,28 @@ const filteredAndSortedEntries = React.useMemo(() => {
       setCurrentPage(currentPage - 1);
     }
   };
+
+  // Function to calculate stats from filtered entries
+  const calculateStats = (entries) => {
+    const totalCompleted = entries.filter(entry => entry.status === 'COMPLETE').length;
+    const activeContacts = entries.filter(entry => entry.status === 'INTERESTED' || entry.status === 'FOLLOW_UP').length;
+    const pendingFollowUp = entries.filter(entry => entry.status === 'FOLLOW_UP').length;
+    const assignedLeads = entries.filter(entry => entry.assignedTo).length;
+    const totalLeads = entries.length;
+
+    setStats({
+      totalCompleted,
+      activeContacts,
+      pendingFollowUp,
+      assignedLeads,
+      totalLeads
+    });
+  };
+
+  // Call calculateStats whenever filteredAndSortedEntries changes
+  useEffect(() => {
+    calculateStats(filteredAndSortedEntries);
+  }, [filteredAndSortedEntries]);
 
   if (loading) return (
     <div className="flex justify-center items-center h-screen">
@@ -673,7 +800,7 @@ const filteredAndSortedEntries = React.useMemo(() => {
 
       // Fetch comments for the entry
       const response = await axios.get(`${API_BASE_URL}/entries/${entryId}/comments`, {
-        headers: { 
+        headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
@@ -683,11 +810,11 @@ const filteredAndSortedEntries = React.useMemo(() => {
         setCurrentComments(response.data.data || []);
         setIsCommentsModalOpen(true);
       } else {
-        toast.error('Failed to fetch comments');
+        // toast.error('Failed to fetch comments');
       }
     } catch (error) {
       console.error('Error fetching comments:', error);
-      toast.error('Error loading comments');
+      // toast.error('Error loading comments');
     }
   };
 
@@ -706,80 +833,84 @@ const filteredAndSortedEntries = React.useMemo(() => {
 
   // Update the table rendering section to handle logs
   const renderTableContent = () => {
-   if (activeTab === 'logs') {
-  return (
-    <div>
-      <table className="w-full text-left border-collapse text-xs whitespace-nowrap">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="px-2 py-1 border">Action</th>
-            <th className="px-2 py-1 border">Details</th>
-            <th className="px-2 py-1 border">Performed By</th>
-            <th className="px-2 py-1 border">Department</th>
-            <th className="px-2 py-1 border">Role</th>
-            <th className="px-2 py-1 border">Timestamp</th>
-          </tr>
-        </thead>
-        <tbody>
-          {currentLogs.map(log => (
-            <tr key={log.id} className="hover:bg-gray-50">
-              <td className="px-2 py-1 border">{log.action}</td>
-              <td className="px-2 py-1 border">{log.details}</td>
-              <td className="px-2 py-1 border">{log.performedBy}</td>
-              <td className="px-2 py-1 border">{log.department}</td>
-              <td className="px-2 py-1 border">{log.role}</td>
-              <td className="px-2 py-1 border">{new Date(log.timestamp).toLocaleString()}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    if (activeTab === 'logs') {
+      return (
+        <div>
+          <table className="w-full text-left border-collapse text-xs whitespace-nowrap">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="px-2 py-1 border">Action</th>
+                <th className="px-2 py-1 border">Details</th>
+                <th className="px-2 py-1 border">Performed By</th>
+                <th className="px-2 py-1 border">Department</th>
+                <th className="px-2 py-1 border">Role</th>
+                <th className="px-2 py-1 border">Timestamp</th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentLogs.map(log => (
+                <tr key={log.id} className="hover:bg-gray-50">
+                  <td className="px-2 py-1 border">{log.action}</td>
+                  <td className="px-2 py-1 border">{log.details}</td>
+                  <td className="px-2 py-1 border">{log.performedBy}</td>
+                  <td className="px-2 py-1 border">{log.department}</td>
+                  <td className="px-2 py-1 border">{log.role}</td>
+                  <td className="px-2 py-1 border">{new Date(log.timestamp).toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-      {/* Pagination for Logs */}
-      <div className="flex justify-center items-center space-x-4 mt-4 text-xs">
-        <button
-          onClick={() => setLogCurrentPage(prev => Math.max(prev - 1, 1))}
-          disabled={logCurrentPage === 1}
-          className={`px-3 py-1 rounded ${
-            logCurrentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#0865b3] text-white hover:bg-blue-600'
-          }`}
-        >
-          Previous
-        </button>
+          {/* Pagination for Logs */}
+          <div className="flex justify-center items-center space-x-4 mt-4 text-xs">
+            <button
+              onClick={() => setLogCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={logCurrentPage === 1}
+              className={`px-3 py-1 rounded ${logCurrentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#0865b3] text-white hover:bg-blue-600'
+                }`}
+            >
+              Previous
+            </button>
 
-        <div className="flex items-center space-x-1">
-          <span className="font-medium">{logCurrentPage}</span>
-          <span className="text-gray-500">of</span>
-          <span className="font-medium">{totalLogPages}</span>
-          <span className="text-gray-500 ml-2">
-            ({logs.length} total logs)
-          </span>
+            <div className="flex items-center space-x-1">
+              <span className="font-medium">{logCurrentPage}</span>
+              <span className="text-gray-500">of</span>
+              <span className="font-medium">{totalLogPages}</span>
+              <span className="text-gray-500 ml-2">
+                ({logs.length} total logs)
+              </span>
+            </div>
+
+            <button
+              onClick={() => setLogCurrentPage(prev => Math.min(prev + 1, totalLogPages))}
+              disabled={logCurrentPage === totalLogPages}
+              className={`px-3 py-1 rounded ${logCurrentPage === totalLogPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#0865b3] text-white hover:bg-blue-600'
+                }`}
+            >
+              Next
+            </button>
+          </div>
         </div>
+      );
+    }
 
-        <button
-          onClick={() => setLogCurrentPage(prev => Math.min(prev + 1, totalLogPages))}
-          disabled={logCurrentPage === totalLogPages}
-          className={`px-3 py-1 rounded ${
-            logCurrentPage === totalLogPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#0865b3] text-white hover:bg-blue-600'
-          }`}
-        >
-          Next
-        </button>
-      </div>
-    </div>
-  );
-}
+
+    // Fetch stats data from API (example function)
+
+
+
 
 
     // Return existing table for active and all tabs
     return (
       <table className="w-full text-left border-collapse text-xs whitespace-nowrap">
-            <thead>
+        <thead>
           <tr className="bg-gray-100">
-            {columns.map(column => visibleColumns[column.id] && (
-                  <th
-                    key={column.id}
+            {columns.map(column => visibleColumns[column.id] && ( 
+              <th
+                key={column.id}
                 className="px-2 py-1 border cursor-pointer hover:bg-gray-200 text-xs font-medium"
-                    onClick={() => handleSort(column.id)}
+                onClick={() => handleSort(column.id)}
               >
                 <div className="flex items-center space-x-1">
                   <span>{column.label}</span>
@@ -789,13 +920,39 @@ const filteredAndSortedEntries = React.useMemo(() => {
                     ) : '↕'}
                   </span>
                 </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {currentEntries.map(entry => (
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {currentEntries.map(entry => (
             <tr key={entry.id} className="hover:bg-gray-50">
+              {visibleColumns.actions && (
+                <td className="px-2 py-1 border flex  justify-center">
+                  <div className="flex space-x-1">
+                    <button
+                      onClick={() => openEditModal(entry)}
+                      className="text-blue-500 hover:bg-blue-100 p-0.5 rounded"
+                    >
+                      <Edit size={14} />
+                    </button>
+
+
+                    {user.mainPosition !== 'Executive' && (
+                      <button
+                        onClick={() => handleDeleteEntry(entry.id)}
+                        className="text-red-500 hover:bg-red-100 p-0.5 rounded"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+
+
+
+
+                  </div>
+                </td>
+              )}
               {visibleColumns.name && (
                 <td className="px-2 py-1 border">
                   <div className="max-w-[150px] truncate" title={entry.name}>
@@ -870,12 +1027,12 @@ const filteredAndSortedEntries = React.useMemo(() => {
                 <td className="px-2 py-1 border">
                   <div className="max-w-[100px] truncate">
                     {entry.comments?.length > 0 ? (
-                          <button
+                      <button
                         onClick={() => openCommentsModal(entry.id)}
                         className="text-blue-500 hover:text-blue-700 text-xs"
-                          >
+                      >
                         Show Comments
-                          </button>
+                      </button>
                     ) : (
                       <span className="text-gray-500 text-xs">No Comments</span>
                     )}
@@ -889,42 +1046,26 @@ const filteredAndSortedEntries = React.useMemo(() => {
                   </div>
                 </td>
               )}
-              {visibleColumns.actions && (
-                <td className="px-2 py-1 border">
-                  <div className="flex space-x-1">
-                          <button
-                      onClick={() => openEditModal(entry)}
-                      className="text-blue-500 hover:bg-blue-100 p-0.5 rounded"
-                          >
-                      <Edit size={14} />
-                          </button>
 
-
-                          {user?.mainPosition?.toLowerCase() !== 'executive' && (
-  <button
-    onClick={() => handleDeleteEntry(entry.id)}
-    className="text-red-500 hover:bg-red-100 p-0.5 rounded"
-  >
-    <Trash2 size={14} />
-  </button>
-)}
-
-
-
-                        </div>
-                </td>
-              )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     );
+
+
+
+
+
+
+
+
   };
 
   return (
     <>
-         {/* Add ToastContainer at the top level of your component */}
-         <ToastContainer
+      {/* Add ToastContainer at the top level of your component */}
+      <ToastContainer
         position="top-right"
         autoClose={2000}
         hideProgressBar={false}
@@ -937,480 +1078,707 @@ const filteredAndSortedEntries = React.useMemo(() => {
         theme="light"
         style={{ zIndex: 9999, width: 'auto' }}
       />
-    <div className="container mx-auto px-2 py-4">
-      {/* Modal - Same as previous implementation */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg relative h-[80vh] w-[40vw] overflow-y-auto">
-            <button
-              onClick={() => setIsModalOpen(false)} 
-              className="absolute top-4 right-4"
-            >
-              <X size={24} />
-            </button>
-            <h2 className="text-xl font-bold mb-4">
-              {currentEditId ? 'Edit Entry' : 'Add New Entry'}
-            </h2>
-            <form onSubmit={currentEditId ? handleUpdateEntry : handleCreateEntry}>
-              <div className="space-y-4">
-                {/* First Row - Name and Contact */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                      onChange={(e) => setFormData({...formData, name: e.target.value})}
-                      className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
-                        ${disabledFields.name ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                  disabled={disabledFields.name}
-                      required
-                />
-              </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Contact
-                </label>
-                <input
-                  type="text"
-                  value={formData.contact}
-                      onChange={(e) => setFormData({...formData, contact: e.target.value})}
-                      className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
-                        ${disabledFields.contact ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                  disabled={disabledFields.contact}
-                      required
-                />
-              </div>
-                </div>
+      <div className="relative w-80  mt-0">
+        <input
+          type="text"
+          placeholder="Search entries..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full pl-10 pr-4 py-1 border rounded-lg"
+        />
+        <Search className="absolute left-3 top-2 text-gray-400" size={20} />
+      </div>
+      <div className="container mx-auto px-2 py-4">
 
-                {/* Second Row - Email and Branch */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
-                        ${disabledFields.email ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                  disabled={disabledFields.email}
-                      required
-                />
-              </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Branch
-                </label>
-                <input
-                  type="text"
-                  value={formData.branch}
-                      onChange={(e) => setFormData({...formData, branch: e.target.value})}
-                      className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
-                        ${disabledFields.branch ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                  disabled={disabledFields.branch}
-                      required
-                />
-              </div>
-                </div>
 
-                {/* Third Row - Comfortable Language and Assigned To */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Comfortable Language
-                </label>
-                <input
-                  type="text"
-                  value={formData.comfortableLanguage}
-                      onChange={(e) => setFormData({...formData, comfortableLanguage: e.target.value})}
-                      className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
-                        ${disabledFields.comfortableLanguage ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                  disabled={disabledFields.comfortableLanguage}
-                      required
-                />
-              </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Assigned To
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                        value={searchExecutive}
-                        onChange={(e) => {
-                          setSearchExecutive(e.target.value);
-                          const filtered = executives.filter(exec => 
-                            exec.email.toLowerCase().includes(e.target.value.toLowerCase()) ||
-                            exec.username.toLowerCase().includes(e.target.value.toLowerCase())
-                          );
-                          setFilteredExecutives(filtered);
-                        }}
-                        className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
-                          ${disabledFields.assignedTo ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                    disabled={disabledFields.assignedTo}
-                        placeholder="Search by name or email..."
-                      />
-                      {searchExecutive && (
-                        <div className="absolute z-10 w-full mt-1 bg-white  rounded-md  max-h-60 overflow-auto">
-                          {filteredExecutives.map((exec) => (
-                            <div
-                              key={exec.employeeId}
-                              className="p-2 hover:bg-gray-100 cursor-pointer"
-                            onClick={() => {
-                                setFormData({...formData, assignedTo: exec.email});
-                                setSearchExecutive(exec.email);
-                                setFilteredExecutives([]);
-                            }}
-                          >
-                              <div>{exec.username}</div>
-                              <div className="text-sm text-gray-500">{exec.email}</div>
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-                </div>
+        {/* Modal - Same as previous implementation */}
+        {isModalOpen && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white p-4 sm:p-6 rounded-lg relative w-[90vw] sm:w-[80vw] md:w-[60vw] lg:w-[40vw] h-[80vh] flex flex-col">
+      <button
+        onClick={() => setIsModalOpen(false)}
+        className="absolute top-4 right-4"
+      >
+        <X size={24} />
+      </button>
+      <h2 className="text-xl font-bold mb-4">
+        {currentEditId ? 'Edit Entry' : 'Add New Entry'}
+      </h2>
 
-                {/* Fourth Row - Call Status and Status */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Call Status
-                </label>
-                <select
-                  value={formData.callStatus}
-                      onChange={(e) => setFormData({...formData, callStatus: e.target.value})}
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                      required
-                >
-                  <option value="">Select Call Status</option>
-                  {callStatusOptions.map(status => (
-                    <option key={status} value={status}>{status}</option>
-                  ))}
-                </select>
-              </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Status
-                </label>
-                <select
-                  value={formData.status}
-                      onChange={(e) => setFormData({...formData, status: e.target.value})}
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                      required
-                >
-                  <option value="">Select Status</option>
-                  {followUpStatusOptions.map(status => (
-                    <option key={status} value={status}>{status}</option>
-                  ))}
-                </select>
-              </div>
-                </div>
+      <div className="flex-1 overflow-y-auto">
 
-                {/* Comment Field - Full Width */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Comment
-                </label>
-                <textarea
-                  value={formData.comment}
-                    onChange={(e) => setFormData({...formData, comment: e.target.value})}
-                    className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                    rows="3"
-                />
-              </div>
-
-                <button
-                  type="submit"
-                  className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-                >
-                  {currentEditId ? 'Update' : 'Create'}
-                </button>
-              </div>
-            </form>
-
-            {/* Previous Comments Section */}
-            {comments.length > 0 && (
-              <div className="mt-4">
-                <h3 className="text-lg font-bold">Previous Comments</h3>
-                <ul className="list-disc pl-5">
-                  {comments.map((comment, index) => (
-                    <li key={index} className="mt-2">
-                      <p className="text-sm text-gray-700">{comment.comment}</p>
-                      <p className="text-xs text-gray-500">
-                        Posted by {comment.postedByUserId} on {new Date(comment.postedAt).toLocaleString()}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Upload Modal */}
-      {isUploadModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-md relative">
-            <button 
-              onClick={() => setIsUploadModalOpen(false)} 
-              className="absolute top-4 right-4"
-            >
-              <X size={24} />
-            </button>
-            <h2 className="text-xl font-bold mb-4">Upload Excel File</h2>
-            <form onSubmit={handleFileUpload}>
-                <input
-                  type="file"
-                accept=".xlsx, .xls" 
-                  onChange={(e) => setUploadFile(e.target.files[0])}
-                className="w-full p-2 border rounded mb-4"
+      <form onSubmit={currentEditId ? handleUpdateEntry : handleCreateEntry}>
+        
+        <div className="space-y-4">
+          {/* First Row - Name and Contact */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Name <span className='text-red-500'>*</span></label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
+                ${disabledFields.name ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                placeholder='Enter Lead Name'
+                disabled={disabledFields.name}
                 required
               />
-              <button 
-                type="submit" 
-                className="bg-blue-500 text-white p-2 rounded"
-              >
-                Validate File
-              </button>
-            </form>
-            {validationResult && (
-              <div className="mt-4">
-                <h3 className="text-lg font-bold">Validation Result</h3>
-                <p>Valid Entries: {validationResult.validEntries.length}</p>
-                <p>Invalid Entries: {validationResult.invalidEntries.length}</p>
-                <button 
-                  onClick={handleFileImport} 
-                  className="bg-green-500 text-white p-2 rounded mt-2"
-                >
-                  Import Valid Entries
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Main Content - Similar to previous implementation */}
-      <div className="space-y-6">
-        {/* Search and Add Button */}
-        <div className="flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
-          <div className="relative w-full md:w-auto mt-0 top-5">
-            <input 
-              type="text" 
-              placeholder="Search entries..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-1 border rounded-lg"
-            />
-            <Search className="absolute left-3 top-2 text-gray-400" size={20} />
-          </div>
-          {!isExecutive() && (
-            <div className="relative">
-                <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
-                className="bg-[#0865b3] hover:bg-blue-600 text-white  py-1 px-2 rounded flex items-center relative top-4 "
-              >
-                <PlusCircle className="mr-2" size={20} />
-                Add Entry
-                <ChevronDown className="ml-2" size={16} />
-                </button>
-              {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-10">
-                <button
-                    onClick={() => {
-                      resetForm();
-                      setIsModalOpen(true);
-                      setIsDropdownOpen(false);
-                    }}
-                    className="flex items-center w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700"
-                  >
-                    <FileText className="mr-2" size={16} />
-                    Single Entry
-                  </button>
-                  <button 
-                    onClick={() => {
-                      setIsUploadModalOpen(true);
-                      setIsDropdownOpen(false);
-                    }}
-                    className="flex items-center w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700 border-t"
-                  >
-                    <Upload className="mr-2" size={16} />
-                    Multiple Entries
-                </button>
-              </div>
-              )}
             </div>
-          )}
-        </div>
-
-        {/* Filters Section */}
-        <div className="bg-white p-2 rounded-lg shadow mb-3 text-xs">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="text-sm font-semibold">Filters</h3>
-            <button 
-              onClick={() => setIsColumnSelectorOpen(!isColumnSelectorOpen)}
-              className="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-gray-200 flex items-center"
-            >
-              <Columns size={14} className="mr-1" />
-              Column Visibility
-            </button>
+            <div>
+  <label className="block text-sm font-medium text-gray-700 mb-1">Contact <span className='text-red-500'>*</span></label>
+  <input
+    type="text"
+    value={formData.contact}
+    onChange={(e) => {
+      const value = e.target.value;
+      // Allow only numbers and limit to 10 digits
+      if (/^\d{0,10}$/.test(value)) {
+        setFormData({ ...formData, contact: value });
+      }
+    }}
+    className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
+    ${disabledFields.contact ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+    disabled={disabledFields.contact}
+    placeholder='Enter Lead Contact Number'
+    pattern="\d{10}" // Ensure exactly 10 digits
+    required
+  />
+  {formData.contact.length !== 10 && formData.contact.length > 0 && (
+    <p className="text-xs text-red-500 mt-1">Contact number must be exactly 10 digits.</p>
+  )}
+</div>
           </div>
 
-          {/* Column Selector Dropdown */}
-          {isColumnSelectorOpen && (
-            <div className="absolute right-4 mt-1 bg-white border rounded-md shadow-lg p-2 z-50">
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                {columns.map(column => (
-                  <label key={column.id} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={visibleColumns[column.id]}
-                      onChange={() => toggleColumn(column.id)}
-                      className="form-checkbox h-3 w-3"
-                    />
-                    <span>{column.label}</span>
-                  </label>
-                ))}
+          {/* Second Row - Email and Branch */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email <span className='text-red-500'>*</span></label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
+                ${disabledFields.email ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                disabled={disabledFields.email}
+                placeholder='Enter Lead Email Address'
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Branch <span className='text-red-500'>*</span></label>
+              <input
+                type="text"
+                value={formData.branch}
+                onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
+                className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
+                ${disabledFields.branch ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                disabled={disabledFields.branch}
+                 placeholder='Enter Lead Stream (Eg:EEE,CSE)'
+                required
+              />
+            </div>
           </div>
-        </div>
-      )}
 
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
-            {/* Status Filter */}
+          {/* Third Row - Comfortable Language and Assigned To */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-0.5">
-                Status
-              </label>
-              <select
-                value={filters.status}
-                onChange={(e) => handleFilterChange('status', e.target.value)}
-                className="w-full p-1 text-xs border rounded focus:ring-1 focus:ring-blue-500"
-              >
-                <option value="">All Status</option>
-                {followUpStatusOptions.map(status => (
-                  <option key={status} value={status}>{status}</option>
-                ))}
-              </select>
-                </div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Comfortable Language <span className='text-red-500'>*</span></label>
+              <input
+                type="text"
+                value={formData.comfortableLanguage}
+                onChange={(e) => setFormData({ ...formData, comfortableLanguage: e.target.value })}
+                className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
+                ${disabledFields.comfortableLanguage ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                disabled={disabledFields.comfortableLanguage}
+                 placeholder='Eg : HINDI,TELUGU,ENGLISH '
+                required
+              />
+            </div>
 
-            {/* Call Status Filter */}
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-0.5">
-                Call Status
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Assigned To</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={user.mainPosition === "Executive" ? user.email : searchExecutive}
+                  onChange={(e) => {
+                    if (user.mainPosition !== "Executive") {
+                      setSearchExecutive(e.target.value);
+                      const filtered = executives.filter(exec =>
+                        exec.email.toLowerCase().includes(e.target.value.toLowerCase()) ||
+                        exec.username.toLowerCase().includes(e.target.value.toLowerCase())
+                      );
+                      setFilteredExecutives(filtered);
+                    }
+                  }}
+                  className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
+                  ${disabledFields.assignedTo || user.mainPosition === "Executive" ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  disabled={disabledFields.assignedTo || user.mainPosition === "Executive"}
+                  placeholder="Search by name or email..."
+                />
+                {searchExecutive && user.mainPosition !== "Executive" && (
+                  <div className="absolute z-10 w-full mt-1 bg-white rounded-md max-h-60 overflow-auto">
+                    {filteredExecutives.map((exec) => (
+                      <div
+                        key={exec.employeeId}
+                        className="p-2 hover:bg-gray-100 cursor-pointer"
+                        onClick={() => {
+                          setFormData({ ...formData, assignedTo: exec.email });
+                          setSearchExecutive(exec.email);
+                          setFilteredExecutives([]);
+                        }}
+                      >
+                        <div>{exec.username}</div>
+                        <div className="text-sm text-gray-500">{exec.email}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Fourth Row - Call Status and Status */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Call Status </label>
               <select
-                value={filters.callStatus}
-                onChange={(e) => handleFilterChange('callStatus', e.target.value)}
-                className="w-full p-1 text-xs border rounded focus:ring-1 focus:ring-blue-500"
+                value={formData.callStatus}
+                onChange={(e) => setFormData({ ...formData, callStatus: e.target.value })}
+                className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                // required
               >
-                <option value="">All Call Status</option>
+                <option value="">Select Call Status</option>
                 {callStatusOptions.map(status => (
                   <option key={status} value={status}>{status}</option>
                 ))}
               </select>
             </div>
-
-            {/* Assigned To Filter */}
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-0.5">
-                Assigned To
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
               <select
-                value={filters.assignedTo}
-                onChange={(e) => handleFilterChange('assignedTo', e.target.value)}
-                className="w-full p-1 text-xs border rounded focus:ring-1 focus:ring-blue-500"
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                // required
               >
-                <option value="">All Executives</option>
-                {executives.map(exec => (
-                  <option key={exec.email} value={exec.email}>{exec.username}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Branch Filter */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-0.5">
-                Branch
-              </label>
-              <select
-                value={filters.branch}
-                onChange={(e) => handleFilterChange('branch', e.target.value)}
-                className="w-full p-1 text-xs border rounded focus:ring-1 focus:ring-blue-500"
-              >
-                <option value="">All Branches</option>
-                {[...new Set(entries.map(entry => entry.branch))].map(branch => (
-                  <option key={branch} value={branch}>{branch}</option>
+                <option value="">Select Status</option>
+                {followUpStatusOptions.map(status => (
+                  <option key={status} value={status}>{status}</option>
                 ))}
               </select>
             </div>
           </div>
+
+          {/* Comment Field - Full Width */}
+          <div>
+  <label className="block text-sm font-medium text-gray-700 mb-1">
+    Comment
+    {currentEditId && <span className='text-red-500 ml-1'>*</span>} {/* Add asterisk only in edit mode */}
+  </label>
+  <textarea
+    value={formData.comment}
+    onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
+    className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+    rows="3"
+    required={!!currentEditId} // Required only in edit mode
+  />
+</div>
+          <div className="sticky bottom-0 bg-white pt-4">
+        <div className='flex justify-center'>
+
+          <button
+            type="submit"
+            className=" bg-[#0865b3] text-white py-1 px-2 rounded hover:bg-blue-600 w-36 "
+          >
+            {currentEditId ? 'Update' : 'Create'}
+          </button>
         </div>
 
-        {/* Add this JSX between filters and table */}
-        <div className="mb-4">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-4" aria-label="Tabs">
-              <button
-                onClick={() => setActiveTab('active')}
-                className={`${
-                  activeTab === 'active'
-                    ? 'border-[#0865b3] text-[#0865b3]'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-xs`}
-              >
-                Active Contacts
-              </button>
-              <button
-                onClick={() => setActiveTab('all')}
-                className={`${
-                  activeTab === 'all'
-                    ? 'border-[#0865b3] text-[#0865b3]'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-xs`}
-              >
-                All Contacts
-              </button>
-              {user?.role === 'Admin' && (
+          </div>
+
+
+        </div>
+      </form>
+      </div>
+
+      {/* Previous Comments Section */}
+      {comments.length > 0 && (
+        <div className="mt-4">
+          <h3 className="text-lg font-bold">Previous Comments</h3>
+          <ul className="list-disc pl-5">
+            {comments.map((comment, index) => (
+              <li key={index} className="mt-2">
+                <p className="text-sm text-gray-700">{comment.comment}</p>
+                <p className="text-xs text-gray-500">
+                  Posted by {comment.postedByUserId} on {new Date(comment.postedAt).toLocaleString()}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  </div>
+)}
+        
+
+        {/* Upload Modal */}
+        {isUploadModalOpen && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-lg w-full max-w-4xl relative">
+      <button
+        onClick={() => {
+          setIsUploadModalOpen(false);
+          setValidationResult({ validEntries: [], invalidEntries: [] }); // Reset validation result to an empty object
+        }}
+        className="absolute top-4 right-4"
+      >
+        <X size={24} />
+      </button>
+      <h2 className="text-xl font-bold mb-4">Upload Excel File</h2>
+      <form onSubmit={handleFileUpload}>
+        <input
+          type="file"
+          accept=".xlsx, .xls"
+          onChange={(e) => setUploadFile(e.target.files[0])}
+          className="w-full p-2 border rounded mb-4"
+          required
+        />
+        <button
+          type="submit"
+          className="bg-blue-500 text-white p-2 rounded"
+        >
+          Validate File
+        </button>
+      </form>
+      {validationResult && (
+        <div className="mt-4">
+          <h3 className="text-lg font-bold mb-4">Validation Result</h3>
+          <div className="flex space-x-6 mb-4 text-sm">
+            <div>
+              <span className="font-medium">Total Entries:</span> {validationResult.validEntries.length + validationResult.invalidEntries.length}
+            </div>
+            <div>
+              <span className="font-medium text-green-500">Success Count:</span> {validationResult.validEntries.length}
+            </div>
+            <div>
+              <span className="font-medium text-red-500">Invalid Count:</span> {validationResult.invalidEntries.length}
+            </div>
+          </div>
+          {validationResult.validEntries.length === 0 && validationResult.invalidEntries.length === 0 ? (
+            <div className="text-center text-gray-500 py-4">
+              No entries found in the file. Please add rows to the Excel file and try again.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs whitespace-nowrap">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="px-2 py-1 border">Name</th>
+                    <th className="px-2 py-1 border">Contact</th>
+                    <th className="px-2 py-1 border">Email</th>
+                    <th className="px-2 py-1 border">Branch</th>
+                    <th className="px-2 py-1 border">Comfortable Language</th>
+                    <th className="px-2 py-1 border">Assigned To</th>
+                    <th className="px-2 py-1 border">Status</th>
+                    <th className="px-2 py-1 border">Reason</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {validationResult.validEntries.map((entry, index) => (
+                    <tr key={`valid-${index}`} className="hover:bg-gray-50">
+                      <td className="px-2 py-1 border">{entry.name}</td>
+                      <td className="px-2 py-1 border">{entry.contact}</td>
+                      <td className="px-2 py-1 border">{entry.email}</td>
+                      <td className="px-2 py-1 border">{entry.branch}</td>
+                      <td className="px-2 py-1 border">{entry.comfortableLanguage}</td>
+                      <td className="px-2 py-1 border">{entry.assignedTo}</td>
+                      <td className="px-2 py-1 border text-green-500">Valid</td>
+                      <td className="px-2 py-1 border">-</td>
+                    </tr>
+                  ))}
+                  {validationResult.invalidEntries.map((entry, index) => (
+                    <tr key={`invalid-${index}`} className="hover:bg-gray-50">
+                      <td className="px-2 py-1 border">{entry.name}</td>
+                      <td className="px-2 py-1 border">{entry.contact}</td>
+                      <td className="px-2 py-1 border">{entry.email}</td>
+                      <td className="px-2 py-1 border">{entry.branch}</td>
+                      <td className="px-2 py-1 border">{entry.comfortableLanguage}</td>
+                      <td className="px-2 py-1 border">{entry.assignedTo}</td>
+                      <td className="px-2 py-1 border text-red-500">Invalid</td>
+                      <td className="px-2 py-1 border">{entry.reason}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <button
+            onClick={handleFileImport}
+            className="bg-green-500 text-white p-2 rounded mt-4"
+          >
+            Import Valid Entries
+          </button>
+        </div>
+      )}
+    </div>
+  </div>
+)}
+
+        {/* Main Content - Similar to previous implementation */}
+        <div className="space-y-6">
+          {/* Search and Add Button */}
+          <div className="flex flex-col md:flex-col justify-between items-center  md:space-y-0 ">
+
+            <div className=''>
+
+              <InfoTiles
+                totalCompleted={stats.totalCompleted}
+                activeContacts={stats.activeContacts}
+                pendingFollowUp={stats.pendingFollowUp}
+                assignedLeads={stats.assignedLeads}
+                totalLeads={stats.totalLeads}
+              />
+            </div>
+            <div>
+              <div className=' flex justify-between w-[74vw]'>
+
+
+                {/* {!isExecutive() && (
+                  <div className="relative">
+                    <button
+                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                      onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
+                      className="bg-[#0865b3] hover:bg-blue-600 text-white  py-1 px-2 rounded flex items-center relative top-4 "
+                    >
+                      <PlusCircle className="mr-2" size={20} />
+                      Add Entry
+                      <ChevronDown className="ml-2" size={16} />
+                    </button>try
+                    {isDropdownOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-10">
+                        <button
+                          onClick={() => {
+                            resetForm();
+                            setIsModalOpen(true);
+                            setIsDropdownOpen(false);
+                          }}
+                          className="flex items-center w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700"
+                        >
+                          <FileText className="mr-2" size={16} />
+                          Single Entry
+                        </button>
+                        <button
+                          onClick={() => {
+                            setIsUploadModalOpen(true);
+                            setIsDropdownOpen(false);
+                          }}
+                          className="flex items-center w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700 border-t"
+                        >
+                          <Upload className="mr-2" size={16} />
+                          Multiple Entries
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )} */}
+
+                <div className="w-full  flex justify-end">
+
+                  <div className='flex gap-2 flex-wrap '>
+                    {/* Download Template Button */}
+                    <button
+                      className="bg-[#0865b3] hover:bg-blue-600 text-white py-1 px-3 rounded flex items-center relative top-4"
+                    >
+                      <a href="/public/CMC_import_Template_v1.xlsx" download="/public/CMC_import_Template_v1.xlsx" >
+
+                      <Download className="mr-2" size={20} />
+                      </a>
+                      <a href="/public/CMC_import_Template_v1.xlsx" download="/public/CMC_import_Template_v1.xlsx" className="text-white hidden md:inline">
+                        Download Template
+                      </a>
+                    </button>
+
+                    {/* Add Entry Button */}
+                    <button
+                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                      onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
+                      className="bg-[#0865b3] hover:bg-blue-600 text-white py-1 px-2 rounded flex items-center relative top-4"
+                    >
+                      <PlusCircle className="mr-2" size={20} />
+                      <span>Add Entry</span> {/* Text always visible */}
+                      <ChevronDown className="ml-2" size={16} />
+                    </button>
+                  </div>
+
+
+                  {isDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-10">
+                      <button
+                        onClick={() => {
+                          resetForm();
+                          setIsModalOpen(true);
+                          setIsDropdownOpen(false);
+                        }}
+                        className="flex items-center w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700"
+                      >
+                        <FileText className="mr-2" size={16} />
+                        Single Entry
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsUploadModalOpen(true);
+                          setIsDropdownOpen(false);
+                        }}
+                        className="flex items-center w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700 border-t"
+                      >
+                        <Upload className="mr-2" size={16} />
+                        Multiple Entries
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+
+              </div>
+
+            </div>
+            <div>
+
+            </div>
+          </div>
+
+          {/* Filters Section */}
+          <div className="bg-white p-2 rounded-lg shadow mb-3 text-xs">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-sm font-semibold">Filters</h3>
+              <div className="flex items-center gap-2">
+                {/* Mobile Filters Dropdown Toggle */}
                 <button
-                  onClick={() => setActiveTab('logs')}
-                  className={`${
-                    activeTab === 'logs'
+                  onClick={() => setIsFiltersDropdownOpen(!isFiltersDropdownOpen)}
+                  className="md:hidden text-xs bg-gray-100 px-2 py-1 rounded hover:bg-gray-200 flex items-center"
+                >
+                  <Columns size={14} className="mr-1" />
+                  Filters
+                </button>
+
+                {/* Column Selector Button */}
+                <button
+                  onClick={() => setIsColumnSelectorOpen(!isColumnSelectorOpen)}
+                  className="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-gray-200 flex items-center"
+                >
+                  <Columns size={14} className="mr-1" />
+                  Column Visibility
+                </button>
+              </div>
+            </div>
+
+            {/* Column Selector Dropdown */}
+            {isColumnSelectorOpen && (
+              <div className="absolute right-4 mt-1 bg-white border rounded-md shadow-lg p-2 z-50">
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  {columns.map(column => (
+                    <label key={column.id} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={visibleColumns[column.id]}
+                        onChange={() => toggleColumn(column.id)}
+                        className="form-checkbox h-3 w-3"
+                        disabled={window.innerWidth < 768 && ['actions', 'name', 'email'].includes(column.id)} // Disable toggling for mobile defaults
+                      />
+                      <span>{column.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Filters for Mobile (Dropdown) */}
+            {isFiltersDropdownOpen && (
+              <div className="md:hidden bg-white border rounded-md shadow-lg p-2 mt-2">
+                <div className="grid grid-cols-1 gap-2">
+                  {/* Status Filter */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-0.5">Status</label>
+                    <select
+                      value={filters.status}
+                      onChange={(e) => handleFilterChange('status', e.target.value)}
+                      className="w-full p-1 text-xs border rounded focus:ring-1 focus:ring-blue-500"
+                    >
+                      <option value="">All Status</option>
+                      {followUpStatusOptions.map(status => (
+                        <option key={status} value={status}>{status}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Call Status Filter */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-0.5">Call Status</label>
+                    <select
+                      value={filters.callStatus}
+                      onChange={(e) => handleFilterChange('callStatus', e.target.value)}
+                      className="w-full p-1 text-xs border rounded focus:ring-1 focus:ring-blue-500"
+                    >
+                      <option value="">All Call Status</option>
+                      {callStatusOptions.map(status => (
+                        <option key={status} value={status}>{status}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Assigned To Filter */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-0.5">Assigned To</label>
+                    <select
+                      value={filters.assignedTo}
+                      onChange={(e) => handleFilterChange('assignedTo', e.target.value)}
+                      className="w-full p-1 text-xs border rounded focus:ring-1 focus:ring-blue-500"
+                    >
+                      <option value="">All Executives</option>
+                      {executives.map(exec => (
+                        <option key={exec.email} value={exec.email}>{exec.username}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Branch Filter */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-0.5">Branch</label>
+                    <select
+                      value={filters.branch}
+                      onChange={(e) => handleFilterChange('branch', e.target.value)}
+                      className="w-full p-1 text-xs border rounded focus:ring-1 focus:ring-blue-500"
+                    >
+                      <option value="">All Branches</option>
+                      {[...new Set(entries.map(entry => entry.branch))].map(branch => (
+                        <option key={branch} value={branch}>{branch}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Filters for Larger Devices (Normal Layout) */}
+            <div className="hidden md:grid grid-cols-1 md:grid-cols-5 gap-2">
+              {/* Status Filter */}
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-0.5">Status</label>
+                <select
+                  value={filters.status}
+                  onChange={(e) => handleFilterChange('status', e.target.value)}
+                  className="w-full p-1 text-xs border rounded focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="">All Status</option>
+                  {followUpStatusOptions.map(status => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Call Status Filter */}
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-0.5">Call Status</label>
+                <select
+                  value={filters.callStatus}
+                  onChange={(e) => handleFilterChange('callStatus', e.target.value)}
+                  className="w-full p-1 text-xs border rounded focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="">All Call Status</option>
+                  {callStatusOptions.map(status => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Assigned To Filter */}
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-0.5">Assigned To</label>
+                <select
+                  value={filters.assignedTo}
+                  onChange={(e) => handleFilterChange('assignedTo', e.target.value)}
+                  className="w-full p-1 text-xs border rounded focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="">All Executives</option>
+                  {executives.map(exec => (
+                    <option key={exec.email} value={exec.email}>{exec.username}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Branch Filter */}
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-0.5">Branch</label>
+                <select
+                  value={filters.branch}
+                  onChange={(e) => handleFilterChange('branch', e.target.value)}
+                  className="w-full p-1 text-xs border rounded focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="">All Branches</option>
+                  {[...new Set(entries.map(entry => entry.branch))].map(branch => (
+                    <option key={branch} value={branch}>{branch}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Add this JSX between filters and table */}
+          <div className="mb-4">
+            <div className="border-b border-gray-200">
+              <nav className="-mb-px flex space-x-4" aria-label="Tabs">
+                <button
+                  onClick={() => setActiveTab('active')}
+                  className={`${activeTab === 'active'
+                    ? 'border-[#0865b3] text-[#0865b3]'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-xs`}
+                >
+                  Active Contacts
+                </button>
+                <button
+                  onClick={() => setActiveTab('all')}
+                  className={`${activeTab === 'all'
+                    ? 'border-[#0865b3] text-[#0865b3]'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-xs`}
+                >
+                  All Contacts
+                </button>
+                {user?.role === 'Admin' && (
+                  <button
+                    onClick={() => setActiveTab('logs')}
+                    className={`${activeTab === 'logs'
                       ? 'border-[#0865b3] text-[#0865b3]'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-xs`}
-                >
-                  Logs
-                </button>
-              )}
-            </nav>
+                      } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-xs`}
+                  >
+                    Logs
+                  </button>
+                )}
+              </nav>
             </div>
           </div>
 
-        {/* Updated Table with truncation */}
-        <div className="overflow-x-auto">
-          {renderTableContent()}
-        </div>
+          {/* Updated Table with truncation */}
+          <div className="overflow-x-auto">
+            {renderTableContent()}
+          </div>
 
-        {/* Pagination Controls */}
-        
-       {activeTab !== 'logs' && (
-  <div className="flex justify-center items-center space-x-4 mt-4 text-xs">
+          {/* Pagination Controls */}
+
+          {activeTab !== 'logs' && (
+  <div className="flex justify-center items-center space-x-4 mt-4 text-xs ">
     <button
       onClick={prevPage}
       disabled={currentPage === 1}
-      className={`px-3 py-1 rounded ${
-        currentPage === 1
-          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-          : 'bg-[#0865b3] text-white hover:bg-blue-600'
-      }`}
+      className={`px-3 py-1 rounded ${currentPage === 1
+        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+        : 'bg-[#0865b3] text-white hover:bg-blue-600'
+        }`}
     >
       Previous
     </button>
@@ -1419,7 +1787,7 @@ const filteredAndSortedEntries = React.useMemo(() => {
       <span className="font-medium">{currentPage}</span>
       <span className="text-gray-500">of</span>
       <span className="font-medium">{totalPages}</span>
-      <span className="text-gray-500 ml-2">
+      <span className="text-gray-500 ml-2 hidden md:block">
         ({filteredAndSortedEntries.length} total entries)
       </span>
     </div>
@@ -1427,59 +1795,75 @@ const filteredAndSortedEntries = React.useMemo(() => {
     <button
       onClick={nextPage}
       disabled={currentPage === totalPages}
-      className={`px-3 py-1 rounded ${
-        currentPage === totalPages
-          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-          : 'bg-[#0865b3] text-white hover:bg-blue-600'
-      }`}
+      className={`px-3 py-1 rounded ${currentPage === totalPages
+        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+        : 'bg-[#0865b3] text-white hover:bg-blue-600'
+        }`}
     >
       Next
     </button>
+
+    {/* Rows Per Page Dropdown */}
+    <div className="flex self-end space-x-2 ml-auto">
+      {/* <span className="text-gray-500">Rows per page:</span> */}
+      <select
+        value={rowsPerPage}
+        onChange={(e) => {
+          setRowsPerPage(Number(e.target.value));
+          setCurrentPage(1); // Reset to the first page when rows per page changes
+        }}
+        className="p-1 border rounded focus:ring-2 focus:ring-blue-500"
+      >
+        <option value={5}>5</option>
+        <option value={25}>25</option>
+        <option value={50}>50</option>
+      </select>
+    </div>
   </div>
 )}
 
 
-        {filteredAndSortedEntries.length === 0 && (
-          <div className="text-center py-4 text-gray-500 text-sm">
-            No entries found matching your criteria
+          {filteredAndSortedEntries.length === 0 && (
+            <div className="text-center py-4 text-gray-500 text-sm">
+              No entries found matching your criteria
+            </div>
+          )}
+        </div>
+
+        {/* Comments Modal */}
+        {isCommentsModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-4 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">Comments History</h3>
+                <button
+                  onClick={() => setIsCommentsModalOpen(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {currentComments.length > 0 ? (
+                <div className="space-y-3">
+                  {currentComments.map((comment, index) => (
+                    <div key={index} className="border-b pb-2">
+                      <div className="flex justify-between text-xs text-gray-500">
+                        <span>{comment.postedByUsername || comment.postedByUserId}</span>
+                        <span>{new Date(comment.postedAt).toLocaleString()}</span>
+                      </div>
+                      <p className="text-sm mt-1">{comment.comment}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-gray-500">No comments available</p>
+              )}
+            </div>
           </div>
         )}
       </div>
 
-      {/* Comments Modal */}
-      {isCommentsModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-4 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Comments History</h3>
-              <button 
-                onClick={() => setIsCommentsModalOpen(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {currentComments.length > 0 ? (
-              <div className="space-y-3">
-                {currentComments.map((comment, index) => (
-                  <div key={index} className="border-b pb-2">
-                    <div className="flex justify-between text-xs text-gray-500">
-                      <span>{comment.postedByUsername || comment.postedByUserId}</span>
-                      <span>{new Date(comment.postedAt).toLocaleString()}</span>
-                    </div>
-                    <p className="text-sm mt-1">{comment.comment}</p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center text-gray-500">No comments available</p>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-    
     </>
   );
 };
