@@ -26,6 +26,10 @@ const API_BASE_URL = `${config.apiUrl}/qems/cms`;
 
 const CMSDashboard = () => {
   const [entries, setEntries] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false); // Add this line
+  const [isValidating, setIsValidating] = useState(false); // Add this line
+  const [isDeleting, setIsDeleting] = useState(null); // Add this line
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('active');
@@ -37,6 +41,7 @@ const CMSDashboard = () => {
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentEditId, setCurrentEditId] = useState(null);
+  const [isImporting, setIsImporting] = useState(false); // Add this line
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [uploadFile, setUploadFile] = useState(null);
   const [validationResult, setValidationResult] = useState({ validEntries: [], invalidEntries: [] });
@@ -46,8 +51,8 @@ const CMSDashboard = () => {
   const [isCommentsModalOpen, setIsCommentsModalOpen] = useState(false);
   const [currentComments, setCurrentComments] = useState([]);
   const [logs, setLogs] = useState([]);
-  const callStatusOptions = ["NEW","ANSWERED", "UNANSWERED", "SWITCH_OFF", "BUSY", "NOT_REACHABLE" ];
-  const followUpStatusOptions = ["NONE","INTERESTED", "NOT_INTERESTED", "FOLLOW_UP", "COMPLETE"];
+  const callStatusOptions = ["NONE","ANSWERED", "UNANSWERED", "SWITCH_OFF", "BUSY", "NOT_REACHABLE" ];
+  const followUpStatusOptions = ["NEW","INTERESTED", "NOT_INTERESTED", "FOLLOW_UP", "COMPLETE"];
   const [rowsPerPage, setRowsPerPage] = useState(25); // Default to 25 rows per page
   const [logCurrentPage, setLogCurrentPage] = useState(1);
   const [logEntriesPerPage] = useState(5); // Set the number of logs per page
@@ -249,6 +254,7 @@ const CMSDashboard = () => {
   // Create entry
   const handleCreateEntry = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       const token = cookie.get('token');
       if (!token) {
@@ -272,7 +278,11 @@ const CMSDashboard = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create entry');
+        if (response.status === 409) {
+          throw new Error('Email or contact number already exists');
+        } else {
+          throw new Error('Failed to create entry');
+        }
       }
 
       await fetchEntries();
@@ -288,6 +298,9 @@ const CMSDashboard = () => {
     } catch (err) {
       console.error('Create error:', err);
       toast.error(`Failed to create entry: ${err.message}`);
+    }
+    finally {
+      setIsSubmitting(false); // End loading state
     }
   };
 
@@ -473,6 +486,7 @@ const CMSDashboard = () => {
 
   const handleFileUpload = async (e) => {
     e.preventDefault();
+    setIsValidating(true); 
     console.log('File upload initiated');
 
     try {
@@ -527,10 +541,14 @@ const CMSDashboard = () => {
       console.error('Upload error:', err);
       toast.error(`File validation failed: ${err.message}`);
     }
+    finally {
+      setIsValidating(false); // End validating state
+    }
   };
 
   // **Handle Import with File Retrieval**
   const handleFileImport = async () => {
+    setIsImporting(true); 
     try {
       if (!validationResult?.validEntries?.length) {
         toast.warning('No valid entries to import');
@@ -580,6 +598,9 @@ const CMSDashboard = () => {
       console.error('Import error:', err);
       toast.error(`Import failed: ${err.message}`);
     }
+    finally {
+      setIsImporting(false); // End importing state
+    }
   };
 
 
@@ -593,7 +614,7 @@ const CMSDashboard = () => {
   const fetchExecutives = async () => {
     try {
       const token = cookie.get('token');
-      const response = await fetch('http://localhost:3000/qems/cms/users/lead-gen-executives', {
+      const response = await fetch(`${API_BASE_URL}/users/lead-gen-executives`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -615,7 +636,7 @@ const CMSDashboard = () => {
   const fetchLogs = async () => {
     try {
       const token = cookie.get('token');
-      const response = await fetch('http://localhost:3000/qems/cms/logs', {
+      const response = await fetch(`${API_BASE_URL}/logs`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -939,12 +960,21 @@ const CMSDashboard = () => {
 
 
                     {user.mainPosition !== 'Executive' && (
-                      <button
-                        onClick={() => handleDeleteEntry(entry.id)}
-                        className="text-red-500 hover:bg-red-100 p-0.5 rounded"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                    <button
+                    onClick={async () => {
+                      setIsDeleting(entry.id); // Start deleting state for this entry
+                      await handleDeleteEntry(entry.id); // Perform the delete operation
+                      setIsDeleting(null); // End deleting state
+                    }}
+                    className="text-red-500 hover:bg-red-100 p-0.5 rounded"
+                    disabled={isDeleting === entry.id} // Disable the button while deleting
+                  >
+                    {isDeleting === entry.id ? (
+                      <div className="size-4 animate-spin rounded-full border-2 border-red-500 border-t-white"></div>
+                    ) : (
+                      <Trash2 size={14} />
+                    )}
+                  </button>
                     )}
 
 
@@ -1288,12 +1318,20 @@ const CMSDashboard = () => {
           <div className="sticky bottom-0 bg-white pt-4">
         <div className='flex justify-center'>
 
-          <button
-            type="submit"
-            className=" bg-[#0865b3] text-white py-1 px-2 rounded hover:bg-blue-600 w-36 "
-          >
-            {currentEditId ? 'Update' : 'Create'}
-          </button>
+        <button
+  type="submit"
+  className="bg-[#0865b3] text-white py-1 px-2 rounded hover:bg-blue-600 w-36"
+  disabled={isSubmitting} // Disable the button while submitting
+>
+  {isSubmitting ? (
+    <div className="flex items-center justify-center space-x-2">
+      <span>Submitting...</span>
+      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  ) : (
+    currentEditId ? 'Update' : 'Create'
+  )}
+</button>
         </div>
 
           </div>
@@ -1305,7 +1343,7 @@ const CMSDashboard = () => {
 
       {/* Previous Comments Section */}
       {comments.length > 0 && (
-        <div className="mt-4">
+        <div className="mt-4 h-40 overflow-y-auto">
           <h3 className="text-lg font-bold">Previous Comments</h3>
           <ul className="list-disc pl-5">
             {comments.map((comment, index) => (
@@ -1346,12 +1384,23 @@ const CMSDashboard = () => {
           className="w-full p-2 border rounded mb-4"
           required
         />
-        <button
-          type="submit"
-          className="bg-blue-500 text-white p-2 rounded"
-        >
-          Validate File
-        </button>
+        <div className='flex justify-end'>
+       <button
+  type="submit"
+  className="bg-blue-500 text-white px-2 py-1 rounded"
+  disabled={isValidating} // Disable the button while validating
+>
+  {isValidating ? (
+    <div className="flex items-center justify-center space-x-2">
+      <span>Validating...</span>
+      <div className="mr-3 size-5 animate-spin rounded-full border-2 border-blue-500 border-t-white"></div>
+    </div>
+  ) : (
+    'Validate File'
+  )}
+</button>
+
+        </div>
       </form>
       {validationResult && (
         <div className="mt-4">
@@ -1415,12 +1464,24 @@ const CMSDashboard = () => {
               </table>
             </div>
           )}
-          <button
-            onClick={handleFileImport}
-            className="bg-green-500 text-white p-2 rounded mt-4"
-          >
-            Import Valid Entries
-          </button>
+
+          <div className='flex justify-end'>
+
+       <button
+  onClick={handleFileImport}
+  className="bg-green-500 text-white px-2 py-1 rounded mt-4"
+  disabled={isImporting} // Disable the button while importing
+>
+  {isImporting ? (
+    <div className="flex items-center justify-center space-x-2">
+      <span>Importing...</span>
+      <div className="mr-3 size-5 animate-spin rounded-full border-2 border-blue-500 border-t-white"></div>
+    </div>
+  ) : (
+    'Import Valid Entries'
+  )}
+</button>
+          </div>
         </div>
       )}
     </div>
@@ -1490,16 +1551,26 @@ const CMSDashboard = () => {
                   <div className='flex gap-2 flex-wrap '>
                     {/* Download Template Button */}
                     <button
-                      className="bg-[#0865b3] hover:bg-blue-600 text-white py-1 px-3 rounded flex items-center relative top-4"
-                    >
-                      <a href="/public/CMC_import_Template_v1.xlsx" download="/public/CMC_import_Template_v1.xlsx" >
-
-                      <Download className="mr-2" size={20} />
-                      </a>
-                      <a href="/public/CMC_import_Template_v1.xlsx" download="/public/CMC_import_Template_v1.xlsx" className="text-white hidden md:inline">
-                        Download Template
-                      </a>
-                    </button>
+  className="bg-[#0865b3] hover:bg-blue-600 text-white py-1 px-3 rounded flex items-center relative top-4"
+  disabled={isDownloading} // Disable the button while downloading
+  onClick={() => {
+    setIsDownloading(true); // Start downloading state
+    setTimeout(() => setIsDownloading(false), 1000); // Simulate download for 1 second
+  }}
+>
+  {isDownloading ? (
+    <div className="flex items-center">
+      <div className="mr-3 size-5 animate-spin rounded-full border-2 border-blue-500 border-t-white"></div>
+      <Download className="mr-2" size={20} />
+      <span>Downloading...</span>
+    </div>
+  ) : (
+    <a href="/public/CMC_import_Template_v1.xlsx" download="/public/CMC_import_Template_v1.xlsx" className="flex items-center">
+      <Download className="mr-2" size={20} />
+      <span className="text-white hidden md:inline">Download Template</span>
+    </a>
+  )}
+</button>
 
                     {/* Add Entry Button */}
                     <button
@@ -1833,7 +1904,7 @@ const CMSDashboard = () => {
         {/* Comments Modal */}
         {isCommentsModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-4 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="bg-white rounded-lg p-4 max-w-2xl w-full max-h-[50vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">Comments History</h3>
                 <button

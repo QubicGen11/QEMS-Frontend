@@ -162,7 +162,7 @@ const DailyTips = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5, duration: 0.7 }}
-      className="mt-4 bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20"
+      className="mt-4 rounded-lg p-4 "
     >
       <motion.div 
         className="flex items-start gap-3"
@@ -195,7 +195,7 @@ const DailyTips = () => {
               repeat: Infinity,
             }}
           >
-            💡 Tip of the Day
+            💡 Thought of the Day
           </motion.h3>
           
           <motion.p 
