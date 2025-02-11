@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Users, 
+ 
   PlusCircle, 
   Edit, 
   Trash2, 
@@ -39,8 +39,12 @@ const CMSDashboard = () => {
   const [comments, setComments] = useState([]);
   const [isCommentsModalOpen, setIsCommentsModalOpen] = useState(false);
   const [currentComments, setCurrentComments] = useState([]);
+  const [logs, setLogs] = useState([]);
   const callStatusOptions = ["ANSWERED", "UNANSWERED", "SWITCH_OFF", "BUSY", "NOT_REACHABLE"];
 const followUpStatusOptions = ["INTERESTED", "NOT_INTERESTED", "FOLLOW_UP", "COMPLETE"];
+const [logCurrentPage, setLogCurrentPage] = useState(1);
+const [logEntriesPerPage] = useState(5); // Set the number of logs per page
+
 const [executives, setExecutives] = useState([]);
 const [searchExecutive, setSearchExecutive] = useState('');
 const [filteredExecutives, setFilteredExecutives] = useState([]);
@@ -110,6 +114,12 @@ const toggleColumn = (columnId) => {
   }));
 };
 
+const indexOfLastLog = logCurrentPage * logEntriesPerPage;
+const indexOfFirstLog = indexOfLastLog - logEntriesPerPage;
+const currentLogs = logs.slice(indexOfFirstLog, indexOfLastLog);
+const totalLogPages = Math.ceil(logs.length / logEntriesPerPage);
+
+
   // Fetch user details
   const fetchUserDetails = async () => {
     try {
@@ -136,6 +146,7 @@ const toggleColumn = (columnId) => {
           'Content-Type': 'application/json'
         }
       });
+    
 
       if (!response.ok) {
         throw new Error('Failed to fetch entries');
@@ -324,6 +335,7 @@ const toggleColumn = (columnId) => {
     }
 
     const user = jwtDecode(token);
+
     if (entry.assignedTo !== user.email && 
         user.role !== 'Admin' && 
         user.mainPosition !== 'Lead Generation') {
@@ -343,10 +355,39 @@ const toggleColumn = (columnId) => {
       status: entry.status || '',
       comment: ''
     });
+
+    // Disable fields if user is an Executive
+    if (user.mainPosition.toLowerCase() === 'executive') {
+      setDisabledFields({
+        name: true,
+        contact: true,
+        email: true,
+        branch: true,
+        comfortableLanguage: true,
+        assignedTo: true,
+        callStatus: false, // Allow executives to update call status
+        status: false, // Allow executives to update status
+        comment: false // Allow executives to add comments
+      });
+    } else {
+      setDisabledFields({
+        name: false,
+        contact: false,
+        email: false,
+        branch: false,
+        comfortableLanguage: false,
+        assignedTo: false,
+        callStatus: false,
+        status: false,
+        comment: false
+      });
+    }
+
     fetchComments(entry.id);
     setIsModalOpen(true);
     toast.info('Edit mode activated 📝');
-  };
+};
+
 
   // Reset form
   const resetForm = () => {
@@ -363,70 +404,84 @@ const toggleColumn = (columnId) => {
   const handleFileUpload = async (e) => {
     e.preventDefault();
     try {
-      if (!uploadFile) {
-        toast.warning('Please select a file to upload');
-        return;
-      }
+        if (!uploadFile) {
+            toast.warning('Please select a file to upload');
+            return;
+        }
 
-      const formData = new FormData();
-      formData.append('file', uploadFile);
+        const formData = new FormData();
+        formData.append('file', uploadFile);
 
-      const token = cookie.get('token');
-      if (!token) {
-        toast.error('Authentication token not found');
-        return;
-      }
+        const token = cookie.get('token');
+        if (!token) {
+            toast.error('Authentication token not found');
+            return;
+        }
 
-      const response = await fetch(`${API_BASE_URL}/validate-excel`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: formData
-      });
+        // Call the validation API (importData=false)
+        const response = await fetch(`${API_BASE_URL}/entries/validateAndImport?importData=false`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+        });
 
-      if (!response.ok) {
-        throw new Error('File validation failed');
-      }
+        if (!response.ok) {
+            throw new Error('File validation failed');
+        }
 
-      const result = await response.json();
-      setValidationResult(result);
-      toast.info(`File validated: ${result.validEntries.length} valid entries found`);
+        const result = await response.json();
+        setValidationResult(result);
+
+        if (result.validEntries.length === 0) {
+            toast.error(`No valid entries found. Check the errors.`);
+        } else {
+            toast.info(`File validated: ${result.validEntries.length} valid entries found`);
+        }
+
     } catch (err) {
-      console.error('Upload error:', err);
-      toast.error(`File upload failed: ${err.message}`);
+        console.error('Upload error:', err);
+        toast.error(`File validation failed: ${err.message}`);
     }
-  };
-  
-  const handleFileImport = async () => {
+};
+
+const handleFileImport = async () => {
     try {
-      const token = cookie.get('token');
-      if (!token) {
-        toast.error('Authentication token not found');
-        return;
-      }
+        if (!validationResult || validationResult.validEntries.length === 0) {
+            toast.warning('No valid entries to import');
+            return;
+        }
 
-      const response = await fetch(`${API_BASE_URL}/import-excel`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(validationResult)
-      });
+        const token = cookie.get('token');
+        if (!token) {
+            toast.error('Authentication token not found');
+            return;
+        }
 
-      if (!response.ok) {
-        throw new Error('Import failed');
-      }
+        // Call the import API (importData=true)
+        const response = await fetch(`${API_BASE_URL}/entries/validateAndImport?importData=true`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(validationResult.validEntries)
+        });
 
-      await fetchEntries();
-      setIsUploadModalOpen(false);
-      setValidationResult(null);
-      setUploadFile(null);
-      toast.success('Entries imported successfully! 📥');
+        if (!response.ok) {
+            throw new Error('Import failed');
+        }
+
+        await fetchEntries();  // Refresh the table with new data
+        setIsUploadModalOpen(false);
+        setValidationResult(null);
+        setUploadFile(null);
+        toast.success('Entries imported successfully! 📥');
+
     } catch (err) {
-      console.error('Import error:', err);
-      toast.error(`Import failed: ${err.message}`);
+        console.error('Import error:', err);
+        toast.error(`Import failed: ${err.message}`);
     }
-  };
+};
 
   const fetchExecutives = async () => {
     try {
@@ -446,19 +501,76 @@ const toggleColumn = (columnId) => {
       toast.error('Failed to fetch executives');
     }
   };
+  const getFilteredContacts = () => {
+    if (activeTab === 'logs') {
+        console.log("Logs before filtering:", logs);
+        return logs?.length ? logs : []; // Ensure logs are an array
+    }
+
+    const token = cookie.get('token');
+    const currentUser = token ? jwtDecode(token) : null;
+    const isExecutive = currentUser?.mainPosition?.toLowerCase() === 'executive';
+
+    let filteredContacts = [...entries];
+
+    if (isExecutive) {
+        filteredContacts = filteredContacts.filter(entry => entry.assignedTo === currentUser.email);
+    }
+
+    if (activeTab === 'active') {
+        console.log("Filtering active entries");
+        filteredContacts = filteredContacts.filter(entry => {
+            console.log("Entry status:", entry.status);
+            return entry.status !== 'COMPLETE';
+        });
+    }
+
+    console.log("Filtered contacts:", filteredContacts);
+    return filteredContacts;
+};
+
+
+  // Add function to fetch logs
+  const fetchLogs = async () => {
+    try {
+      const token = cookie.get('token');
+      const response = await fetch('http://localhost:3000/qems/cms/logs', {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch logs');
+      const data = await response.json();
+      setLogs(data.data);
+    } catch (err) {
+      console.error('Error fetching logs:', err);
+      // toast.error('Failed to fetch activity logs');
+    }
+  };
 
   useEffect(() => {
     fetchUserDetails();
     fetchEntries();
     fetchExecutives();
+
+    console.log("Fetching logs...");
+    fetchLogs();
   }, []);
 
+  // Update useEffect to fetch logs when tab changes
+  useEffect(() => {
+    if (activeTab === 'logs' && user?.role === 'Admin') {
+      console.log("Logs are commng")
+      fetchLogs();
+    }
+    
+
+  }, [activeTab]);
+
   // Filtered entries logic
-  const filteredEntries = entries.filter(entry => 
-    Object.values(entry).some(val => 
-      val?.toString().toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
+
 
   // Add these helper functions
   const handleFilterChange = (filterName, value) => {
@@ -480,48 +592,45 @@ const toggleColumn = (columnId) => {
     if (!sortConfig.key) return entries;
 
     return [...entries].sort((a, b) => {
-      // Handle null or undefined values
       if (a[sortConfig.key] === null) return 1;
       if (b[sortConfig.key] === null) return -1;
 
-      // Handle different data types
       const aVal = a[sortConfig.key];
       const bVal = b[sortConfig.key];
 
-      // Handle dates
       if (sortConfig.key === 'createdAt' || sortConfig.key === 'updatedAt') {
-        const dateA = new Date(aVal);
-        const dateB = new Date(bVal);
         return sortConfig.direction === 'asc' 
-          ? dateA - dateB 
-          : dateB - dateA;
+          ? new Date(aVal) - new Date(bVal) 
+          : new Date(bVal) - new Date(aVal);
       }
 
-      // Handle strings (case-insensitive)
-      const stringA = String(aVal).toLowerCase();
-      const stringB = String(bVal).toLowerCase();
       return sortConfig.direction === 'asc'
-        ? stringA.localeCompare(stringB)
-        : stringB.localeCompare(stringA);
+        ? String(aVal).localeCompare(String(bVal))
+        : String(bVal).localeCompare(String(aVal));
     });
-  };
+};
+
+const filteredAndSortedEntries = React.useMemo(() => {
+  let result = getFilteredContacts();  // Apply filters first
+  return sortEntries(result);          // Then apply sorting
+}, [entries, activeTab, filters, sortConfig]);
 
   // Filter and sort entries
-  const filteredAndSortedEntries = React.useMemo(() => {
-    let result = entries.filter(entry => {
-      const matchesSearch = Object.values(entry).some(val => 
-        val?.toString().toLowerCase().includes(searchTerm.toLowerCase())
-      );
+  // const filteredAndSortedEntries = React.useMemo(() => {
+  //   let result = entries.filter(entry => {
+  //     const matchesSearch = Object.values(entry).some(val => 
+  //       val?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+  //     );
 
-      const matchesFilters = Object.entries(filters).every(([key, value]) => 
-        !value || entry[key]?.toString().toLowerCase() === value.toLowerCase()
-      );
+  //     const matchesFilters = Object.entries(filters).every(([key, value]) => 
+  //       !value || entry[key]?.toString().toLowerCase() === value.toLowerCase()
+  //     );
 
-      return matchesSearch && matchesFilters;
-    });
+  //     return matchesSearch && matchesFilters;
+  //   });
 
-    return sortEntries(result);
-  }, [entries, searchTerm, filters, sortConfig]);
+  //   return sortEntries(result);
+  // }, [entries, searchTerm, filters, sortConfig]);
 
   // Pagination calculations
   const indexOfLastEntry = currentPage * entriesPerPage;
@@ -582,16 +691,234 @@ const toggleColumn = (columnId) => {
     }
   };
 
-  const closeCommentsModal = () => {
-    setIsCommentsModalOpen(false);
-    setCurrentComments([]);
-  };
+
 
   const isExecutive = () => {
     const token = cookie.get('token');
     if (!token) return false;
     const user = jwtDecode(token);
     return user.mainPosition?.toLowerCase() === 'executive';
+  };
+
+  // Update the getFilteredContacts function
+
+
+
+  // Update the table rendering section to handle logs
+  const renderTableContent = () => {
+   if (activeTab === 'logs') {
+  return (
+    <div>
+      <table className="w-full text-left border-collapse text-xs whitespace-nowrap">
+        <thead>
+          <tr className="bg-gray-100">
+            <th className="px-2 py-1 border">Action</th>
+            <th className="px-2 py-1 border">Details</th>
+            <th className="px-2 py-1 border">Performed By</th>
+            <th className="px-2 py-1 border">Department</th>
+            <th className="px-2 py-1 border">Role</th>
+            <th className="px-2 py-1 border">Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          {currentLogs.map(log => (
+            <tr key={log.id} className="hover:bg-gray-50">
+              <td className="px-2 py-1 border">{log.action}</td>
+              <td className="px-2 py-1 border">{log.details}</td>
+              <td className="px-2 py-1 border">{log.performedBy}</td>
+              <td className="px-2 py-1 border">{log.department}</td>
+              <td className="px-2 py-1 border">{log.role}</td>
+              <td className="px-2 py-1 border">{new Date(log.timestamp).toLocaleString()}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Pagination for Logs */}
+      <div className="flex justify-center items-center space-x-4 mt-4 text-xs">
+        <button
+          onClick={() => setLogCurrentPage(prev => Math.max(prev - 1, 1))}
+          disabled={logCurrentPage === 1}
+          className={`px-3 py-1 rounded ${
+            logCurrentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#0865b3] text-white hover:bg-blue-600'
+          }`}
+        >
+          Previous
+        </button>
+
+        <div className="flex items-center space-x-1">
+          <span className="font-medium">{logCurrentPage}</span>
+          <span className="text-gray-500">of</span>
+          <span className="font-medium">{totalLogPages}</span>
+          <span className="text-gray-500 ml-2">
+            ({logs.length} total logs)
+          </span>
+        </div>
+
+        <button
+          onClick={() => setLogCurrentPage(prev => Math.min(prev + 1, totalLogPages))}
+          disabled={logCurrentPage === totalLogPages}
+          className={`px-3 py-1 rounded ${
+            logCurrentPage === totalLogPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#0865b3] text-white hover:bg-blue-600'
+          }`}
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
+    // Return existing table for active and all tabs
+    return (
+      <table className="w-full text-left border-collapse text-xs whitespace-nowrap">
+            <thead>
+          <tr className="bg-gray-100">
+            {columns.map(column => visibleColumns[column.id] && (
+                  <th
+                    key={column.id}
+                className="px-2 py-1 border cursor-pointer hover:bg-gray-200 text-xs font-medium"
+                    onClick={() => handleSort(column.id)}
+              >
+                <div className="flex items-center space-x-1">
+                  <span>{column.label}</span>
+                  <span className="text-gray-400">
+                    {sortConfig.key === column.id ? (
+                      sortConfig.direction === 'asc' ? '↑' : '↓'
+                    ) : '↕'}
+                  </span>
+                </div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {currentEntries.map(entry => (
+            <tr key={entry.id} className="hover:bg-gray-50">
+              {visibleColumns.name && (
+                <td className="px-2 py-1 border">
+                  <div className="max-w-[150px] truncate" title={entry.name}>
+                    {entry.name}
+                  </div>
+                </td>
+              )}
+              {visibleColumns.contact && (
+                <td className="px-2 py-1 border">
+                  <div className="max-w-[100px] truncate" title={entry.contact}>
+                    {entry.contact}
+                  </div>
+                </td>
+              )}
+              {visibleColumns.email && (
+                <td className="px-2 py-1 border">
+                  <div className="max-w-[150px] truncate" title={entry.email}>
+                    {entry.email}
+                  </div>
+                </td>
+              )}
+              {visibleColumns.branch && (
+                <td className="px-2 py-1 border">
+                  <div className="max-w-[100px] truncate" title={entry.branch}>
+                    {entry.branch}
+                  </div>
+                </td>
+              )}
+              {visibleColumns.comfortableLanguage && (
+                <td className="px-2 py-1 border">
+                  <div className="max-w-[100px] truncate" title={entry.comfortableLanguage}>
+                    {entry.comfortableLanguage}
+                  </div>
+                </td>
+              )}
+              {visibleColumns.assignedTo && (
+                <td className="px-2 py-1 border">
+                  <div className="max-w-[100px] truncate" title={entry.assignedTo}>
+                    {entry.assignedTo}
+                  </div>
+                </td>
+              )}
+              {visibleColumns.callStatus && (
+                <td className="px-2 py-1 border">
+                  <div className="max-w-[100px] truncate" title={entry.callStatus}>
+                    {entry.callStatus}
+                  </div>
+                </td>
+              )}
+              {visibleColumns.status && (
+                <td className="px-2 py-1 border">
+                  <div className="max-w-[100px] truncate" title={entry.status}>
+                    {entry.status}
+                  </div>
+                </td>
+              )}
+              {visibleColumns.createdByUserId && (
+                <td className="px-2 py-1 border">
+                  <div className="max-w-[100px] truncate" title={entry.createdByUserId}>
+                    {entry.createdByUserId}
+                  </div>
+                </td>
+              )}
+              {visibleColumns.createdAt && (
+                <td className="px-2 py-1 border">
+                  <div className="max-w-[100px] truncate" title={new Date(entry.createdAt).toLocaleString()}>
+                    {new Date(entry.createdAt).toLocaleString()}
+                  </div>
+                </td>
+              )}
+              {visibleColumns.comments && (
+                <td className="px-2 py-1 border">
+                  <div className="max-w-[100px] truncate">
+                    {entry.comments?.length > 0 ? (
+                          <button
+                        onClick={() => openCommentsModal(entry.id)}
+                        className="text-blue-500 hover:text-blue-700 text-xs"
+                          >
+                        Show Comments
+                          </button>
+                    ) : (
+                      <span className="text-gray-500 text-xs">No Comments</span>
+                    )}
+                  </div>
+                </td>
+              )}
+              {visibleColumns.updatedAt && (
+                <td className="px-2 py-1 border">
+                  <div className="max-w-[100px] truncate" title={new Date(entry.updatedAt).toLocaleString()}>
+                    {new Date(entry.updatedAt).toLocaleString()}
+                  </div>
+                </td>
+              )}
+              {visibleColumns.actions && (
+                <td className="px-2 py-1 border">
+                  <div className="flex space-x-1">
+                          <button
+                      onClick={() => openEditModal(entry)}
+                      className="text-blue-500 hover:bg-blue-100 p-0.5 rounded"
+                          >
+                      <Edit size={14} />
+                          </button>
+
+
+                          {user?.mainPosition?.toLowerCase() !== 'executive' && (
+  <button
+    onClick={() => handleDeleteEntry(entry.id)}
+    className="text-red-500 hover:bg-red-100 p-0.5 rounded"
+  >
+    <Trash2 size={14} />
+  </button>
+)}
+
+
+
+                        </div>
+                </td>
+              )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+    );
   };
 
   return (
@@ -615,7 +942,7 @@ const toggleColumn = (columnId) => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg relative h-[80vh] w-[40vw] overflow-y-auto">
-            <button 
+            <button
               onClick={() => setIsModalOpen(false)} 
               className="absolute top-4 right-4"
             >
@@ -630,89 +957,89 @@ const toggleColumn = (columnId) => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Name
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.name}
+                  Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
                       onChange={(e) => setFormData({...formData, name: e.target.value})}
                       className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
                         ${disabledFields.name ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                      disabled={disabledFields.name}
+                  disabled={disabledFields.name}
                       required
-                    />
-                  </div>
+                />
+              </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Contact
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.contact}
+                  Contact
+                </label>
+                <input
+                  type="text"
+                  value={formData.contact}
                       onChange={(e) => setFormData({...formData, contact: e.target.value})}
                       className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
                         ${disabledFields.contact ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                      disabled={disabledFields.contact}
+                  disabled={disabledFields.contact}
                       required
-                    />
-                  </div>
+                />
+              </div>
                 </div>
 
                 {/* Second Row - Email and Branch */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      value={formData.email}
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={formData.email}
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
                       className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
                         ${disabledFields.email ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                      disabled={disabledFields.email}
+                  disabled={disabledFields.email}
                       required
-                    />
-                  </div>
+                />
+              </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Branch
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.branch}
+                  Branch
+                </label>
+                <input
+                  type="text"
+                  value={formData.branch}
                       onChange={(e) => setFormData({...formData, branch: e.target.value})}
                       className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
                         ${disabledFields.branch ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                      disabled={disabledFields.branch}
+                  disabled={disabledFields.branch}
                       required
-                    />
-                  </div>
+                />
+              </div>
                 </div>
 
                 {/* Third Row - Comfortable Language and Assigned To */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Comfortable Language
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.comfortableLanguage}
+                  Comfortable Language
+                </label>
+                <input
+                  type="text"
+                  value={formData.comfortableLanguage}
                       onChange={(e) => setFormData({...formData, comfortableLanguage: e.target.value})}
                       className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
                         ${disabledFields.comfortableLanguage ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                      disabled={disabledFields.comfortableLanguage}
+                  disabled={disabledFields.comfortableLanguage}
                       required
-                    />
-                  </div>
+                />
+              </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Assigned To
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
+                  Assigned To
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
                         value={searchExecutive}
                         onChange={(e) => {
                           setSearchExecutive(e.target.value);
@@ -724,7 +1051,7 @@ const toggleColumn = (columnId) => {
                         }}
                         className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
                           ${disabledFields.assignedTo ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                        disabled={disabledFields.assignedTo}
+                    disabled={disabledFields.assignedTo}
                         placeholder="Search by name or email..."
                       />
                       {searchExecutive && (
@@ -733,73 +1060,73 @@ const toggleColumn = (columnId) => {
                             <div
                               key={exec.employeeId}
                               className="p-2 hover:bg-gray-100 cursor-pointer"
-                              onClick={() => {
+                            onClick={() => {
                                 setFormData({...formData, assignedTo: exec.email});
                                 setSearchExecutive(exec.email);
                                 setFilteredExecutives([]);
-                              }}
-                            >
+                            }}
+                          >
                               <div>{exec.username}</div>
                               <div className="text-sm text-gray-500">{exec.email}</div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                          </div>
+                        ))}
                     </div>
-                  </div>
+                  )}
+                </div>
+              </div>
                 </div>
 
                 {/* Fourth Row - Call Status and Status */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Call Status
-                    </label>
-                    <select
-                      value={formData.callStatus}
+                  Call Status
+                </label>
+                <select
+                  value={formData.callStatus}
                       onChange={(e) => setFormData({...formData, callStatus: e.target.value})}
                       className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
                       required
-                    >
-                      <option value="">Select Call Status</option>
-                      {callStatusOptions.map(status => (
-                        <option key={status} value={status}>{status}</option>
-                      ))}
-                    </select>
-                  </div>
+                >
+                  <option value="">Select Call Status</option>
+                  {callStatusOptions.map(status => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Status
-                    </label>
-                    <select
-                      value={formData.status}
+                  Status
+                </label>
+                <select
+                  value={formData.status}
                       onChange={(e) => setFormData({...formData, status: e.target.value})}
                       className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
                       required
-                    >
-                      <option value="">Select Status</option>
-                      {followUpStatusOptions.map(status => (
-                        <option key={status} value={status}>{status}</option>
-                      ))}
-                    </select>
-                  </div>
+                >
+                  <option value="">Select Status</option>
+                  {followUpStatusOptions.map(status => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </div>
                 </div>
 
                 {/* Comment Field - Full Width */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Comment
-                  </label>
-                  <textarea
-                    value={formData.comment}
+                  Comment
+                </label>
+                <textarea
+                  value={formData.comment}
                     onChange={(e) => setFormData({...formData, comment: e.target.value})}
                     className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
                     rows="3"
-                  />
-                </div>
+                />
+              </div>
 
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
                 >
                   {currentEditId ? 'Update' : 'Create'}
@@ -839,10 +1166,10 @@ const toggleColumn = (columnId) => {
             </button>
             <h2 className="text-xl font-bold mb-4">Upload Excel File</h2>
             <form onSubmit={handleFileUpload}>
-              <input 
-                type="file" 
+                <input
+                  type="file"
                 accept=".xlsx, .xls" 
-                onChange={(e) => setUploadFile(e.target.files[0])}
+                  onChange={(e) => setUploadFile(e.target.files[0])}
                 className="w-full p-2 border rounded mb-4"
                 required
               />
@@ -873,31 +1200,31 @@ const toggleColumn = (columnId) => {
       {/* Main Content - Similar to previous implementation */}
       <div className="space-y-6">
         {/* Search and Add Button */}
-        <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <div className="relative w-full md:w-auto">
+        <div className="flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
+          <div className="relative w-full md:w-auto mt-0 top-5">
             <input 
               type="text" 
               placeholder="Search entries..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border rounded-lg"
+              className="w-full pl-10 pr-4 py-1 border rounded-lg"
             />
-            <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+            <Search className="absolute left-3 top-2 text-gray-400" size={20} />
           </div>
           {!isExecutive() && (
             <div className="relative">
-              <button 
+                <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
-                className="bg-[#0865b3] hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center"
+                className="bg-[#0865b3] hover:bg-blue-600 text-white  py-1 px-2 rounded flex items-center relative top-4 "
               >
                 <PlusCircle className="mr-2" size={20} />
                 Add Entry
                 <ChevronDown className="ml-2" size={16} />
-              </button>
+                </button>
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-10">
-                  <button 
+                <button
                     onClick={() => {
                       resetForm();
                       setIsModalOpen(true);
@@ -917,8 +1244,8 @@ const toggleColumn = (columnId) => {
                   >
                     <Upload className="mr-2" size={16} />
                     Multiple Entries
-                  </button>
-                </div>
+                </button>
+              </div>
               )}
             </div>
           )}
@@ -952,9 +1279,9 @@ const toggleColumn = (columnId) => {
                     <span>{column.label}</span>
                   </label>
                 ))}
-              </div>
-            </div>
-          )}
+          </div>
+        </div>
+      )}
 
           <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
             {/* Status Filter */}
@@ -972,7 +1299,7 @@ const toggleColumn = (columnId) => {
                   <option key={status} value={status}>{status}</option>
                 ))}
               </select>
-            </div>
+                </div>
 
             {/* Call Status Filter */}
             <div>
@@ -1027,184 +1354,90 @@ const toggleColumn = (columnId) => {
           </div>
         </div>
 
+        {/* Add this JSX between filters and table */}
+        <div className="mb-4">
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-4" aria-label="Tabs">
+              <button
+                onClick={() => setActiveTab('active')}
+                className={`${
+                  activeTab === 'active'
+                    ? 'border-[#0865b3] text-[#0865b3]'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-xs`}
+              >
+                Active Contacts
+              </button>
+              <button
+                onClick={() => setActiveTab('all')}
+                className={`${
+                  activeTab === 'all'
+                    ? 'border-[#0865b3] text-[#0865b3]'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-xs`}
+              >
+                All Contacts
+              </button>
+              {user?.role === 'Admin' && (
+                <button
+                  onClick={() => setActiveTab('logs')}
+                  className={`${
+                    activeTab === 'logs'
+                      ? 'border-[#0865b3] text-[#0865b3]'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-xs`}
+                >
+                  Logs
+                </button>
+              )}
+            </nav>
+            </div>
+          </div>
+
         {/* Updated Table with truncation */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs whitespace-nowrap">
-            <thead>
-              <tr className="bg-gray-100">
-                {columns.map(column => visibleColumns[column.id] && (
-                  <th 
-                    key={column.id}
-                    className="px-2 py-1 border cursor-pointer hover:bg-gray-200 text-xs font-medium"
-                    onClick={() => handleSort(column.id)}
-                  >
-                    <div className="flex items-center space-x-1">
-                      <span>{column.label}</span>
-                      <span className="text-gray-400">
-                        {sortConfig.key === column.id ? (
-                          sortConfig.direction === 'asc' ? '↑' : '↓'
-                        ) : '↕'}
-                      </span>
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {currentEntries.map(entry => (
-                <tr key={entry.id} className="hover:bg-gray-50">
-                  {visibleColumns.name && (
-                    <td className="px-2 py-1 border">
-                      <div className="max-w-[150px] truncate" title={entry.name}>
-                        {entry.name}
-                      </div>
-                    </td>
-                  )}
-                  {visibleColumns.contact && (
-                    <td className="px-2 py-1 border">
-                      <div className="max-w-[100px] truncate" title={entry.contact}>
-                        {entry.contact}
-                      </div>
-                    </td>
-                  )}
-                  {visibleColumns.email && (
-                    <td className="px-2 py-1 border">
-                      <div className="max-w-[150px] truncate" title={entry.email}>
-                        {entry.email}
-                      </div>
-                    </td>
-                  )}
-                  {visibleColumns.branch && (
-                    <td className="px-2 py-1 border">
-                      <div className="max-w-[100px] truncate" title={entry.branch}>
-                        {entry.branch}
-                      </div>
-                    </td>
-                  )}
-                  {visibleColumns.comfortableLanguage && (
-                    <td className="px-2 py-1 border">
-                      <div className="max-w-[100px] truncate" title={entry.comfortableLanguage}>
-                        {entry.comfortableLanguage}
-                      </div>
-                    </td>
-                  )}
-                  {visibleColumns.assignedTo && (
-                    <td className="px-2 py-1 border">
-                      <div className="max-w-[100px] truncate" title={entry.assignedTo}>
-                        {entry.assignedTo}
-                      </div>
-                    </td>
-                  )}
-                  {visibleColumns.callStatus && (
-                    <td className="px-2 py-1 border">
-                      <div className="max-w-[100px] truncate" title={entry.callStatus}>
-                        {entry.callStatus}
-                      </div>
-                    </td>
-                  )}
-                  {visibleColumns.status && (
-                    <td className="px-2 py-1 border">
-                      <div className="max-w-[100px] truncate" title={entry.status}>
-                        {entry.status}
-                      </div>
-                    </td>
-                  )}
-                  {visibleColumns.createdByUserId && (
-                    <td className="px-2 py-1 border">
-                      <div className="max-w-[100px] truncate" title={entry.createdByUserId}>
-                        {entry.createdByUserId}
-                      </div>
-                    </td>
-                  )}
-                  {visibleColumns.createdAt && (
-                    <td className="px-2 py-1 border">
-                      <div className="max-w-[100px] truncate" title={new Date(entry.createdAt).toLocaleString()}>
-                        {new Date(entry.createdAt).toLocaleString()}
-                      </div>
-                    </td>
-                  )}
-                  {visibleColumns.comments && (
-                    <td className="px-2 py-1 border">
-                      <div className="max-w-[100px] truncate">
-                        {entry.comments?.length > 0 ? (
-                          <button 
-                            onClick={() => openCommentsModal(entry.id)}
-                            className="text-blue-500 hover:text-blue-700 text-xs"
-                          >
-                            Show Comments
-                          </button>
-                        ) : (
-                          <span className="text-gray-500 text-xs">No Comments</span>
-                        )}
-                      </div>
-                    </td>
-                  )}
-                  {visibleColumns.updatedAt && (
-                    <td className="px-2 py-1 border">
-                      <div className="max-w-[100px] truncate" title={new Date(entry.updatedAt).toLocaleString()}>
-                        {new Date(entry.updatedAt).toLocaleString()}
-                      </div>
-                    </td>
-                  )}
-                  {visibleColumns.actions && (
-                    <td className="px-2 py-1 border">
-                      <div className="flex space-x-1">
-                        <button 
-                          onClick={() => openEditModal(entry)}
-                          className="text-blue-500 hover:bg-blue-100 p-0.5 rounded"
-                        >
-                          <Edit size={14} />
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteEntry(entry.id)}
-                          className="text-red-500 hover:bg-red-100 p-0.5 rounded"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {renderTableContent()}
         </div>
 
         {/* Pagination Controls */}
-        <div className="flex justify-center items-center space-x-4 mt-4 text-xs">
-          <button
-            onClick={prevPage}
-            disabled={currentPage === 1}
-            className={`px-3 py-1 rounded ${
-              currentPage === 1
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-blue-500 text-white hover:bg-blue-600'
-            }`}
-          >
-            Previous
-          </button>
+        
+       {activeTab !== 'logs' && (
+  <div className="flex justify-center items-center space-x-4 mt-4 text-xs">
+    <button
+      onClick={prevPage}
+      disabled={currentPage === 1}
+      className={`px-3 py-1 rounded ${
+        currentPage === 1
+          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+          : 'bg-[#0865b3] text-white hover:bg-blue-600'
+      }`}
+    >
+      Previous
+    </button>
 
-          <div className="flex items-center space-x-1">
-            <span className="font-medium">{currentPage}</span>
-            <span className="text-gray-500">of</span>
-            <span className="font-medium">{totalPages}</span>
-            <span className="text-gray-500 ml-2">
-              ({filteredAndSortedEntries.length} total entries)
-            </span>
-          </div>
+    <div className="flex items-center space-x-1">
+      <span className="font-medium">{currentPage}</span>
+      <span className="text-gray-500">of</span>
+      <span className="font-medium">{totalPages}</span>
+      <span className="text-gray-500 ml-2">
+        ({filteredAndSortedEntries.length} total entries)
+      </span>
+    </div>
 
-          <button
-            onClick={nextPage}
-            disabled={currentPage === totalPages}
-            className={`px-3 py-1 rounded ${
-              currentPage === totalPages
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-blue-500 text-white hover:bg-blue-600'
-            }`}
-          >
-            Next
-          </button>
-        </div>
+    <button
+      onClick={nextPage}
+      disabled={currentPage === totalPages}
+      className={`px-3 py-1 rounded ${
+        currentPage === totalPages
+          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+          : 'bg-[#0865b3] text-white hover:bg-blue-600'
+      }`}
+    >
+      Next
+    </button>
+  </div>
+)}
+
 
         {filteredAndSortedEntries.length === 0 && (
           <div className="text-center py-4 text-gray-500 text-sm">
