@@ -444,31 +444,7 @@ const CMSDashboard = () => {
     });
 
     // Disable fields if user is an Executive
-    if (user.mainPosition.toLowerCase() === 'executive') {
-      setDisabledFields({
-        name: true,
-        contact: true,
-        email: true,
-        branch: true,
-        comfortableLanguage: true,
-        assignedTo: true, // Disable assignedTo for Executives
-        callStatus: false, // Allow executives to update call status
-        status: false, // Allow executives to update status
-        comment: false // Allow executives to add comments
-      });
-    } else {
-      setDisabledFields({
-        name: false,
-        contact: false,
-        email: false,
-        branch: false,
-        comfortableLanguage: false,
-        assignedTo: false,
-        callStatus:false,
-        status: false,
-        comment: false
-      });
-    }
+  
 
     fetchComments(entry.id);
     setIsModalOpen(true);
