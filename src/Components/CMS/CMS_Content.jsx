@@ -51,8 +51,8 @@ const CMSDashboard = () => {
   const [isCommentsModalOpen, setIsCommentsModalOpen] = useState(false);
   const [currentComments, setCurrentComments] = useState([]);
   const [logs, setLogs] = useState([]);
-  const callStatusOptions = ["NONE","ANSWERED", "UNANSWERED", "SWITCH_OFF", "BUSY", "NOT_REACHABLE" ];
-  const followUpStatusOptions = ["NEW","INTERESTED", "NOT_INTERESTED", "FOLLOW_UP", "COMPLETE"];
+  const callStatusOptions = ["NONE", "ANSWERED", "UNANSWERED", "SWITCH_OFF", "BUSY", "NOT_REACHABLE"];
+  const followUpStatusOptions = ["NEW", "INTERESTED", "NOT_INTERESTED", "FOLLOW_UP", "COMPLETE"];
   const [rowsPerPage, setRowsPerPage] = useState(25); // Default to 25 rows per page
   const [logCurrentPage, setLogCurrentPage] = useState(1);
   const [logEntriesPerPage] = useState(5); // Set the number of logs per page
@@ -290,10 +290,10 @@ const CMSDashboard = () => {
       resetForm();
       toast.success('Entry created successfully! 🎉');
 
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
-  
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 2000);
+
 
     } catch (err) {
       console.error('Create error:', err);
@@ -314,7 +314,7 @@ const CMSDashboard = () => {
         toast.error('Authentication token not found');
         return;
       }
-  
+
       // Status update
       if (formData.callStatus || formData.status) {
         try {
@@ -330,7 +330,7 @@ const CMSDashboard = () => {
           toast.error(`Failed to update status: ${statusError.message}`);
         }
       }
-  
+
       // Comment update
       if (formData.comment?.trim()) {
         try {
@@ -346,7 +346,7 @@ const CMSDashboard = () => {
           toast.error(`Failed to add comment: ${commentError.message}`);
         }
       }
-  
+
       // General update
       try {
         await axios.put(
@@ -362,13 +362,13 @@ const CMSDashboard = () => {
           { headers: { 'Authorization': `Bearer ${token}` } }
         );
         toast.success('Entry details updated successfully! ✨');
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+        // setTimeout(() => {
+        //   window.location.reload();
+        // }, 1000);
       } catch (updateError) {
         toast.error(`Failed to update entry details: ${updateError.message}`);
       }
-  
+
       await fetchEntries();
       setIsModalOpen(false);
       resetForm();
@@ -404,6 +404,7 @@ const CMSDashboard = () => {
 
       await fetchEntries();
       toast.success('Entry deleted successfully! 🗑️');
+      resetForm();
     } catch (err) {
       console.error('Delete error:', err);
       toast.error(`Failed to delete entry: ${err.message}`);
@@ -444,7 +445,7 @@ const CMSDashboard = () => {
     });
 
     // Disable fields if user is an Executive
-  
+
 
     fetchComments(entry.id);
     setIsModalOpen(true);
@@ -457,7 +458,8 @@ const CMSDashboard = () => {
     setFormData({
       name: '', contact: '', email: '',
       branch: '', comfortableLanguage: '',
-      assignedTo: '', callStatus: '', status: '', comment: ''
+      assignedTo: '', // Ensure this is reset
+      callStatus: '', status: '', comment: ''
     });
     setCurrentEditId(null);
     setComments([]);
@@ -466,7 +468,7 @@ const CMSDashboard = () => {
 
   const handleFileUpload = async (e) => {
     e.preventDefault();
-    setIsValidating(true); 
+    setIsValidating(true);
     console.log('File upload initiated');
 
     try {
@@ -493,7 +495,7 @@ const CMSDashboard = () => {
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData
       });
-      console.log("form data is: "+formData);
+      console.log("form data is: " + formData);
 
       if (!response.ok) {
         console.error('File validation failed with status:', response.status);
@@ -528,7 +530,7 @@ const CMSDashboard = () => {
 
   // **Handle Import with File Retrieval**
   const handleFileImport = async () => {
-    setIsImporting(true); 
+    setIsImporting(true);
     try {
       if (!validationResult?.validEntries?.length) {
         toast.warning('No valid entries to import');
@@ -609,7 +611,7 @@ const CMSDashboard = () => {
       toast.error('Failed to fetch executives');
     }
   };
- 
+
 
 
   // Add function to fetch logs
@@ -907,7 +909,7 @@ const CMSDashboard = () => {
       <table className="w-full text-left border-collapse text-xs whitespace-nowrap">
         <thead>
           <tr className="bg-gray-100">
-            {columns.map(column => visibleColumns[column.id] && ( 
+            {columns.map(column => visibleColumns[column.id] && (
               <th
                 key={column.id}
                 className="px-2 py-1 border cursor-pointer hover:bg-gray-200 text-xs font-medium"
@@ -931,30 +933,40 @@ const CMSDashboard = () => {
               {visibleColumns.actions && (
                 <td className="px-2 py-1 border flex  justify-center">
                   <div className="flex space-x-1">
-                    <button
-                      onClick={() => openEditModal(entry)}
-                      className="text-blue-500 hover:bg-blue-100 p-0.5 rounded"
-                    >
-                      <Edit size={14} />
-                    </button>
+                    {entry.status !== 'COMPLETE' || user.mainPosition !== 'Executive' ? (
+                      <button
+                        onClick={() => openEditModal(entry)}
+                        className="text-blue-500 hover:bg-blue-100 p-0.5 rounded"
+                      >
+                        <Edit size={14} />
+                      </button>
+                    ) : (
+                      <button
+                        disabled
+                        title="Cannot edit a completed entry"
+                        className="text-blue-500 bg-blue-100 p-0.5 rounded cursor-not-allowed"
+                      >
+                        <Edit size={14} />
+                      </button>
+                    )}
 
 
                     {user.mainPosition !== 'Executive' && (
-                    <button
-                    onClick={async () => {
-                      setIsDeleting(entry.id); // Start deleting state for this entry
-                      await handleDeleteEntry(entry.id); // Perform the delete operation
-                      setIsDeleting(null); // End deleting state
-                    }}
-                    className="text-red-500 hover:bg-red-100 p-0.5 rounded"
-                    disabled={isDeleting === entry.id} // Disable the button while deleting
-                  >
-                    {isDeleting === entry.id ? (
-                      <div className="size-4 animate-spin rounded-full border-2 border-red-500 border-t-white"></div>
-                    ) : (
-                      <Trash2 size={14} />
-                    )}
-                  </button>
+                      <button
+                        onClick={async () => {
+                          setIsDeleting(entry.id); // Start deleting state for this entry
+                          await handleDeleteEntry(entry.id); // Perform the delete operation
+                          setIsDeleting(null); // End deleting state
+                        }}
+                        className="text-red-500 hover:bg-red-100 p-0.5 rounded"
+                        disabled={isDeleting === entry.id} // Disable the button while deleting
+                      >
+                        {isDeleting === entry.id ? (
+                          <div className="size-4 animate-spin rounded-full border-2 border-red-500 border-t-white"></div>
+                        ) : (
+                          <Trash2 size={14} />
+                        )}
+                      </button>
                     )}
 
 
@@ -1103,381 +1115,381 @@ const CMSDashboard = () => {
 
         {/* Modal - Same as previous implementation */}
         {isModalOpen && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white p-4 sm:p-6 rounded-lg relative w-[90vw] sm:w-[80vw] md:w-[60vw] lg:w-[40vw] h-[80vh] flex flex-col">
-      <button
-        onClick={() => setIsModalOpen(false)}
-        className="absolute top-4 right-4"
-      >
-        <X size={24} />
-      </button>
-      <h2 className="text-xl font-bold mb-4">
-        {currentEditId ? 'Edit Entry' : 'Add New Entry'}
-      </h2>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-4 sm:p-6 rounded-lg relative w-[90vw] sm:w-[80vw] md:w-[60vw] lg:w-[40vw] h-[80vh] flex flex-col">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="absolute top-4 right-4"
+              >
+                <X size={24} />
+              </button>
+              <h2 className="text-xl font-bold mb-4">
+                {currentEditId ? 'Edit Entry' : 'Add New Entry'}
+              </h2>
 
-      <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto">
 
-      <form onSubmit={currentEditId ? handleUpdateEntry : handleCreateEntry}>
-        
-        <div className="space-y-4">
-          {/* First Row - Name and Contact */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name <span className='text-red-500'>*</span></label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
+                <form onSubmit={currentEditId ? handleUpdateEntry : handleCreateEntry}>
+
+                  <div className="space-y-4">
+                    {/* First Row - Name and Contact */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Name <span className='text-red-500'>*</span></label>
+                        <input
+                          type="text"
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
                 ${disabledFields.name ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                placeholder='Enter Lead Name'
-                disabled={disabledFields.name}
-                required
-              />
-            </div>
-            <div>
-  <label className="block text-sm font-medium text-gray-700 mb-1">Contact <span className='text-red-500'>*</span></label>
-  <input
-    type="text"
-    value={formData.contact}
-    onChange={(e) => {
-      const value = e.target.value;
-      // Allow only numbers and limit to 10 digits
-      if (/^\d{0,10}$/.test(value)) {
-        setFormData({ ...formData, contact: value });
-      }
-    }}
-    className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
+                          placeholder='Enter Lead Name'
+                          disabled={disabledFields.name}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Contact <span className='text-red-500'>*</span></label>
+                        <input
+                          type="text"
+                          value={formData.contact}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            // Allow only numbers and limit to 10 digits
+                            if (/^\d{0,10}$/.test(value)) {
+                              setFormData({ ...formData, contact: value });
+                            }
+                          }}
+                          className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
     ${disabledFields.contact ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-    disabled={disabledFields.contact}
-    placeholder='Enter Lead Contact Number'
-    pattern="\d{10}" // Ensure exactly 10 digits
-    required
-  />
-  {formData.contact.length !== 10 && formData.contact.length > 0 && (
-    <p className="text-xs text-red-500 mt-1">Contact number must be exactly 10 digits.</p>
-  )}
-</div>
-          </div>
+                          disabled={disabledFields.contact}
+                          placeholder='Enter Lead Contact Number'
+                          pattern="\d{10}" // Ensure exactly 10 digits
+                          required
+                        />
+                        {formData.contact.length !== 10 && formData.contact.length > 0 && (
+                          <p className="text-xs text-red-500 mt-1">Contact number must be exactly 10 digits.</p>
+                        )}
+                      </div>
+                    </div>
 
-          {/* Second Row - Email and Branch */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email <span className='text-red-500'>*</span></label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
+                    {/* Second Row - Email and Branch */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Email <span className='text-red-500'>*</span></label>
+                        <input
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
                 ${disabledFields.email ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                disabled={disabledFields.email}
-                placeholder='Enter Lead Email Address'
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Branch <span className='text-red-500'>*</span></label>
-              <input
-                type="text"
-                value={formData.branch}
-                onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
-                className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
+                          disabled={disabledFields.email}
+                          placeholder='Enter Lead Email Address'
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Branch <span className='text-red-500'>*</span></label>
+                        <input
+                          type="text"
+                          value={formData.branch}
+                          onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
+                          className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
                 ${disabledFields.branch ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                disabled={disabledFields.branch}
-                 placeholder='Enter Lead Stream (Eg:EEE,CSE)'
-                required
-              />
-            </div>
-          </div>
+                          disabled={disabledFields.branch}
+                          placeholder='Enter Lead Stream (Eg:EEE,CSE)'
+                          required
+                        />
+                      </div>
+                    </div>
 
-          {/* Third Row - Comfortable Language and Assigned To */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Comfortable Language <span className='text-red-500'>*</span></label>
-              <input
-                type="text"
-                value={formData.comfortableLanguage}
-                onChange={(e) => setFormData({ ...formData, comfortableLanguage: e.target.value })}
-                className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
+                    {/* Third Row - Comfortable Language and Assigned To */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Comfortable Language <span className='text-red-500'>*</span></label>
+                        <input
+                          type="text"
+                          value={formData.comfortableLanguage}
+                          onChange={(e) => setFormData({ ...formData, comfortableLanguage: e.target.value })}
+                          className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
                 ${disabledFields.comfortableLanguage ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                disabled={disabledFields.comfortableLanguage}
-                 placeholder='Eg : HINDI,TELUGU,ENGLISH '
-                required
-              />
-            </div>
+                          disabled={disabledFields.comfortableLanguage}
+                          placeholder='Eg : HINDI,TELUGU,ENGLISH '
+                          required
+                        />
+                      </div>
 
-            <div>
-  <label className="block text-sm font-medium text-gray-700 mb-1">Assigned To</label>
-  <div className="relative">
-    <input
-      type="text"
-      value={user.mainPosition === "Executive" ? user.email : formData.assignedTo} 
-      onChange={(e) => {
-        const value = e.target.value; 
-        setSearchExecutive(value); // Update the search input
-        if (user.mainPosition !== "Executive") {
-          const filtered = executives.filter(exec =>
-            exec.email.toLowerCase().includes(value.toLowerCase()) ||
-            exec.username.toLowerCase().includes(value.toLowerCase())
-          );
-          setFilteredExecutives(filtered);
-        }
-        // Always update formData with the current input value
-        setFormData({ ...formData, assignedTo: value });
-      }}
-      className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Assigned To</label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={user.mainPosition === "Executive" ? user.email : formData.assignedTo}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setSearchExecutive(value); // Update the search input
+                              if (user.mainPosition !== "Executive") {
+                                const filtered = executives.filter(exec =>
+                                  exec.email.toLowerCase().includes(value.toLowerCase()) ||
+                                  exec.username.toLowerCase().includes(value.toLowerCase())
+                                );
+                                setFilteredExecutives(filtered);
+                              }
+                              // Always update formData with the current input value
+                              setFormData({ ...formData, assignedTo: value });
+                            }}
+                            className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
       ${disabledFields.assignedTo || user.mainPosition === "Executive" ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-      disabled={disabledFields.assignedTo || user.mainPosition === "Executive"}
-      placeholder="Search by name or email..."
-    />
-    {searchExecutive && user.mainPosition !== "Executive" && filteredExecutives.length > 0 && (
-      <div className="absolute z-10 w-full mt-1 bg-white rounded-md max-h-60 overflow-auto">
-        {filteredExecutives.map((exec) => (
-          <div
-            key={exec.employeeId}
-            className="p-2 hover:bg-gray-100 cursor-pointer"
-            onClick={() => {
-              setFormData({ ...formData, assignedTo: exec.email }); // Update formData with selected email
-              setSearchExecutive(exec.email);
-              setFilteredExecutives([]); // Close dropdown
-            }}
-          >
-            <div>{exec.username}</div>
-            <div className="text-sm text-gray-500">{exec.email}</div>
-          </div>
-        ))}
-      </div>
-    )}
-  </div>
-</div>
-          </div>
+                            disabled={disabledFields.assignedTo || user.mainPosition === "Executive"}
+                            placeholder="Search by name or email..."
+                          />
+                          {searchExecutive && user.mainPosition !== "Executive" && filteredExecutives.length > 0 && (
+                            <div className="absolute z-10 w-full mt-1 bg-white rounded-md max-h-60 overflow-auto">
+                              {filteredExecutives.map((exec) => (
+                                <div
+                                  key={exec.employeeId}
+                                  className="p-2 hover:bg-gray-100 cursor-pointer"
+                                  onClick={() => {
+                                    setFormData({ ...formData, assignedTo: exec.email }); // Update formData with selected email
+                                    setSearchExecutive(exec.email);
+                                    setFilteredExecutives([]); // Close dropdown
+                                  }}
+                                >
+                                  <div>{exec.username}</div>
+                                  <div className="text-sm text-gray-500">{exec.email}</div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
 
-          {/* Fourth Row - Call Status and Status */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Call Status {currentEditId && <span className='text-red-500 ml-1'>*</span>} 
-              </label>
-              <select
-                value={formData.callStatus}
-                onChange={(e) => setFormData({ ...formData, callStatus: e.target.value })}
-                className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                required={!!currentEditId}
-              >
-                <option value="">Select Call Status</option>
-                {callStatusOptions.map(status => (
-                  <option key={status} value={status}>{status}</option>
-                ))}
-              </select>
+                    {/* Fourth Row - Call Status and Status */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Call Status {currentEditId && <span className='text-red-500 ml-1'>*</span>}
+                        </label>
+                        <select
+                          value={formData.callStatus}
+                          onChange={(e) => setFormData({ ...formData, callStatus: e.target.value })}
+                          className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                          required={!!currentEditId}
+                        >
+                          <option value="">Select Call Status</option>
+                          {callStatusOptions.map(status => (
+                            <option key={status} value={status}>{status}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Status {currentEditId && <span className='text-red-500 ml-1'>*</span>}
+                        </label>
+                        <select
+                          value={formData.status}
+                          onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                          className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                          required={!!currentEditId}
+                        >
+                          <option value="">Select Status</option>
+                          {followUpStatusOptions.map(status => (
+                            <option key={status} value={status}>{status}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Comment Field - Full Width */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Comment
+                        {currentEditId && <span className='text-red-500 ml-1'>*</span>} {/* Add asterisk only in edit mode */}
+                      </label>
+                      <textarea
+                        value={formData.comment}
+                        onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
+                        className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                        rows="3"
+                        required={!!currentEditId} // Required only in edit mode
+                      />
+                    </div>
+                    <div className="sticky bottom-0 bg-white pt-4">
+                      <div className='flex justify-center'>
+
+                        <button
+                          type="submit"
+                          className="bg-[#0865b3] text-white py-1 px-2 rounded hover:bg-blue-600 w-36"
+                          disabled={isSubmitting} // Disable the button while submitting
+                        >
+                          {isSubmitting ? (
+                            <div className="flex items-center justify-center space-x-2">
+                              <span>Submitting...</span>
+                              <div className="w-4 h-4 border-t-transparent rounded-full animate-spin border-2 border-blue-500 border-t-white"></div>
+                            </div>
+                          ) : (
+                            currentEditId ? (
+                              <span>Update</span> // Show "Updating..." when in edit mode
+                            ) : (
+                              'Create'
+                            )
+                          )}
+                        </button>
+                      </div>
+
+                    </div>
+
+
+                  </div>
+                </form>
+              </div>
+
+              {/* Previous Comments Section */}
+              {comments.length > 0 && (
+                <div className="mt-4 h-40 overflow-y-auto">
+                  <h3 className="text-lg font-bold">Previous Comments</h3>
+                  <ul className="list-disc pl-5">
+                    {comments.map((comment, index) => (
+                      <li key={index} className="mt-2">
+                        <p className="text-sm text-gray-700">{comment.comment}</p>
+                        <p className="text-xs text-gray-500">
+                          Posted by {comment.postedByUserId} on {new Date(comment.postedAt).toLocaleString()}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Status {currentEditId && <span className='text-red-500 ml-1'>*</span>} 
-              </label>
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                required={!!currentEditId}
-              >
-                <option value="">Select Status</option>
-                {followUpStatusOptions.map(status => (
-                  <option key={status} value={status}>{status}</option>
-                ))}
-              </select>
-            </div>
           </div>
+        )}
 
-          {/* Comment Field - Full Width */}
-          <div>
-  <label className="block text-sm font-medium text-gray-700 mb-1">
-    Comment
-    {currentEditId && <span className='text-red-500 ml-1'>*</span>} {/* Add asterisk only in edit mode */}
-  </label>
-  <textarea
-    value={formData.comment}
-    onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
-    className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-    rows="3"
-    required={!!currentEditId} // Required only in edit mode
-  />
-</div>
-          <div className="sticky bottom-0 bg-white pt-4">
-        <div className='flex justify-center'>
-
-        <button
-  type="submit"
-  className="bg-[#0865b3] text-white py-1 px-2 rounded hover:bg-blue-600 w-36"
-  disabled={isSubmitting} // Disable the button while submitting
->
-  {isSubmitting ? (
-    <div className="flex items-center justify-center space-x-2">
-      <span>Submitting...</span>
-      <div className="w-4 h-4 border-t-transparent rounded-full animate-spin border-2 border-blue-500 border-t-white"></div>
-    </div>
-  ) : (
-    currentEditId ? (
-      <span>Update</span> // Show "Updating..." when in edit mode
-    ) : (
-      'Create'
-    )
-  )}
-</button>
-        </div>
-
-          </div>
-
-
-        </div>
-      </form>
-      </div>
-
-      {/* Previous Comments Section */}
-      {comments.length > 0 && (
-        <div className="mt-4 h-40 overflow-y-auto">
-          <h3 className="text-lg font-bold">Previous Comments</h3>
-          <ul className="list-disc pl-5">
-            {comments.map((comment, index) => (
-              <li key={index} className="mt-2">
-                <p className="text-sm text-gray-700">{comment.comment}</p>
-                <p className="text-xs text-gray-500">
-                  Posted by {comment.postedByUserId} on {new Date(comment.postedAt).toLocaleString()}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  </div>
-)}
-        
 
         {/* Upload Modal */}
         {isUploadModalOpen && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded-lg w-full max-w-4xl relative">
-      <button
-        onClick={() => {
-          setIsUploadModalOpen(false);
-          setValidationResult({ validEntries: [], invalidEntries: [] }); // Reset validation result to an empty object
-        }}
-        className="absolute top-4 right-4"
-      >
-        <X size={24} />
-      </button>
-      <h2 className="text-xl font-bold mb-4">Upload Excel File</h2>
-      <form onSubmit={handleFileUpload}>
-        <input
-          type="file"
-          accept=".xlsx, .xls"
-          onChange={(e) => setUploadFile(e.target.files[0])}
-          className="w-full p-2 border rounded mb-4"
-          required
-        />
-        <div className='flex justify-end'>
-       <button
-  type="submit"
-  className="bg-blue-500 text-white px-2 py-1 rounded"
-  disabled={isValidating} // Disable the button while validating
->
-  {isValidating ? (
-    <div className="flex items-center justify-center space-x-2">
-      <span>Validating...</span>
-      <div className="mr-3 size-5 animate-spin rounded-full border-2 border-blue-500 border-t-white"></div>
-    </div>
-  ) : (
-    'Validate File'
-  )}
-</button>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg w-full max-w-4xl relative">
+              <button
+                onClick={() => {
+                  setIsUploadModalOpen(false);
+                  setValidationResult({ validEntries: [], invalidEntries: [] }); // Reset validation result to an empty object
+                }}
+                className="absolute top-4 right-4"
+              >
+                <X size={24} />
+              </button>
+              <h2 className="text-xl font-bold mb-4">Upload Excel File</h2>
+              <form onSubmit={handleFileUpload}>
+                <input
+                  type="file"
+                  accept=".xlsx, .xls"
+                  onChange={(e) => setUploadFile(e.target.files[0])}
+                  className="w-full p-2 border rounded mb-4"
+                  required
+                />
+                <div className='flex justify-end'>
+                  <button
+                    type="submit"
+                    className="bg-blue-500 text-white px-2 py-1 rounded"
+                    disabled={isValidating} // Disable the button while validating
+                  >
+                    {isValidating ? (
+                      <div className="flex items-center justify-center space-x-2">
+                        <span>Validating...</span>
+                        <div className="mr-3 size-5 animate-spin rounded-full border-2 border-blue-500 border-t-white"></div>
+                      </div>
+                    ) : (
+                      'Validate File'
+                    )}
+                  </button>
 
-        </div>
-      </form>
-      {validationResult && (
-        <div className="mt-4">
-          <h3 className="text-lg font-bold mb-4">Validation Result</h3>
-          <div className="flex space-x-6 mb-4 text-sm">
-            <div>
-              <span className="font-medium">Total Entries:</span> {validationResult.validEntries.length + validationResult.invalidEntries.length}
-            </div>
-            <div>
-              <span className="font-medium text-green-500">Success Count:</span> {validationResult.validEntries.length}
-            </div>
-            <div>
-              <span className="font-medium text-red-500">Invalid Count:</span> {validationResult.invalidEntries.length}
+                </div>
+              </form>
+              {validationResult && (
+                <div className="mt-4">
+                  <h3 className="text-lg font-bold mb-4">Validation Result</h3>
+                  <div className="flex space-x-6 mb-4 text-sm">
+                    <div>
+                      <span className="font-medium">Total Entries:</span> {validationResult.validEntries.length + validationResult.invalidEntries.length}
+                    </div>
+                    <div>
+                      <span className="font-medium text-green-500">Success Count:</span> {validationResult.validEntries.length}
+                    </div>
+                    <div>
+                      <span className="font-medium text-red-500">Invalid Count:</span> {validationResult.invalidEntries.length}
+                    </div>
+                  </div>
+                  {validationResult.validEntries.length === 0 && validationResult.invalidEntries.length === 0 ? (
+                    <div className="text-center text-gray-500 py-4">
+                      No entries found in the file. Please add rows to the Excel file and try again.
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse text-xs whitespace-nowrap">
+                        <thead>
+                          <tr className="bg-gray-100">
+                            <th className="px-2 py-1 border">Name</th>
+                            <th className="px-2 py-1 border">Contact</th>
+                            <th className="px-2 py-1 border">Email</th>
+                            <th className="px-2 py-1 border">Branch</th>
+                            <th className="px-2 py-1 border">Comfortable Language</th>
+                            <th className="px-2 py-1 border">Assigned To</th>
+                            <th className="px-2 py-1 border">Status</th>
+                            <th className="px-2 py-1 border">Reason</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {validationResult.validEntries.map((entry, index) => (
+                            <tr key={`valid-${index}`} className="hover:bg-gray-50">
+                              <td className="px-2 py-1 border">{entry.name}</td>
+                              <td className="px-2 py-1 border">{entry.contact}</td>
+                              <td className="px-2 py-1 border">{entry.email}</td>
+                              <td className="px-2 py-1 border">{entry.branch}</td>
+                              <td className="px-2 py-1 border">{entry.comfortableLanguage}</td>
+                              <td className="px-2 py-1 border">{entry.assignedTo}</td>
+                              <td className="px-2 py-1 border text-green-500">Valid</td>
+                              <td className="px-2 py-1 border">-</td>
+                            </tr>
+                          ))}
+                          {validationResult.invalidEntries.map((entry, index) => (
+                            <tr key={`invalid-${index}`} className="hover:bg-gray-50">
+                              <td className="px-2 py-1 border">{entry.name}</td>
+                              <td className="px-2 py-1 border">{entry.contact}</td>
+                              <td className="px-2 py-1 border">{entry.email}</td>
+                              <td className="px-2 py-1 border">{entry.branch}</td>
+                              <td className="px-2 py-1 border">{entry.comfortableLanguage}</td>
+                              <td className="px-2 py-1 border">{entry.assignedTo}</td>
+                              <td className="px-2 py-1 border text-red-500">Invalid</td>
+                              <td className="px-2 py-1 border">{entry.reason}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  <div className='flex justify-end'>
+
+                    <button
+                      onClick={handleFileImport}
+                      className="bg-green-500 text-white px-2 py-1 rounded mt-4"
+                      disabled={isImporting} // Disable the button while importing
+                    >
+                      {isImporting ? (
+                        <div className="flex items-center justify-center space-x-2">
+                          <span>Importing...</span>
+                          <div className="mr-3 size-5 animate-spin rounded-full border-2 border-blue-500 border-t-white"></div>
+                        </div>
+                      ) : (
+                        'Import Valid Entries'
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-          {validationResult.validEntries.length === 0 && validationResult.invalidEntries.length === 0 ? (
-            <div className="text-center text-gray-500 py-4">
-              No entries found in the file. Please add rows to the Excel file and try again.
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs whitespace-nowrap">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="px-2 py-1 border">Name</th>
-                    <th className="px-2 py-1 border">Contact</th>
-                    <th className="px-2 py-1 border">Email</th>
-                    <th className="px-2 py-1 border">Branch</th>
-                    <th className="px-2 py-1 border">Comfortable Language</th>
-                    <th className="px-2 py-1 border">Assigned To</th>
-                    <th className="px-2 py-1 border">Status</th>
-                    <th className="px-2 py-1 border">Reason</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {validationResult.validEntries.map((entry, index) => (
-                    <tr key={`valid-${index}`} className="hover:bg-gray-50">
-                      <td className="px-2 py-1 border">{entry.name}</td>
-                      <td className="px-2 py-1 border">{entry.contact}</td>
-                      <td className="px-2 py-1 border">{entry.email}</td>
-                      <td className="px-2 py-1 border">{entry.branch}</td>
-                      <td className="px-2 py-1 border">{entry.comfortableLanguage}</td>
-                      <td className="px-2 py-1 border">{entry.assignedTo}</td>
-                      <td className="px-2 py-1 border text-green-500">Valid</td>
-                      <td className="px-2 py-1 border">-</td>
-                    </tr>
-                  ))}
-                  {validationResult.invalidEntries.map((entry, index) => (
-                    <tr key={`invalid-${index}`} className="hover:bg-gray-50">
-                      <td className="px-2 py-1 border">{entry.name}</td>
-                      <td className="px-2 py-1 border">{entry.contact}</td>
-                      <td className="px-2 py-1 border">{entry.email}</td>
-                      <td className="px-2 py-1 border">{entry.branch}</td>
-                      <td className="px-2 py-1 border">{entry.comfortableLanguage}</td>
-                      <td className="px-2 py-1 border">{entry.assignedTo}</td>
-                      <td className="px-2 py-1 border text-red-500">Invalid</td>
-                      <td className="px-2 py-1 border">{entry.reason}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          <div className='flex justify-end'>
-
-       <button
-  onClick={handleFileImport}
-  className="bg-green-500 text-white px-2 py-1 rounded mt-4"
-  disabled={isImporting} // Disable the button while importing
->
-  {isImporting ? (
-    <div className="flex items-center justify-center space-x-2">
-      <span>Importing...</span>
-      <div className="mr-3 size-5 animate-spin rounded-full border-2 border-blue-500 border-t-white"></div>
-    </div>
-  ) : (
-    'Import Valid Entries'
-  )}
-</button>
-          </div>
-        </div>
-      )}
-    </div>
-  </div>
-)}
+        )}
 
         {/* Main Content - Similar to previous implementation */}
         <div className="space-y-6">
@@ -1542,26 +1554,26 @@ const CMSDashboard = () => {
                   <div className='flex gap-2 flex-wrap '>
                     {/* Download Template Button */}
                     <button
-  className="bg-[#0865b3] hover:bg-blue-600 text-white py-1 px-3 rounded flex items-center relative top-4"
-  disabled={isDownloading} // Disable the button while downloading
-  onClick={() => {
-    setIsDownloading(true); // Start downloading state
-    setTimeout(() => setIsDownloading(false), 1000); // Simulate download for 1 second
-  }}
->
-  {isDownloading ? (
-    <div className="flex items-center">
-      <div className="mr-3 size-5 animate-spin rounded-full border-2 border-blue-500 border-t-white"></div>
-      <Download className="mr-2" size={20} />
-      <span>Downloading...</span>
-    </div>
-  ) : (
-    <a href="/public/CMC_import_Template_v1.xlsx" download="/public/CMC_import_Template_v1.xlsx" className="flex items-center">
-      <Download className="mr-2" size={20} />
-      <span className="text-white hidden md:inline">Download Template</span>
-    </a>
-  )}
-</button>
+                      className="bg-[#0865b3] hover:bg-blue-600 text-white py-1 px-3 rounded flex items-center relative top-4"
+                      disabled={isDownloading} // Disable the button while downloading
+                      onClick={() => {
+                        setIsDownloading(true); // Start downloading state
+                        setTimeout(() => setIsDownloading(false), 1000); // Simulate download for 1 second
+                      }}
+                    >
+                      {isDownloading ? (
+                        <div className="flex items-center">
+                          <div className="mr-3 size-5 animate-spin rounded-full border-2 border-blue-500 border-t-white"></div>
+                          <Download className="mr-2" size={20} />
+                          <span>Downloading...</span>
+                        </div>
+                      ) : (
+                        <a href="/public/CMC_import_Template_v1.xlsx" download="/public/CMC_import_Template_v1.xlsx" className="flex items-center">
+                          <Download className="mr-2" size={20} />
+                          <span className="text-white hidden md:inline">Download Template</span>
+                        </a>
+                      )}
+                    </button>
 
                     {/* Add Entry Button */}
                     <button
@@ -1833,56 +1845,56 @@ const CMSDashboard = () => {
           {/* Pagination Controls */}
 
           {activeTab !== 'logs' && (
-  <div className="flex justify-center items-center space-x-4 mt-4 text-xs ">
-    <button
-      onClick={prevPage}
-      disabled={currentPage === 1}
-      className={`px-3 py-1 rounded ${currentPage === 1
-        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-        : 'bg-[#0865b3] text-white hover:bg-blue-600'
-        }`}
-    >
-      Previous
-    </button>
+            <div className="flex justify-center items-center space-x-4 mt-4 text-xs ">
+              <button
+                onClick={prevPage}
+                disabled={currentPage === 1}
+                className={`px-3 py-1 rounded ${currentPage === 1
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-[#0865b3] text-white hover:bg-blue-600'
+                  }`}
+              >
+                Previous
+              </button>
 
-    <div className="flex items-center space-x-1">
-      <span className="font-medium">{currentPage}</span>
-      <span className="text-gray-500">of</span>
-      <span className="font-medium">{totalPages}</span>
-      <span className="text-gray-500 ml-2 hidden md:block">
-        ({filteredAndSortedEntries.length} total entries)
-      </span>
-    </div>
+              <div className="flex items-center space-x-1">
+                <span className="font-medium">{currentPage}</span>
+                <span className="text-gray-500">of</span>
+                <span className="font-medium">{totalPages}</span>
+                <span className="text-gray-500 ml-2 hidden md:block">
+                  ({filteredAndSortedEntries.length} total entries)
+                </span>
+              </div>
 
-    <button
-      onClick={nextPage}
-      disabled={currentPage === totalPages}
-      className={`px-3 py-1 rounded ${currentPage === totalPages
-        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-        : 'bg-[#0865b3] text-white hover:bg-blue-600'
-        }`}
-    >
-      Next
-    </button>
+              <button
+                onClick={nextPage}
+                disabled={currentPage === totalPages}
+                className={`px-3 py-1 rounded ${currentPage === totalPages
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-[#0865b3] text-white hover:bg-blue-600'
+                  }`}
+              >
+                Next
+              </button>
 
-    {/* Rows Per Page Dropdown */}
-    <div className="flex self-end space-x-2 ml-auto">
-      {/* <span className="text-gray-500">Rows per page:</span> */}
-      <select
-        value={rowsPerPage}
-        onChange={(e) => {
-          setRowsPerPage(Number(e.target.value));
-          setCurrentPage(1); // Reset to the first page when rows per page changes
-        }}
-        className="p-1 border rounded focus:ring-2 focus:ring-blue-500"
-      >
-        <option value={5}>5</option>
-        <option value={25}>25</option>
-        <option value={50}>50</option>
-      </select>
-    </div>
-  </div>
-)}
+              {/* Rows Per Page Dropdown */}
+              <div className="flex self-end space-x-2 ml-auto">
+                {/* <span className="text-gray-500">Rows per page:</span> */}
+                <select
+                  value={rowsPerPage}
+                  onChange={(e) => {
+                    setRowsPerPage(Number(e.target.value));
+                    setCurrentPage(1); // Reset to the first page when rows per page changes
+                  }}
+                  className="p-1 border rounded focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value={5}>5</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                </select>
+              </div>
+            </div>
+          )}
 
 
           {filteredAndSortedEntries.length === 0 && (
