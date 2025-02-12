@@ -307,17 +307,18 @@ const CMSDashboard = () => {
   // Update entry
   const handleUpdateEntry = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true); // Start loading state
     try {
       const token = cookie.get('token');
       if (!token) {
         toast.error('Authentication token not found');
         return;
       }
-
+  
       // Status update
       if (formData.callStatus || formData.status) {
         try {
-          const statusResponse = await axios.put(
+          await axios.put(
             `${API_BASE_URL}/entries/${currentEditId}/status`,
             {
               callStatus: formData.callStatus,
@@ -325,12 +326,11 @@ const CMSDashboard = () => {
             },
             { headers: { 'Authorization': `Bearer ${token}` } }
           );
-          // toast.success('Status updated successfully! ��');
         } catch (statusError) {
           toast.error(`Failed to update status: ${statusError.message}`);
         }
       }
-
+  
       // Comment update
       if (formData.comment?.trim()) {
         try {
@@ -342,12 +342,11 @@ const CMSDashboard = () => {
             },
             { headers: { 'Authorization': `Bearer ${token}` } }
           );
-          // toast.success('Comment added successfully! 💬');
         } catch (commentError) {
           toast.error(`Failed to add comment: ${commentError.message}`);
         }
       }
-
+  
       // General update
       try {
         await axios.put(
@@ -363,16 +362,21 @@ const CMSDashboard = () => {
           { headers: { 'Authorization': `Bearer ${token}` } }
         );
         toast.success('Entry details updated successfully! ✨');
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       } catch (updateError) {
         toast.error(`Failed to update entry details: ${updateError.message}`);
       }
-
+  
       await fetchEntries();
       setIsModalOpen(false);
       resetForm();
     } catch (err) {
       console.error('Update error:', err);
       toast.error(`Update failed: ${err.message}`);
+    } finally {
+      setIsSubmitting(false); // End loading state
     }
   };
 
@@ -1227,57 +1231,62 @@ const CMSDashboard = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Assigned To</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={user.mainPosition === "Executive" ? user.email : searchExecutive}
-                  onChange={(e) => {
-                    if (user.mainPosition !== "Executive") {
-                      setSearchExecutive(e.target.value);
-                      const filtered = executives.filter(exec =>
-                        exec.email.toLowerCase().includes(e.target.value.toLowerCase()) ||
-                        exec.username.toLowerCase().includes(e.target.value.toLowerCase())
-                      );
-                      setFilteredExecutives(filtered);
-                    }
-                  }}
-                  className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
-                  ${disabledFields.assignedTo || user.mainPosition === "Executive" ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                  disabled={disabledFields.assignedTo || user.mainPosition === "Executive"}
-                  placeholder="Search by name or email..."
-                />
-                {searchExecutive && user.mainPosition !== "Executive" && (
-                  <div className="absolute z-10 w-full mt-1 bg-white rounded-md max-h-60 overflow-auto">
-                    {filteredExecutives.map((exec) => (
-                      <div
-                        key={exec.employeeId}
-                        className="p-2 hover:bg-gray-100 cursor-pointer"
-                        onClick={() => {
-                          setFormData({ ...formData, assignedTo: exec.email });
-                          setSearchExecutive(exec.email);
-                          setFilteredExecutives([]);
-                        }}
-                      >
-                        <div>{exec.username}</div>
-                        <div className="text-sm text-gray-500">{exec.email}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
+  <label className="block text-sm font-medium text-gray-700 mb-1">Assigned To</label>
+  <div className="relative">
+    <input
+      type="text"
+      value={user.mainPosition === "Executive" ? user.email : formData.assignedTo} 
+      onChange={(e) => {
+        const value = e.target.value;
+        setSearchExecutive(value); // Update the search input
+        if (user.mainPosition !== "Executive") {
+          const filtered = executives.filter(exec =>
+            exec.email.toLowerCase().includes(value.toLowerCase()) ||
+            exec.username.toLowerCase().includes(value.toLowerCase())
+          );
+          setFilteredExecutives(filtered);
+        }
+        // Always update formData with the current input value
+        setFormData({ ...formData, assignedTo: value });
+      }}
+      className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 
+      ${disabledFields.assignedTo || user.mainPosition === "Executive" ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+      disabled={disabledFields.assignedTo || user.mainPosition === "Executive"}
+      placeholder="Search by name or email..."
+    />
+    {searchExecutive && user.mainPosition !== "Executive" && filteredExecutives.length > 0 && (
+      <div className="absolute z-10 w-full mt-1 bg-white rounded-md max-h-60 overflow-auto">
+        {filteredExecutives.map((exec) => (
+          <div
+            key={exec.employeeId}
+            className="p-2 hover:bg-gray-100 cursor-pointer"
+            onClick={() => {
+              setFormData({ ...formData, assignedTo: exec.email }); // Update formData with selected email
+              setSearchExecutive(exec.email);
+              setFilteredExecutives([]); // Close dropdown
+            }}
+          >
+            <div>{exec.username}</div>
+            <div className="text-sm text-gray-500">{exec.email}</div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+</div>
           </div>
 
           {/* Fourth Row - Call Status and Status */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Call Status </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Call Status {currentEditId && <span className='text-red-500 ml-1'>*</span>} 
+              </label>
               <select
                 value={formData.callStatus}
                 onChange={(e) => setFormData({ ...formData, callStatus: e.target.value })}
                 className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                // required
+                required={!!currentEditId}
               >
                 <option value="">Select Call Status</option>
                 {callStatusOptions.map(status => (
@@ -1286,12 +1295,14 @@ const CMSDashboard = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Status {currentEditId && <span className='text-red-500 ml-1'>*</span>} 
+              </label>
               <select
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                 className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                // required
+                required={!!currentEditId}
               >
                 <option value="">Select Status</option>
                 {followUpStatusOptions.map(status => (
@@ -1326,10 +1337,14 @@ const CMSDashboard = () => {
   {isSubmitting ? (
     <div className="flex items-center justify-center space-x-2">
       <span>Submitting...</span>
-      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+      <div className="w-4 h-4 border-t-transparent rounded-full animate-spin border-2 border-blue-500 border-t-white"></div>
     </div>
   ) : (
-    currentEditId ? 'Update' : 'Create'
+    currentEditId ? (
+      <span>Update</span> // Show "Updating..." when in edit mode
+    ) : (
+      'Create'
+    )
   )}
 </button>
         </div>

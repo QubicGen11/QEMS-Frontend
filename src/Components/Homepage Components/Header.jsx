@@ -305,7 +305,7 @@ const Header = () => {
         console.error('Error fetching notifications:', error);
         // Don't show error toast for 404s as they're expected when no notifications exist
         if (error.response?.status !== 404) {
-            toast.error('Failed to fetch notifications');
+            // toast.error('Failed to fetch notifications');
         }
     }
   };
