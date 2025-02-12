@@ -1237,7 +1237,7 @@ const CMSDashboard = () => {
       type="text"
       value={user.mainPosition === "Executive" ? user.email : formData.assignedTo} 
       onChange={(e) => {
-        const value = e.target.value;
+        const value = e.target.value; 
         setSearchExecutive(value); // Update the search input
         if (user.mainPosition !== "Executive") {
           const filtered = executives.filter(exec =>

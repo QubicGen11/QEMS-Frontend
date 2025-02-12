@@ -160,17 +160,16 @@ const Sidemenu = () => {
               
                 {(userRole === 'Admin' || mainPosition === 'Lead Generation' || mainPosition === 'Executive') && (
                   <li className="nav-item">
-                    <a
-                      href="/cms"
+                    <Link to="/cms"
                       className="nav-link"
-                      onClick={() => toggleDropdown(setIsAttendanceOpen, isAttendanceOpen)}
+                      
                     >
                       <FontAwesomeIcon icon={faClock} className="nav-icon" />
                       <p>
                         CMC
                         <FontAwesomeIcon icon={faAngleRight} className="right" />
                       </p>
-                    </a>
+                    </Link>
                   </li>
                 )}
          
