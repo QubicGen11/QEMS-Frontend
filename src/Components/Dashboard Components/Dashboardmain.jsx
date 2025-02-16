@@ -22,7 +22,8 @@ const Dashboardmain = () => {
 
 
 
-        </div>)
+        </div>
+        )
 }
 
 export default Dashboardmain

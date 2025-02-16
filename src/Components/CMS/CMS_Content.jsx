@@ -1184,7 +1184,7 @@ const CMSDashboard = () => {
                 ${disabledFields.email ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           disabled={disabledFields.email}
                           placeholder='Enter Lead Email Address'
-                          required
+                          // required
                         />
                       </div>
                       <div>
@@ -1197,7 +1197,7 @@ const CMSDashboard = () => {
                 ${disabledFields.branch ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           disabled={disabledFields.branch}
                           placeholder='Enter Lead Stream (Eg:EEE,CSE)'
-                          required
+                          // required
                         />
                       </div>
                     </div>
@@ -1214,7 +1214,7 @@ const CMSDashboard = () => {
                 ${disabledFields.comfortableLanguage ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           disabled={disabledFields.comfortableLanguage}
                           placeholder='Eg : HINDI,TELUGU,ENGLISH '
-                          required
+                          // required
                         />
                       </div>
 
@@ -1424,8 +1424,8 @@ const CMSDashboard = () => {
                       No entries found in the file. Please add rows to the Excel file and try again.
                     </div>
                   ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left border-collapse text-xs whitespace-nowrap">
+                    <div className="overflow-x-auto h-96">
+                      <table className="w-full text-left border-collapse text-xs whitespace-nowrap ">
                         <thead>
                           <tr className="bg-gray-100">
                             <th className="px-2 py-1 border">Name</th>
