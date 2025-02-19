@@ -158,7 +158,7 @@ const Sidemenu = () => {
               )}
 
               
-                {(userRole === 'Admin' || mainPosition === 'Lead Generation' || mainPosition === 'Executive') && (
+                {(userRole === 'Admin' || mainPosition === 'Lead Generation' || mainPosition === 'Executive' || mainPosition == 'Product Manager') && (
                   <li className="nav-item">
                     <Link to="/cms"
                       className="nav-link"

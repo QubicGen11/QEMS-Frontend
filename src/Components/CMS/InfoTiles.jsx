@@ -4,9 +4,15 @@ import './Infotiles.css';
 import cookie from 'js-cookie';
 import config from "../config";
 import DailyTips from "../Homepage Components/DailyTips";
+import axios from "axios";
 
 const InfoTiles = ({ totalCompleted, activeContacts, pendingFollowUp, assignedLeads, totalLeads }) => {
   const [isMobile, setIsMobile] = useState(false);
+  const [financialData, setFinancialData] = useState({
+    totalProjectedAmount: 0,
+    totalPreRegisteredAmount: 0,
+    totalRemainingAmount: 0
+  });
 
   useEffect(() => {
     const handleResize = () => {
@@ -17,6 +23,38 @@ const InfoTiles = ({ totalCompleted, activeContacts, pendingFollowUp, assignedLe
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  useEffect(() => {
+    const fetchFinancialData = async () => {
+      try {
+        const token = cookie.get('token');
+        if (!token) return;
+
+        const response = await axios.get(
+          `${config.apiUrl}/qems/cms/entries/counts`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+       
+
+        if (response.data?.success) {
+          setFinancialData(response.data.data.financialData || {
+            totalProjectedAmount: 0,
+            totalPreRegisteredAmount: 0,
+            totalRemainingAmount: 0
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching financial data:', error);
+      }
+    };
+
+    fetchFinancialData();
+  }, []);
+
   if (isMobile) {
     return (
       <div id="info-tiles" className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:hidden">
@@ -25,7 +63,8 @@ const InfoTiles = ({ totalCompleted, activeContacts, pendingFollowUp, assignedLe
           { title: "Active Contacts", value: activeContacts, bgColor: "bg-gradient-to-r from-blue-400 to-blue-600" },
           { title: "Pending Follow-ups", value: pendingFollowUp, bgColor: "bg-gradient-to-r from-orange-400 to-red-500" },
           { title: "Total Leads", value: totalLeads, bgColor: "bg-gradient-to-r from-yellow-400 to-yellow-600" },
-          ...(cookie.get('token') ? [{ title: "Assigned Leads", value: assignedLeads, bgColor: "bg-gradient-to-r from-gray-500 to-gray-700" }] : [])
+          ...(cookie.get('token') ? [{ title: "Assigned Leads", value: assignedLeads, bgColor: "bg-gradient-to-r from-gray-500 to-gray-700" }] : []),
+          { title: "Financial Summary", value: financialData, bgColor: "bg-gradient-to-r from-purple-400 to-purple-600" }
         ].map((tile, index) => (
           <motion.div
             key={index}
@@ -36,10 +75,30 @@ const InfoTiles = ({ totalCompleted, activeContacts, pendingFollowUp, assignedLe
           >
             <motion.div className="absolute inset-0 bg-white/10 blur-md" animate={{ opacity: 1, transition: { duration: 1, repeat: Infinity, repeatType: "mirror" } }} />
             <motion.div className="transform perspective-1000" whileHover={{ rotateY: 10, rotateX: 10 }}>
-              <div className="flex w-60 md:w-44 gap-3 h-3 items-center justify-between flex-row-reverse">
-                <p className="text-lg font-bold text-center">{tile.value}</p>
-                <h3 className="text-md font-semibold text-center whitespace-nowrap">{tile.title}</h3>
-              </div>
+              {tile.title === "Financial Summary" ? (
+                <div className="flex flex-col w-full gap-1 p-2">
+                  <h3 className="text-sm font-semibold text-center mb-1">Financial Summary</h3>
+                  <div className="grid grid-cols-2 gap-1 text-center">
+                    <div className="col-span-2">
+                      <p className="text-xs">Projected</p>
+                      <p className="text-sm font-bold">₹{tile.value?.totalProjectedAmount?.toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-[0.65rem]">Pre-registered</p>
+                      <p className="text-xs">₹{tile.value?.totalPreRegisteredAmount?.toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-[0.65rem]">Remaining</p>
+                      <p className="text-xs">₹{tile.value?.totalRemainingAmount?.toLocaleString()}</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex w-60 md:w-44 gap-3 h-3 items-center justify-between flex-row-reverse">
+                  <p className="text-lg font-bold text-center">{tile.value}</p>
+                  <h3 className="text-md font-semibold text-center whitespace-nowrap">{tile.title}</h3>
+                </div>
+              )}
             </motion.div>
           </motion.div>
         ))}
@@ -65,7 +124,13 @@ const InfoTiles = ({ totalCompleted, activeContacts, pendingFollowUp, assignedLe
             { title: "Followups", value: pendingFollowUp, bgColor: "from-orange-400 to-red-500", height: "h-24" },
             { title: "Completed", value: totalCompleted, bgColor: "from-green-400 to-green-600", height: "h-28" },
             { title: "Total Leads", value: totalLeads, bgColor: "from-yellow-400 to-yellow-600", height: "h-32" },
-            ...(cookie.get('token') ? [{ title: "Assigned Leads", value: assignedLeads, bgColor: "from-gray-500 to-gray-700", height: "h-36" }] : [])
+            ...(cookie.get('token') ? [{ title: "Assigned Leads", value: assignedLeads, bgColor: "from-gray-500 to-gray-700", height: "h-36" }] : []),
+            { 
+              title: "Financial Summary",
+              value: financialData,
+              bgColor: "from-purple-400 to-purple-600", 
+              height: "h-40"  // Make this the largest
+            }
           ].map((tile, index) => (
             <motion.div
               key={index}
@@ -76,9 +141,30 @@ const InfoTiles = ({ totalCompleted, activeContacts, pendingFollowUp, assignedLe
             >
               <motion.div className="absolute inset-0 bg-white/20 blur-lg rounded-xl" animate={{ opacity: 0.7, transition: { duration: 1.5, repeat: Infinity, repeatType: "mirror" } }} />
               <motion.div className="transform perspective-1000 flex flex-col items-center justify-center h-full" whileHover={{ rotateY: 15, rotateX: 15 }}>
-                <p className="text-2xl font-extrabold">{tile.value > 0 ? "✅" : "❌"}</p>
-                <p className="text-xl font-extrabold">{tile.value}</p>
-                <h3 className="text-sm font-normal text-center">{tile.title}</h3>
+                {tile.title === "Financial Summary" ? (
+                  <div className="space-y-2 text-center">
+                    <div className="space-y-1">
+                      <p className="text-xs opacity-80">Total Projected</p>
+                      <p className="text-xl font-bold">₹{tile.value?.totalProjectedAmount?.toLocaleString()}</p>
+                    </div>
+                    <div className="flex gap-4">
+                      <div>
+                        <p className="text-xs opacity-80">Pre-registered</p>
+                        <p className="text-sm">₹{tile.value?.totalPreRegisteredAmount?.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs opacity-80">Remaining</p>
+                        <p className="text-sm">₹{tile.value?.totalRemainingAmount?.toLocaleString()}</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-2xl font-extrabold">{tile.value > 0 ? "✅" : "❌"}</p>
+                    <p className="text-xl font-extrabold">{tile.value}</p>
+                    <h3 className="text-sm font-normal text-center">{tile.title}</h3>
+                  </>
+                )}
               </motion.div>
             </motion.div>
           ))}
