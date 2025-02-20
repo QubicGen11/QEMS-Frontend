@@ -108,7 +108,7 @@ const CMSDashboard = () => {
     status: false,
     createdByUserId: false,
     createdAt: false,
-    comments: false,
+    comments: true,
     projectedAmount:true,
     preRegisteredAmount:true,
     remainingAmount:true,
@@ -187,12 +187,12 @@ const CMSDashboard = () => {
     { id: 'registeredMonth', label: 'Registered Month' },
     { id: 'projectedAmount', label: 'Projected Amount' },
     { id: 'preRegisteredAmount', label: 'Pre-Registered Amount' },
-    { id: 'remainingAmount', label: 'Remaining Amount' }, // Auto-calculated remaining amount
-    { id: 'createdByUserId', label: 'Created By' }, // Creator's email
-    { id: 'createdAt', label: 'Created At' }, // Timestamp of creation
-    { id: 'updatedAt', label: 'Updated At' }, // Timestamp of last update
-    { id: 'comments', label: 'Comments' } // Comment column for user feedback
-];
+    { id: 'remainingAmount', label: 'Remaining Amount' },
+    { id: 'createdByUserId', label: 'Created By' },
+    { id: 'createdAt', label: 'Created At' },
+    { id: 'updatedAt', label: 'Updated At' },
+    { id: 'comments', label: 'Comments' } // Keep this in columns array
+  ];
 
   
 
@@ -1122,30 +1122,49 @@ const CMSDashboard = () => {
               visibleColumns[column.id] ? (
                 <td key={column.id} className="px-2 py-1 border">
                   <div className="max-w-[150px] truncate" title={entry[column.id]}>
-                    {column.id === 'createdAt' || column.id === 'updatedAt'
-                      ? new Date(entry[column.id]).toLocaleString()
-                      : entry[column.id] || '-'}
+                    {column.id === 'comments' ? (
+                      entry.comments?.length > 0 ? (
+                        <button
+                          onClick={() => {
+                            fetchComments(entry.id);
+                            setIsCommentsModalOpen(true);
+                          }}
+                          className="text-blue-500 hover:text-blue-700 text-xs"
+                        >
+                          Show Comments ({entry.comments.length})
+                        </button>
+                      ) : (
+                        <span className="text-gray-500 text-xs">No Comments</span>
+                      )
+                    ) : column.id === 'createdAt' || column.id === 'updatedAt' ? (
+                      new Date(entry[column.id]).toLocaleString()
+                    ) : (
+                      entry[column.id] || '-'
+                    )}
                   </div>
                 </td>
               ) : null
             )}
     
-            {visibleColumns.comments && (
+            {/* {visibleColumns.comments && (
               <td className="px-2 py-1 border">
                 <div className="max-w-[100px] truncate">
                   {entry.comments?.length > 0 ? (
                     <button
-                      onClick={() => openCommentsModal(entry.id)}
+                      onClick={() => {
+                        fetchComments(entry.id);
+                        setIsCommentsModalOpen(true);
+                      }}
                       className="text-blue-500 hover:text-blue-700 text-xs"
                     >
-                      Show Comments
+                      Show Comments ({entry.comments.length})
                     </button>
                   ) : (
                     <span className="text-gray-500 text-xs">No Comments</span>
                   )}
                 </div>
               </td>
-            )}
+            )} */}
           </tr>
         ))}
       </tbody>

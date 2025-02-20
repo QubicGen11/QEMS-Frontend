@@ -33,6 +33,7 @@ import Cookies from 'js-cookie';
 import Swal from 'sweetalert2';
 import ForgotPassword from "./Components/Login/ForgotPassword";
 import CMS_Main from "./Components/CMS/CMS_Main";
+import CommentTestPage from "./Components/CMS/CommentTestPage";
 
 // Add this authentication check function
 const requireAuth = () => {
@@ -187,6 +188,11 @@ const router = createBrowserRouter([
     path: "/cms",
     element: <ProtectedRoute element={<CMS_Main />} />
   },
+  {
+    path: "/test-comments",
+    element: <ProtectedRoute element={<CommentTestPage />} />
+  },
+  
 
 ]);
 
