@@ -139,37 +139,25 @@ const CMSDashboard = () => {
   // Add image upload handler
   const handleImageUpload = async (file) => {
     try {
-      setIsUploadingImage(true);
       const formData = new FormData();
-      formData.append('file', file); // Key should be 'file'
-
-      const token = cookie.get('token'); // Get JWT token from cookies
+      formData.append('file', file);
 
       const response = await axios.post(
-        // 'https://image.qubinest.com/qems/upload',
-        'http://localhost:8082/qems/upload',
+        'https://image.qubinest.com/qems/upload',
         formData,
         {
           headers: {
-            'Authorization': `Bearer ${token}` // Add authorization header if needed
-          }
+            'Authorization': `Bearer ${cookie.get('token')}`,
+            'Content-Type': 'multipart/form-data'
+          },
+          withCredentials: true // Only if using cookies
         }
       );
 
-      // Handle different response structures
-      if (response.data.url) {
-        return response.data.url;
-      } else if (response.data.imageUrl) {
-        return response.data.imageUrl;
-      } else {
-        throw new Error('Invalid response format');
-      }
+      return response.data.url;
     } catch (error) {
-      console.error('Upload error:', error.response?.data || error.message);
-      toast.error(`Upload failed: ${error.response?.data?.message || error.message}`);
+      console.error('Upload error:', error);
       throw error;
-    } finally {
-      setIsUploadingImage(false);
     }
   };
 
