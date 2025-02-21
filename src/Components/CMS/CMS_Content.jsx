@@ -136,28 +136,70 @@ const CMSDashboard = () => {
   const [commentImage, setCommentImage] = useState(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
+  // Add new state near other state declarations
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  // Add new state for courses and loading
+  const [courses, setCourses] = useState([]);
+  const [isLoadingCourses, setIsLoadingCourses] = useState(true);
+
+  // Add useEffect for fetching courses
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await fetch('https://qg.vidyantra-dev.com/qubicgen/allCourses', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include'
+        }).then(res => res.json()).then(data => console.log(data)).catch(err => console.error(err));
+        
+        
+        const data = await response.json();
+        setCourses(data);
+      } catch (error) {
+        console.error('Error fetching courses:', error);
+        toast.error('Failed to load courses');
+      } finally {
+        setIsLoadingCourses(false);
+      }
+    };
+    fetchCourses();
+  }, []);
+
   // Add image upload handler
   const handleImageUpload = async (file) => {
     try {
+      setIsUploadingImage(true);
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', file); // Key should be 'file'
+
+      const token = cookie.get('token'); // Get JWT token from cookies
 
       const response = await axios.post(
-        'https://image.qubinest.com/qems/upload',
+        // 'https://image.qubinest.com/qems/upload',
+        'http://localhost:8082/qems/upload',
         formData,
         {
           headers: {
-            'Authorization': `Bearer ${cookie.get('token')}`,
-            'Content-Type': 'multipart/form-data'
-          },
-          withCredentials: true // Only if using cookies
+            'Authorization': `Bearer ${token}` // Add authorization header if needed
+          }
         }
       );
 
-      return response.data.url;
+      // Handle different response structures
+      if (response.data.url) {
+        return response.data.url;
+      } else if (response.data.imageUrl) {
+        return response.data.imageUrl;
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error('Upload error:', error.response?.data || error.message);
+      toast.error(`Upload failed: ${error.response?.data?.message || error.message}`);
       throw error;
+    } finally {
+      setIsUploadingImage(false);
     }
   };
 
@@ -1431,13 +1473,23 @@ const CMSDashboard = () => {
                       {/* Course Opted */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Course Opted</label>
-                        <input
-                          type="text"
+                        <select
                           value={formData.courseOpt}
                           onChange={(e) => setFormData({ ...formData, courseOpt: e.target.value })}
                           className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                          placeholder="Enter Course Opted"
-                        />
+                          disabled={isLoadingCourses}
+                        >
+                          <option value="">Select Course</option>
+                          {isLoadingCourses ? (
+                            <option disabled>Loading courses...</option>
+                          ) : (
+                            courses.map(course => (
+                              <option key={course.id} value={course.courseName}>
+                                {course.courseName}
+                              </option>
+                            ))
+                          )}
+                        </select>
                       </div>
 
                       {/* Registered Month */}
@@ -1850,7 +1902,7 @@ const CMSDashboard = () => {
                     {/* Add Entry Button */}
                     <button
                       onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                      onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
+                      // onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
                       className="bg-[#0865b3] hover:bg-blue-600 text-white py-1 px-2 rounded flex items-center relative top-4"
                     >
                       <PlusCircle className="mr-2" size={20} />
@@ -2203,7 +2255,12 @@ const CMSDashboard = () => {
                                     <span>{new Date(comment.postedAt).toLocaleString()}</span>
                                 </div>
                                 {isImage ? (
-                                    <img src={imageUrl} alt="Comment Attachment" className="w-40 h-auto mt-1 rounded" />
+                                    <img 
+                                        src={imageUrl} 
+                                        alt="Comment Attachment" 
+                                        className="w-40 h-auto mt-1 rounded cursor-zoom-in"
+                                        onClick={() => setSelectedImage(imageUrl)}
+                                    />
                                 ) : (
                                     <p className="text-sm mt-1">{comment.comment}</p>
                                 )}
@@ -2216,6 +2273,25 @@ const CMSDashboard = () => {
             )}
         </div>
     </div>
+)}
+
+
+{selectedImage && (
+  <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[60]">
+    <div className="relative w-full h-full flex items-center justify-center">
+      <button
+        onClick={() => setSelectedImage(null)}
+        className="absolute top-4 right-4 text-white hover:text-gray-300"
+      >
+        <X size={32} />
+      </button>
+      <img 
+        src={selectedImage} 
+        alt="Full screen comment" 
+        className="max-w-[90vw] max-h-[90vh] object-contain"
+      />
+    </div>
+  </div>
 )}
 
 
