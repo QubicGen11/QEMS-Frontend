@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import SendNotificationModal from "./SendNotificationModal";
 import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Toast,{ displayToast } from '../../Toast';
 
 
 const Allemployees = () => {
@@ -90,7 +91,7 @@ const Allemployees = () => {
     XLSX.utils.book_append_sheet(wb, ws, "Employees");
     
     XLSX.writeFile(wb, `Employees_List_${new Date().toLocaleDateString()}.xlsx`);
-    toast.success('Successfully exported to Excel!');
+    displayToast('success', 'Successfully exported to Excel!');
   };
 
   const getStatusClasses = (status) => {
@@ -142,7 +143,7 @@ const Allemployees = () => {
       setEmployees(filteredUsers);
     } catch (error) {
       console.error('Error fetching employees:', error);
-      toast.error('Failed to load employees data');
+      displayToast('error', 'Failed to load employees data');
     } finally {
       setIsLoading(false);
     }
@@ -182,12 +183,12 @@ const Allemployees = () => {
         });
 
         if (response.status === 200) {
-          toast.success('Employee disabled successfully');
+          displayToast('success', 'Employee disabled successfully');
           fetchEmployees();
         }
       } catch (error) {
         console.error('Error disabling employee:', error);
-        toast.error('Failed to disable employee');
+        displayToast('error', 'Failed to disable employee');
       } finally {
         setIsLoading(false);
       }
@@ -204,12 +205,12 @@ const Allemployees = () => {
         });
 
         if (response.status === 200) {
-          toast.success('Employee enabled successfully');
+          displayToast('success', 'Employee enabled successfully');
           fetchEmployees();
         }
       } catch (error) {
         console.error('Error enabling employee:', error);
-        toast.error('Failed to enable employee');
+        displayToast('error', 'Failed to enable employee');
       } finally {
         setIsLoading(false);
       }
@@ -227,13 +228,13 @@ const Allemployees = () => {
       });
 
       if (response.status === 200) {
-        toast.success('Employee updated successfully');
+        displayToast('success', 'Employee updated successfully');
         setIsEditModalOpen(false);
         fetchEmployees();
       }
     } catch (error) {
       console.error('Error updating employee:', error);
-      toast.error('Failed to update employee');
+      displayToast('error', 'Failed to update employee');
     }
   };
 
@@ -286,6 +287,10 @@ const Allemployees = () => {
 
   return (
     <>
+    <div>
+  
+
+
       <div>
         <Header />
         <Sidemenu />
@@ -634,6 +639,8 @@ const Allemployees = () => {
           setAllSelected(false);
         }}
       />
+
+    </div>
     </>
   );
 };

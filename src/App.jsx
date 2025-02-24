@@ -36,26 +36,26 @@ import CMS_Main from "./Components/CMS/CMS_Main";
 import CommentTestPage from "./Components/CMS/CommentTestPage";
 
 // Add this authentication check function
-const requireAuth = () => {
-  const email = Cookies.get('email');
- 
+  const requireAuth = () => {
+    const email = Cookies.get('email');
+  
 
-  if (!email ) {
-    Swal.fire({
-      title: 'Authentication Required',
-      text: 'Please login to access this page',
-      icon: 'warning',
-      confirmButtonText: 'Go to Login',
-      confirmButtonColor: '#3085d6'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        window.location.href = '/';
-      }
-    });
-    return false;
-  }
-  return true;
-};
+    if (!email ) {
+      Swal.fire({
+        title: 'Authentication Required',
+        text: 'Please login to access this page',
+        icon: 'warning',
+        confirmButtonText: 'Go to Login',
+        confirmButtonColor: '#3085d6'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = '/';
+        }
+      });
+      return false;
+    }
+    return true;
+  };
 
 // Protected Route Component
 const ProtectedRoute = ({ element }) => {
