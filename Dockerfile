@@ -4,7 +4,7 @@ WORKDIR /emsFE
 
 COPY . .
 
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 EXPOSE 8085
 
