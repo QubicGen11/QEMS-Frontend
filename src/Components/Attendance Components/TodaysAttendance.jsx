@@ -459,6 +459,7 @@ const TodaysAttendance = () => {
                   <span className="text-sm text-gray-700">
                     Page {currentPage} of {totalPages}
                   </span>
+                  <span className="ml-2 text-gray-500">({filteredAttendance.length} records)</span>
                   <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
                     <button
                       onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
@@ -470,6 +471,11 @@ const TodaysAttendance = () => {
                       <span className="sr-only">Previous</span>
                       <FontAwesomeIcon icon={faChevronLeft} className="h-3 w-3" />
                     </button>
+
+                    <div className="flex items-center px-4 bg-white text-sm text-gray-700">
+                      Page {currentPage} of {totalPages}
+                      <span className="ml-2 text-gray-500">({filteredAttendance.length} records)</span>
+                    </div>
 
                     <button
                       onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}

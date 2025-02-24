@@ -66,6 +66,7 @@ const SingleEmployeeAttendance = () => {
   const adminEmail = Cookies.get('email');
   const [isApproving, setIsApproving] = useState(false);
   const [isDeclining, setIsDeclining] = useState(false);
+  const [sortOrder, setSortOrder] = useState('desc');
 
   useEffect(() => {
     const email = Cookies.get('email');
@@ -489,6 +490,14 @@ const SingleEmployeeAttendance = () => {
     doc.save(`all-employees-attendance-${month}-${year}.pdf`);
   };
 
+  const sortByDate = (records) => {
+    return records.slice().sort((a, b) => {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+    });
+  };
+
   return (
     <>
       <Header />
@@ -646,8 +655,15 @@ const SingleEmployeeAttendance = () => {
                                 checked={selectedRecords.length === filteredAttendance.length}
                               />
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th 
+                              scope="col" 
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                              onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                            >
                               Date
+                              <span className="ml-1">
+                                {sortOrder === 'asc' ? '▲' : '▼'}
+                              </span>
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Check-in Time
@@ -670,61 +686,53 @@ const SingleEmployeeAttendance = () => {
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {filteredAttendance.length > 0 ? (
-                            filteredAttendance.map((record) => (
-                              <tr key={record.id}>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                  <input
-                                    type="checkbox"
-                                    className="form-checkbox"
-                                    checked={selectedRecords.includes(record)}
-                                    onChange={() => handleSelectRecord(record)}
-                                  />
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                  {formatIndianDate(record.date)}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {formatIndianTime(record.checkin_Time)}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {record.checkout_Time ? formatIndianTime(record.checkout_Time) : '---'}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                    record.checkin_Time && record.checkout_Time 
-                                      ? 'bg-blue-100 text-blue-800'
-                                      : 'bg-gray-100 text-gray-800'
-                                  }`}>
-                                    {calculateWorkingHours(record.checkin_Time, record.checkout_Time)}
-                                  </span>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  {getCheckinStatus(record.checkin_Time, record.checkout_Time)}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <span className={`px-2 py-1 text-xs rounded-full ${
-                                    record.status === 'approved' 
-                                      ? 'bg-green-100 text-green-800'
-                                      : record.status === 'declined'
-                                      ? 'bg-red-100 text-red-800'
-                                      : 'bg-yellow-100 text-yellow-800'
-                                  }`}>
-                                    {record.status?.toUpperCase() || 'PENDING'}
-                                  </span>
-                                </td>
-                                <td className="px-6 py-4 whitespace-normal text-sm text-gray-500">
-                                  {renderReport(record.reports)}
-                                </td>
-                              </tr>
-                            ))
-                          ) : (
-                            <tr>
-                              <td colSpan="8" className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                                No data available for the selected period.
+                          {sortByDate(filteredAttendance).map((record) => (
+                            <tr key={record.id}>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <input
+                                  type="checkbox"
+                                  className="form-checkbox"
+                                  checked={selectedRecords.includes(record)}
+                                  onChange={() => handleSelectRecord(record)}
+                                />
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {formatIndianDate(record.date)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {formatIndianTime(record.checkin_Time)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {record.checkout_Time ? formatIndianTime(record.checkout_Time) : '---'}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                  record.checkin_Time && record.checkout_Time 
+                                    ? 'bg-blue-100 text-blue-800'
+                                    : 'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {calculateWorkingHours(record.checkin_Time, record.checkout_Time)}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                {getCheckinStatus(record.checkin_Time, record.checkout_Time)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`px-2 py-1 text-xs rounded-full ${
+                                  record.status === 'approved' 
+                                    ? 'bg-green-100 text-green-800'
+                                    : record.status === 'declined'
+                                    ? 'bg-red-100 text-red-800'
+                                    : 'bg-yellow-100 text-yellow-800'
+                                }`}>
+                                  {record.status?.toUpperCase() || 'PENDING'}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-normal text-sm text-gray-500">
+                                {renderReport(record.reports)}
                               </td>
                             </tr>
-                          )}
+                          ))}
                         </tbody>
                       </table>
                     </div>

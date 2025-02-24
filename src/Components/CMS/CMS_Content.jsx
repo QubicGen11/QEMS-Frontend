@@ -20,6 +20,7 @@ import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 import InfoTiles from './InfoTiles';
 import config from '../config';
+import Swal from 'sweetalert2';
 
 const API_BASE_URL = `${config.apiUrl}/qems/cms`;
 // const Api = `{${config.apiUrl}/`
@@ -151,8 +152,11 @@ const CMSDashboard = () => {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include'
-        }).then(res => res.json()).then(data => console.log(data)).catch(err => console.error(err));
+        });
         
+        if (!response.ok) {
+          throw new Error('Failed to fetch courses');
+        }
         
         const data = await response.json();
         setCourses(data);
@@ -176,8 +180,8 @@ const CMSDashboard = () => {
       const token = cookie.get('token'); // Get JWT token from cookies
 
       const response = await axios.post(
-        // 'https://image.qubinest.com/qems/upload',
-        'http://localhost:8082/qems/upload',
+        'https://image.qubinest.com/qems/upload',
+        // 'http://localhost:8082/qems/upload',
         formData,
         {
           headers: {
@@ -749,12 +753,31 @@ const CMSDashboard = () => {
         }
       });
 
-      if (!response.ok) throw new Error('Failed to fetch executives');
+      if (!response.ok) {
+        if(response.status === 403) {
+          throw new Error('SESSION_EXPIRED');
+        }
+        throw new Error('Failed to fetch executives');
+      }
+
       const data = await response.json();
       setExecutives(data.data);
     } catch (err) {
       console.error('Error fetching executives:', err);
-      toast.error('Failed to fetch executives');
+      
+      if(err.message === 'SESSION_EXPIRED') {
+        Swal.fire({
+          icon: 'error',
+          title: 'Session Expired',
+          text: 'Your login session has expired. Please login again.',
+          confirmButtonText: 'OK'
+        }).then(() => {
+          cookie.remove('token');
+          window.location.href = '/';
+        });
+      } else {
+        toast.error('Failed to fetch executives');
+      }
     }
   };
 
