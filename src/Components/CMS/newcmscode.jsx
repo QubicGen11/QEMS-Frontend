@@ -21,6 +21,8 @@ import axios from 'axios';
 import InfoTiles from './InfoTiles';
 import config from '../config';
 import Swal from 'sweetalert2';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const API_BASE_URL = `${config.apiUrl}/qems/cms`;
 // const Api = `{${config.apiUrl}/`
@@ -171,40 +173,13 @@ const CMSDashboard = () => {
   }, []);
 
   // Add image upload handler
-  const handleImageUpload = async (file) => {
-    try {
-      setIsUploadingImage(true);
-      const formData = new FormData();
-      formData.append('file', file); // Key should be 'file'
-
-      const token = cookie.get('token'); // Get JWT token from cookies
-
-      const response = await axios.post(
-        'https://image.qubinest.com/qems/upload',
-        // 'http://localhost:8082/qems/upload',
-        formData,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}` // Add authorization header if needed
-          }
-        }
-      );
-
-      // Handle different response structures
-      if (response.data.url) {
-        return response.data.url;
-      } else if (response.data.imageUrl) {
-        return response.data.imageUrl;
-      } else {
-        throw new Error('Invalid response format');
-      }
-    } catch (error) {
-      console.error('Upload error:', error.response?.data || error.message);
-      toast.error(`Upload failed: ${error.response?.data?.message || error.message}`);
-      throw error;
-    } finally {
-      setIsUploadingImage(false);
-    }
+  const handleImageUpload = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+      reader.readAsDataURL(file);
+    });
   };
 
   // Column definitions
@@ -887,21 +862,21 @@ const CMSDashboard = () => {
 
   const filteredAndSortedEntries = React.useMemo(() => {
     let result = entries.filter(entry => {
-      // Active tab filter
-      if (activeTab === 'active' && entry.status === 'COMPLETE') {
-        return false;
-      }
+        // Active tab filter
+        if (activeTab === 'active' && entry.status === 'COMPLETE') {
+          return false;
+        }
 
-      // Search filter
-      const matchesSearch = searchTerm ?
-        Object.values(entry).some(val =>
-          val?.toString().toLowerCase().includes(searchTerm.toLowerCase())
-        ) : true;
+        // Search filter
+        const matchesSearch = searchTerm ?
+          Object.values(entry).some(val =>
+            val?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+          ) : true;
 
-      // Custom filters
-      const matchesFilters = Object.entries(filters).every(([key, value]) =>
-        !value || entry[key]?.toString().toLowerCase() === value.toLowerCase()
-      );
+        // Custom filters
+        const matchesFilters = Object.entries(filters).every(([key, value]) =>
+          !value || entry[key]?.toString().toLowerCase() === value.toLowerCase()
+        );
 
       return matchesSearch && matchesFilters;
     });
@@ -962,41 +937,6 @@ const CMSDashboard = () => {
     </div>
   );
 
-  const openCommentsModal = async (entryId) => {
-    try {
-        const token = cookie.get('token');
-        if (!token) {
-            toast.error('Authentication token not found');
-            return;
-        }
-
-        const response = await axios.get(`${API_BASE_URL}/entries/${entryId}/comments`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (response.data && response.data.success) {
-            setCurrentComments(response.data.data || []);
-            setIsCommentsModalOpen(true);
-        } else {
-            setCurrentComments([]);
-        }
-    } catch (error) {
-        console.error('Error fetching comments:', error);
-    }
-};
-
-
-
-
-  const isExecutive = () => {
-    const token = cookie.get('token');
-    if (!token) return false;
-    const user = jwtDecode(token);
-    return user.mainPosition?.toLowerCase() === 'executive';
-  };
 
   // Update the getFilteredContacts function
 
@@ -1614,13 +1554,13 @@ const CMSDashboard = () => {
                               const file = e.target.files[0];
                               if (file) {
                                 try {
-                                  const imageUrl = await handleImageUpload(file);
+                                  const base64Image = await handleImageUpload(file);
                                   setFormData(prev => ({
                                     ...prev,
-                                    comment: `${prev.comment}\n[image:${imageUrl}]`
+                                    comment: `${prev.comment}\n[image:data:image/png;base64,${base64Image.split(',')[1]}]`
                                   }));
                                 } catch (error) {
-                                  // Error already handled
+                                  toast.error('Error converting image: ' + error.message);
                                 }
                               }
                             }}
@@ -1682,17 +1622,18 @@ const CMSDashboard = () => {
     <ul>
   {comments.map((comment) => {
     // Check if comment contains an image
-    const imageMatch = comment.comment.match(/\[image:(.*?)\]/);
-    const imageUrl = imageMatch ? imageMatch[1] : null;
-    const textComment = imageMatch ? comment.comment.replace(imageMatch[0], '') : comment.comment;
+    const isImage = comment.comment.startsWith("[image:data:image");
+    const imageData = isImage ? 
+      comment.comment.replace("[image:", "").replace("]", "") : null;
+    const textComment = isImage ? comment.comment.replace(/\[image:.*?\]/, '') : comment.comment;
 
     return (
       <li key={comment.id}>
         <p><strong>{comment.postedByUsername || comment.postedByUserId}</strong></p>
         {isImage ? (
-          <img src={imageUrl} alt="comment attachment" style={{ width: "150px", height: "auto" }} />
+          <img src={imageData} alt="comment attachment" style={{ width: "150px", height: "auto" }} />
         ) : (
-          <p>{comment.comment}</p>
+          <p>{textComment}</p>
         )}
         <p><small>{new Date(comment.postedAt).toLocaleString()}</small></p>
       </li>
@@ -2267,42 +2208,38 @@ const CMSDashboard = () => {
 
             {currentComments.length > 0 ? (
                 <div className="space-y-3">
-                  {currentComments.map((comment, index) => {
-    // Extract image URLs using regex
-    const imageMatches = [...comment.comment.matchAll(/\[image:(.*?)\]/g)];
-    const imageUrls = imageMatches.map(match => match[1]);
-    
-    // Remove image placeholders from text
-    const textComment = comment.comment.replace(/\[image:.*?\]/g, '').trim();
-
-    return (
-        <div key={index} className="border-b pb-2">
-            <div className="flex justify-between text-xs text-gray-500">
-                <span>{comment.postedByUsername || comment.postedByUserId}</span>
-                <span>{new Date(comment.postedAt).toLocaleString()}</span>
-            </div>
-
-            {/* Display text if available */}
-            {textComment && <p className="text-sm mt-1">{textComment}</p>}
-
-            {/* Display images if available */}
-            {imageUrls.length > 0 && (
-                <div className="mt-2 space-y-2">
-                    {imageUrls.map((imageUrl, imgIndex) => (
-                        <img
-                            key={imgIndex}
-                            src={imageUrl}
-                            alt="Comment Attachment"
-                            className="w-40 h-auto rounded cursor-zoom-in"
-                            onClick={() => setSelectedImage(imageUrl)}
-                        />
-                    ))}
-                </div>
-            )}
-        </div>
-    );
-})}
-
+                    {currentComments.map((comment, index) => {
+                        // Use non-greedy match with proper escaping
+                        const commentParts = comment.comment.split(/\[image:(.*?)\]/g);
+                        
+                        return (
+                            <div key={index} className="border-b pb-2">
+                                <div className="flex justify-between text-xs text-gray-500">
+                                    <span>{comment.postedByUsername || comment.postedByUserId}</span>
+                                    <span>{new Date(comment.postedAt).toLocaleString()}</span>
+                                </div>
+                                <div className="text-sm mt-1">
+                                    {commentParts.map((part, i) => {
+                                        if (i % 2 === 1) {
+                                            // Handle bracket-enclosed image data
+                                            const cleanBase64 = part.replace(/^\[|\]$/g, '');
+                                            const fullBase64 = cleanBase64.startsWith('data:') ? cleanBase64 : `data:image/png;base64,${cleanBase64}`;
+                                            return (
+                                                <img
+                                                    key={`img-${i}`}
+                                                    src={fullBase64}
+                                                    alt="Comment Attachment"
+                                                    className="w-40 h-auto mt-1 rounded cursor-zoom-in"
+                                                    onClick={() => setSelectedImage(fullBase64)}
+                                                />
+                                            );
+                                        }
+                                        return part;
+                                    })}
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             ) : (
                 <p className="text-center text-gray-500">No comments available</p>
