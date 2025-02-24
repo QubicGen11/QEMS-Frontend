@@ -23,8 +23,9 @@ const TodaysAttendance = () => {
   });
   const [filters, setFilters] = useState({
     department: '',
+    position: '',
     status: 'all',
-    employeeId: ''
+    searchQuery: ''
   });
   const [showFilters, setShowFilters] = useState(false);
   const [departments, setDepartments] = useState(['All']);
@@ -199,25 +200,34 @@ const TodaysAttendance = () => {
         filters.department === 'All' || 
         record.department === filters.department;
 
+      // Position filter
+      const positionMatch = 
+        !filters.position ||
+        filters.position === 'All' || 
+        record.mainPosition === filters.position;
+
       // Status filter
       const statusMatch = 
         filters.status === 'all' || 
         record.checkinStatus === filters.status;
 
-      // Employee ID filter
-      const employeeIdMatch = 
-        !filters.employeeId || 
-        record.employeeId.toLowerCase().includes(filters.employeeId.toLowerCase());
+      // Search filter (ID, Name, Email)
+      const searchMatch = 
+        !filters.searchQuery ||
+        record.employeeId.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+        record.employeeName.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+        (record.email && record.email.toLowerCase().includes(filters.searchQuery.toLowerCase()));
 
-      return departmentMatch && statusMatch && employeeIdMatch;
+      return departmentMatch && positionMatch && statusMatch && searchMatch;
     });
   }, [attendance, filters]);
 
   // Add this helper function to check if any filters are active
   const isAnyFilterActive = () => {
-    return filters.employeeId !== '' || 
+    return filters.searchQuery !== '' || 
            filters.department !== '' || 
-           filters.status !== 'all';
+           filters.status !== 'all' || 
+           filters.position !== 'All';
   };
 
   // Add this pagination logic
@@ -255,21 +265,46 @@ const TodaysAttendance = () => {
         {showFilters && (
           <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4">
-              {/* Employee ID Filter */}
+              {/* Search Filter */}
               <div className="flex flex-col">
                 <label className="text-sm font-medium text-gray-700 mb-1">
-                  Filter by Employee ID
+                  Search (ID, Name, Email)
                 </label>
                 <div className="flex items-center gap-2">
                   <FontAwesomeIcon icon={faSearch} className="text-gray-500" />
                   <input
                     className="border rounded-md px-3 py-1.5 text-gray-700 w-full"
-                    value={filters.employeeId}
+                    value={filters.searchQuery}
                     onChange={(e) => setFilters(prev => ({ 
                       ...prev, 
-                      employeeId: e.target.value 
+                      searchQuery: e.target.value 
                     }))}
                   />
+                </div>
+              </div>
+
+              {/* Position Filter */}
+              <div className="flex flex-col">
+                <label className="text-sm font-medium text-gray-700 mb-1">
+                  Filter by Position
+                </label>
+                <div className="flex items-center gap-2">
+                  <FontAwesomeIcon icon={faFilter} className="text-gray-500" />
+                  <select
+                    className="border rounded-md px-3 py-1.5 text-gray-700 w-full"
+                    value={filters.position}
+                    onChange={(e) => setFilters(prev => ({ 
+                      ...prev, 
+                      position: e.target.value 
+                    }))}
+                  >
+                    <option value="All">All Positions</option>
+                    {[...new Set(attendance.map(item => item.mainPosition))].map((position) => (
+                      <option key={position} value={position}>
+                        {position || 'N/A'}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -312,7 +347,7 @@ const TodaysAttendance = () => {
                       status: e.target.value 
                     }))}
                   >
-                    <option value="all">All Status</option>
+                    <option value="all">All</option>
                     <option value="ontime">On Time</option>
                     <option value="late">Late</option>
                     <option value="absent">Absent</option>
@@ -325,8 +360,9 @@ const TodaysAttendance = () => {
                 <button
                   onClick={() => setFilters({ 
                     department: '', 
+                    position: '',
                     status: 'all', 
-                    employeeId: '' 
+                    searchQuery: '' 
                   })}
                   disabled={!isAnyFilterActive()}
                   className={`flex items-center gap-2 px-4 py-1.5 rounded-md transition-colors w-40

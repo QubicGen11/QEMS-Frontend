@@ -97,15 +97,17 @@ const AllEmployeeAttendance = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
+  const [positionFilter, setPositionFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const getStatusClasses = (status) => {
     switch (status) {
       case "Active":
-        return " text-green-800";
-      case "Decline":
-        return " text-red-800";
+        return "  bg-green-600 text-white p-2";
+      case "Disabled":
+        return " text-white p-2 bg-red-600 ";
       case "Pending":
         return " text-yellow-800";
       default:
@@ -163,19 +165,22 @@ const AllEmployeeAttendance = () => {
   };
 
   const uniqueRoles = [...new Set(employees.map(emp => emp.role))].filter(Boolean);
+  const uniquePositions = [...new Set(employees.map(emp => emp.mainPosition))].filter(Boolean);
+  const statusOptions = ['all', 'Active', 'Disabled', 'Pending'];
 
   const filteredEmployees = employees.filter(user => {
     const searchString = searchTerm.toLowerCase();
     const matchesSearch = (
       user.username?.toLowerCase().includes(searchString) ||
       user.email?.toLowerCase().includes(searchString) ||
-      user.employeeId?.toLowerCase().includes(searchString) ||
-      user.mainPosition?.toLowerCase().includes(searchString)
+      user.employeeId?.toLowerCase().includes(searchString)
     );
     
     const matchesRole = !roleFilter || user.role === roleFilter;
+    const matchesPosition = !positionFilter || user.mainPosition === positionFilter;
+    const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
     
-    return matchesSearch && matchesRole;
+    return matchesSearch && matchesRole && matchesPosition && matchesStatus;
   });
 
   const exportToExcel = async () => {
@@ -466,6 +471,35 @@ const AllEmployeeAttendance = () => {
                               <FiFilter className="absolute right-2 top-3 text-gray-400" />
                             </div>
                             
+                            <div className="relative">
+                              <select
+                                className="appearance-none px-4 py-2 border rounded-lg text-gray-700 focus:outline-none focus:border-blue-500 pr-8"
+                                value={positionFilter}
+                                onChange={(e) => setPositionFilter(e.target.value)}
+                              >
+                                <option value="">All Positions</option>
+                                {uniquePositions.map(position => (
+                                  <option key={position} value={position}>{position}</option>
+                                ))}
+                              </select>
+                              <FiFilter className="absolute right-2 top-3 text-gray-400" />
+                            </div>
+
+                            <div className="relative">
+                              <select
+                                className="appearance-none px-4 py-2 border rounded-lg text-gray-700 focus:outline-none focus:border-blue-500 pr-8"
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)}
+                              >
+                                {statusOptions.map(status => (
+                                  <option key={status} value={status}>
+                                    {status === 'all' ? 'All Statuses' : status}
+                                  </option>
+                                ))}
+                              </select>
+                              <FiFilter className="absolute right-2 top-3 text-gray-400" />
+                            </div>
+
                             <div className="flex items-center gap-4">
                               <button
                                 onClick={exportToExcel}

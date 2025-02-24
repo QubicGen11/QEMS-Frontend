@@ -674,9 +674,7 @@ const SingleEmployeeAttendance = () => {
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Total Working Time
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Status
-                            </th>
+                  
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Approval Status
                             </th>
@@ -714,9 +712,7 @@ const SingleEmployeeAttendance = () => {
                                   {calculateWorkingHours(record.checkin_Time, record.checkout_Time)}
                                 </span>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                {getCheckinStatus(record.checkin_Time, record.checkout_Time)}
-                              </td>
+                          
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span className={`px-2 py-1 text-xs rounded-full ${
                                   record.status === 'approved' 

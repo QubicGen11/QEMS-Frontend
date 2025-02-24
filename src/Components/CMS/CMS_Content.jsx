@@ -887,21 +887,21 @@ const CMSDashboard = () => {
 
   const filteredAndSortedEntries = React.useMemo(() => {
     let result = entries.filter(entry => {
-      // Active tab filter
-      if (activeTab === 'active' && entry.status === 'COMPLETE') {
-        return false;
-      }
+        // Active tab filter
+        if (activeTab === 'active' && entry.status === 'COMPLETE') {
+          return false;
+        }
 
-      // Search filter
-      const matchesSearch = searchTerm ?
-        Object.values(entry).some(val =>
-          val?.toString().toLowerCase().includes(searchTerm.toLowerCase())
-        ) : true;
+        // Search filter
+        const matchesSearch = searchTerm ?
+          Object.values(entry).some(val =>
+            val?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+          ) : true;
 
-      // Custom filters
-      const matchesFilters = Object.entries(filters).every(([key, value]) =>
-        !value || entry[key]?.toString().toLowerCase() === value.toLowerCase()
-      );
+        // Custom filters
+        const matchesFilters = Object.entries(filters).every(([key, value]) =>
+          !value || entry[key]?.toString().toLowerCase() === value.toLowerCase()
+        );
 
       return matchesSearch && matchesFilters;
     });
