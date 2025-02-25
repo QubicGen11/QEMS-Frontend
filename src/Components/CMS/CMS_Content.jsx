@@ -119,6 +119,8 @@ const CMSDashboard = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage] = useState(5);
+  const [isLoadingComments, setIsLoadingComments] = useState(false);
+
 
 
 const columnSelectorRef = useRef(null);
@@ -373,13 +375,12 @@ useEffect(() => {
   // Fetch comments for an entry
   const fetchComments = async (entryId) => {
     try {
-        console.log("Fetching comments for entryId:", entryId);
+        setIsLoadingComments(true); // Start loading
 
         const token = cookie.get('token');
-        console.log("Retrieved token:", token ? "Exists" : "Missing");
-
         if (!token) {
-            throw new Error('No authentication token found');
+            toast.error('Authentication token not found');
+            return;
         }
 
         const response = await axios.get(`${API_BASE_URL}/entries/${entryId}/comments`, {
@@ -389,29 +390,19 @@ useEffect(() => {
             }
         });
 
-        console.log("API Response:", response);
-
         if (response.data && response.data.success) {
-            console.log("API Response Data:", response.data.data);
-            console.log("Setting Current Comments:", Array.isArray(response.data.data) ? "Valid Array" : "Not an Array");
-
             setCurrentComments(response.data.data || []);
         } else {
-            console.warn("API did not return success:", response.data);
             setCurrentComments([]);
         }
     } catch (error) {
-        console.error("Error fetching comments:", error);
-
-        if (error.response) {
-            console.error('Error Response Data:', error.response.data);
-            console.error('Error Response Status:', error.response.status);
-            console.error('Error Response Headers:', error.response.headers);
-        }
-
+        console.error('Error fetching comments:', error);
         setCurrentComments([]);
+    } finally {
+        setIsLoadingComments(false); // Stop loading
     }
 };
+
 
 
   
@@ -2299,48 +2290,55 @@ useEffect(() => {
                 </button>
             </div>
 
-            {currentComments.length > 0 ? (
-                <div className="space-y-3">
-                  {currentComments.map((comment, index) => {
-    // Extract image URLs using regex
-    const imageMatches = [...comment.comment.matchAll(/\[image:(.*?)\]/g)];
-    const imageUrls = imageMatches.map(match => match[1]);
-    
-    // Remove image placeholders from text
-    const textComment = comment.comment.replace(/\[image:.*?\]/g, '').trim();
+            {isLoadingComments ? (
+    <div className="flex justify-center items-center py-4">
+        <div className="size-6 animate-spin rounded-full border-2 border-blue-500 border-t-white"></div>
+    </div>
+) : (
+    currentComments.length > 0 ? (
+        <div className="space-y-3">
+            {currentComments.map((comment, index) => {
+                const imageMatches = [...comment.comment.matchAll(/\[image:(.*?)\]/g)];
+                const imageUrls = imageMatches.map(match => match[1]);
+                const textComment = comment.comment.replace(/\[image:.*?\]/g, '').trim();
 
-    return (
-        <div key={index} className="border-b pb-2">
-            <div className="flex justify-between text-xs text-gray-500">
-                <span>{comment.postedByUsername || comment.postedByUserId}</span>
-                <span>{new Date(comment.postedAt).toLocaleString()}</span>
-            </div>
+                return (
+                    <div key={index} className="border-b pb-2">
+                        <div className="flex justify-between text-xs text-gray-500">
+                            <span>{comment.postedByUsername || comment.postedByUserId}</span>
+                            <span>{new Date(comment.postedAt).toLocaleString()}</span>
+                        </div>
+                        {textComment && (
+    <p 
+        className="text-sm mt-1 truncate max-w-xs cursor-pointer"
+        title={textComment.length > 100 ? textComment : ""}
+    >
+        {textComment.length > 100 ? `${textComment.slice(0, 100)}...` : textComment}
+    </p>
+)}
 
-            {/* Display text if available */}
-            {textComment && <p className="text-sm mt-1">{textComment}</p>}
-
-            {/* Display images if available */}
-            {imageUrls.length > 0 && (
-                <div className="mt-2 space-y-2">
-                    {imageUrls.map((imageUrl, imgIndex) => (
-                        <img
-                            key={imgIndex}
-                            src={imageUrl}
-                            alt="Comment Attachment"
-                            className="w-40 h-auto rounded cursor-zoom-in"
-                            onClick={() => setSelectedImage(imageUrl)}
-                        />
-                    ))}
-                </div>
-            )}
+                        {imageUrls.length > 0 && (
+                            <div className="mt-2 space-y-2">
+                                {imageUrls.map((imageUrl, imgIndex) => (
+                                    <img
+                                        key={imgIndex}
+                                        src={imageUrl}
+                                        alt="Comment Attachment"
+                                        className="w-40 h-auto rounded cursor-zoom-in"
+                                        onClick={() => setSelectedImage(imageUrl)}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                );
+            })}
         </div>
-    );
-})}
+    ) : (
+        <p className="text-center text-gray-500">No comments available</p>
+    )
+)}
 
-                </div>
-            ) : (
-                <p className="text-center text-gray-500">No comments available</p>
-            )}
         </div>
     </div>
 )}
