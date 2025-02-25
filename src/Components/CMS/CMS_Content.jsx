@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
 
   PlusCircle,
@@ -78,7 +78,7 @@ const CMSDashboard = () => {
   const [disabledFields, setDisabledFields] = useState({
     name: false,
     contact: false,
-    email: false,
+    email: true,
     branch: false,
     comfortableLanguage: false,
     assignedTo: false,
@@ -100,6 +100,7 @@ const CMSDashboard = () => {
   const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState({
     actions: true,
+    email:true,
     name: true,
     contact: true,
     branch: false,
@@ -118,6 +119,22 @@ const CMSDashboard = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage] = useState(5);
+
+
+const columnSelectorRef = useRef(null);
+useEffect(() => {
+  function handleClickOutside(event) {
+    if (columnSelectorRef.current && !columnSelectorRef.current.contains(event.target)) {
+      setIsColumnSelectorOpen(false);
+    }
+  }
+
+  document.addEventListener('mousedown', handleClickOutside);
+  return () => {
+    document.removeEventListener('mousedown', handleClickOutside);
+  };
+}, []);
+
 
   // Add these new state variables
   const [selectedEntries, setSelectedEntries] = useState(new Set());
@@ -241,39 +258,60 @@ const CMSDashboard = () => {
   // Effect to reset column visibility based on screen size
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 400) {
-        // Mobile view: Force Actions, Name, and Email to be visible
-        setVisibleColumns((prev) => ({
-          ...prev,
+      if (window.innerWidth < 600) {
+        // Mobile view: Force only Name, Email, and Contact to be visible
+        setVisibleColumns({
           actions: true,
           name: true,
           email: true,
-        }));
+          contact: true,
+          branch: false,
+          comfortableLanguage: false,
+          assignedTo: false,
+          callStatus: false,
+          status: false,
+          createdByUserId: false,
+          createdAt: false,
+          comments: false,
+          projectedAmount: false,
+          preRegisteredAmount: false,
+          remainingAmount: false,
+          updatedAt: false,
+        });
       } else {
-        // Medium and larger views: Allow all columns to be customizable
+        // Desktop view: Restore full visibility settings
         setVisibleColumns((prev) => ({
           ...prev,
           actions: prev.actions,
           name: prev.name,
           email: prev.email,
-          comfortableLanguage: true,
-          assignedTo: true,
-          callStatus: true,
-          status: true,
-          createdByUserId: true,
+          contact: prev.contact,
+          branch: prev.branch,
+          comfortableLanguage: prev.comfortableLanguage,
+          assignedTo: prev.assignedTo,
+          callStatus: prev.callStatus,
+          status: prev.status,
+          createdByUserId: prev.createdByUserId,
+          createdAt: prev.createdAt,
+          comments: prev.comments,
+          projectedAmount: prev.projectedAmount,
+          preRegisteredAmount: prev.preRegisteredAmount,
+          remainingAmount: prev.remainingAmount,
+          updatedAt: prev.updatedAt,
         }));
       }
     };
-
-    // Add event listener for window resize
-    window.addEventListener('resize', handleResize);
-
-    // Initial call to set the correct visibility
+  
+    // Run on mount
     handleResize();
-
-    // Cleanup event listener
+  
+    // Listen for window resize
+    window.addEventListener('resize', handleResize);
+    
+    // Cleanup listener
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+  
 
   const indexOfLastLog = logCurrentPage * logEntriesPerPage;
   const indexOfFirstLog = indexOfLastLog - logEntriesPerPage;
@@ -1992,24 +2030,25 @@ const CMSDashboard = () => {
             </div>
 
             {/* Column Selector Dropdown */}
-            {isColumnSelectorOpen && (
-              <div className="absolute right-4 mt-1 bg-white border rounded-md shadow-lg p-2 z-50">
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  {columns.map(column => (
-                    <label key={column.id} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={visibleColumns[column.id]}
-                        onChange={() => toggleColumn(column.id)}
-                        className="form-checkbox h-3 w-3"
-                        disabled={window.innerWidth < 768 && ['actions', 'name', 'email'].includes(column.id)} // Disable toggling for mobile defaults
-                      />
-                      <span>{column.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
+           {/* Column Selector Dropdown */}
+{isColumnSelectorOpen && (
+  <div ref={columnSelectorRef} className="absolute right-4 mt-1 bg-white border rounded-md shadow-lg p-2 z-50">
+    <div className="grid grid-cols-2 gap-2 text-xs">
+      {columns.map(column => (
+        <label key={column.id} className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            checked={visibleColumns[column.id]}
+            onChange={() => toggleColumn(column.id)}
+            className="form-checkbox h-3 w-3"
+          />
+          <span>{column.label}</span>
+        </label>
+      ))}
+    </div>
+  </div>
+)}
+
 
             {/* Filters for Mobile (Dropdown) */}
             {isFiltersDropdownOpen && (
