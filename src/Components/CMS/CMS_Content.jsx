@@ -382,17 +382,17 @@ const CMSDashboard = () => {
   const handleCreateEntry = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+  
     try {
       const token = cookie.get('token');
       if (!token) {
         toast.error('Authentication token not found');
         return;
       }
-
-      // Ensure assignedTo is included in the payload
+  
       const payload = {
         ...formData,
-        assignedTo: formData.assignedTo || user.email, // Fallback to user.email if not set
+        assignedTo: formData.assignedTo || user.email,
         collegeName: formData.collegeName,
         yearOfStudying: formData.yearOfStudying ? parseInt(formData.yearOfStudying) : null,
         courseOpt: formData.courseOpt,
@@ -400,8 +400,7 @@ const CMSDashboard = () => {
         projectedAmount: formData.projectedAmount ? parseFloat(formData.projectedAmount) : 0,
         preRegisteredAmount: formData.preRegisteredAmount ? parseFloat(formData.preRegisteredAmount) : 0
       };
-      
-
+  
       const response = await fetch(`${API_BASE_URL}/entries`, {
         method: 'POST',
         headers: {
@@ -410,121 +409,117 @@ const CMSDashboard = () => {
         },
         body: JSON.stringify(payload)
       });
-
-      const data = await response.json(); // Parse JSON response
-
-  if (!response.ok) {
-    if (response.status === 400) {
-      toast.error(data.message, { position: 'top-right', autoClose: 3000 });
-    } else if (response.status === 409) {
-      throw new Error('Email or contact number already exists');
-    } else {
-      throw new Error('Failed to create entry');
-    }
-    return; // Stop execution if response is not ok
-  }
-
-      await fetchEntries();
-      setIsModalOpen(false);
-      resetForm();
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        if (response.status === 400) {
+          toast.error(data.message, { position: 'top-right', autoClose: 3000 });
+        } else if (response.status === 409) {
+          throw new Error('Email or contact number already exists');
+        } else {
+          throw new Error('Failed to create entry');
+        }
+        return;
+      }
+  
       toast.success('Entry created successfully! 🎉');
-
-      // setTimeout(() => {
-      //   window.location.reload();
-      // }, 2000);
-
-
+      
+      // ✅ Close modal immediately
+      setIsModalOpen(false);
+      
+      // ✅ Reset form before fetching
+      resetForm();
+      
+      // ✅ Fetch entries in the background
+      fetchEntries();
+  
     } catch (err) {
       console.error('Create error:', err);
       toast.error(`Failed to create entry: ${err.message}`);
-    }
-    finally {
-      setIsSubmitting(false); // End loading state
+    } finally {
+      setIsSubmitting(false);
     }
   };
+  
 
   // Update entry
   const handleUpdateEntry = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true); // Start loading state
+    setIsSubmitting(true);
+  
     try {
       const token = cookie.get('token');
       if (!token) {
         toast.error('Authentication token not found');
         return;
       }
-
+  
       // Status update
       if (formData.callStatus || formData.status) {
         try {
           await axios.put(
             `${API_BASE_URL}/entries/${currentEditId}/status`,
-            {
-              callStatus: formData.callStatus,
-              status: formData.status
-            },
+            { callStatus: formData.callStatus, status: formData.status },
             { headers: { 'Authorization': `Bearer ${token}` } }
           );
         } catch (statusError) {
           toast.error(`Failed to update status: ${statusError.message}`);
         }
       }
-
+  
       // Comment update
       if (formData.comment?.trim()) {
         try {
           await axios.post(
             `${API_BASE_URL}/entries/${currentEditId}/comments`,
-            {
-              entryId: currentEditId,
-              comment: formData.comment.trim()
-            },
+            { entryId: currentEditId, comment: formData.comment.trim() },
             { headers: { 'Authorization': `Bearer ${token}` } }
           );
         } catch (commentError) {
           toast.error(`Failed to add comment: ${commentError.message}`);
         }
       }
-
+  
       // General update
-      try {
-        await axios.put(
-          `${API_BASE_URL}/entries/${currentEditId}`,
-          {
-            name: formData.name,
-            contact: formData.contact,
-            email: formData.email,
-            branch: formData.branch,
-            comfortableLanguage: formData.comfortableLanguage,
-            assignedTo: formData.assignedTo,
-            collegeName: formData.collegeName,
-            yearOfStudying: formData.yearOfStudying ? parseInt(formData.yearOfStudying) : null,
-            courseOpt: formData.courseOpt,
-            registeredMonth: formData.registeredMonth,
-            projectedAmount: formData.projectedAmount ? parseFloat(formData.projectedAmount) : 0,
-            preRegisteredAmount: formData.preRegisteredAmount ? parseFloat(formData.preRegisteredAmount) : 0
-          },
-          { headers: { 'Authorization': `Bearer ${token}` } }
-        );
-        
-        toast.success('Entry details updated successfully! ✨');
-        // setTimeout(() => {
-        //   window.location.reload();
-        // }, 1000);
-      } catch (updateError) {
-        toast.error(`Failed to update entry details: ${updateError.message}`);
-      }
-
-      await fetchEntries();
+      await axios.put(
+        `${API_BASE_URL}/entries/${currentEditId}`,
+        {
+          name: formData.name,
+          contact: formData.contact,
+          email: formData.email,
+          branch: formData.branch,
+          comfortableLanguage: formData.comfortableLanguage,
+          assignedTo: formData.assignedTo,
+          collegeName: formData.collegeName,
+          yearOfStudying: formData.yearOfStudying ? parseInt(formData.yearOfStudying) : null,
+          courseOpt: formData.courseOpt,
+          registeredMonth: formData.registeredMonth,
+          projectedAmount: formData.projectedAmount ? parseFloat(formData.projectedAmount) : 0,
+          preRegisteredAmount: formData.preRegisteredAmount ? parseFloat(formData.preRegisteredAmount) : 0
+        },
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+  
+      toast.success('Entry details updated successfully! ✨');
+  
+      // ✅ Close modal immediately
       setIsModalOpen(false);
+      
+      // ✅ Reset form before fetching
       resetForm();
+      
+      // ✅ Fetch entries in the background
+      fetchEntries();
+  
     } catch (err) {
       console.error('Update error:', err);
       toast.error(`Update failed: ${err.message}`);
     } finally {
-      setIsSubmitting(false); // End loading state
+      setIsSubmitting(false);
     }
   };
+  
 
   // Delete entry
   const handleDeleteEntry = async (id) => {
