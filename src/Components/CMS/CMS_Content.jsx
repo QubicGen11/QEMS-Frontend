@@ -13,6 +13,8 @@ import {
   Download,
   UserPlus
 } from 'lucide-react';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 import cookie from 'js-cookie';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -154,10 +156,28 @@ useEffect(() => {
 
   // Add this state near other state declarations
   const [commentImage, setCommentImage] = useState(null);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false); // Close dropdown if clicked outside
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isDropdownOpen]);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   // Add new state near other state declarations
   const [selectedImage, setSelectedImage] = useState(null);
+  const [isAssigning, setIsAssigning] = useState(false);
 
   // Add new state for courses and loading
   const [courses, setCourses] = useState([]);
@@ -335,7 +355,23 @@ useEffect(() => {
       setError(err.message);
     }
   };
+  const modalRef = useRef(null);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        setIsModalOpen(false); // Close modal if clicked outside
+      }
+    };
+
+    if (isModalOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isModalOpen]);
   // Fetch entries
   const fetchEntries = async () => {
     try {
@@ -1345,7 +1381,7 @@ useEffect(() => {
         {/* Modal - Same as previous implementation */}
         {isModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-4 sm:p-6 rounded-lg relative w-[90vw] sm:w-[80vw] md:w-[60vw] lg:w-[40vw] h-[80vh] flex flex-col">
+            <div ref={modalRef}  className="bg-white p-4 sm:p-6 rounded-lg relative w-[90vw] sm:w-[80vw] md:w-[60vw] lg:w-[40vw] h-[80vh] flex flex-col">
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="absolute top-4 right-4"
@@ -1960,30 +1996,30 @@ useEffect(() => {
 
 
                   {isDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-10">
-                      <button
-                        onClick={() => {
-                          resetForm();
-                          setIsModalOpen(true);
-                          setIsDropdownOpen(false);
-                        }}
-                        className="flex items-center w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700"
-                      >
-                        <FileText className="mr-2" size={16} />
-                        Single Entry
-                      </button>
-                      <button
-                        onClick={() => {
-                          setIsUploadModalOpen(true);
-                          setIsDropdownOpen(false);
-                        }}
-                        className="flex items-center w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700 border-t"
-                      >
-                        <Upload className="mr-2" size={16} />
-                        Multiple Entries
-                      </button>
-                    </div>
-                  )}
+          <div ref={dropdownRef} className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-10">
+            <button
+              onClick={() => {
+                resetForm();
+                setIsModalOpen(true);
+                setIsDropdownOpen(false);
+              }}
+              className="flex items-center w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700"
+            >
+              <FileText className="mr-2" size={16} />
+              Single Entry
+            </button>
+            <button
+              onClick={() => {
+                setIsUploadModalOpen(true);
+                setIsDropdownOpen(false);
+              }}
+              className="flex items-center w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700 border-t"
+            >
+              <Upload className="mr-2" size={16} />
+              Multiple Entries
+            </button>
+          </div>
+        )}
                 </div>
 
 
@@ -2349,7 +2385,7 @@ useEffect(() => {
     <div className="relative w-full h-full flex items-center justify-center">
       <button
         onClick={() => setSelectedImage(null)}
-        className="absolute top-4 right-4 text-white hover:text-gray-300"
+        className="absolute top-20 right-4 text-white hover:text-gray-300"
       >
         <X size={32} />
       </button>
@@ -2365,92 +2401,109 @@ useEffect(() => {
 
         {/* Assign Modal */}
         {isAssignModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg w-full max-w-sm">
-              <h2 className="text-lg font-bold mb-4">Assign Selected Entries</h2>
-              
-              {/* Selected Executive Display */}
-              {selectedExecutive && (
-                <div className="mb-4 p-2 bg-blue-50 rounded flex items-center justify-between">
-                  <div>
-                    <span className="font-medium">
-                      {executives.find(e => e.email === selectedExecutive)?.username}
-                    </span>
-                    <span className="text-gray-500 text-sm ml-2">
-                      ({selectedExecutive})
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => setSelectedExecutive('')}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              )}
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-lg w-full max-w-sm">
+      <h2 className="text-lg font-bold mb-4">Assign Selected Entries</h2>
 
-              {/* Search input */}
-              <div className="mb-4 relative">
-                <input
-                  type="text"
-                  placeholder="Search executives..."
-                  value={assignSearch}
-                  onChange={(e) => setAssignSearch(e.target.value)}
-                  className="w-full p-2 border rounded pl-8 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  autoFocus
-                />
-                <Search className="absolute left-2 top-3 text-gray-400" size={16} />
-              </div>
-
-              {/* Executive List */}
-              <div className="mb-4 max-h-60 overflow-y-auto">
-                <div className="space-y-2">
-                  {filteredAssignExecutives.map(exec => (
-                    <div
-                      key={exec.email}
-                      onClick={() => {
-                        setSelectedExecutive(exec.email);
-                        setAssignSearch('');
-                      }}
-                      className={`p-2 cursor-pointer rounded ${
-                        selectedExecutive === exec.email 
-                          ? 'bg-blue-100' 
-                          : 'hover:bg-gray-100'
-                      }`}
-                    >
-                      <div className="font-medium">{exec.username}</div>
-                      <div className="text-xs text-gray-500">{exec.email}</div>
-                    </div>
-                  ))}
-                  {filteredAssignExecutives.length === 0 && (
-                    <div className="p-2 text-gray-500 text-sm">
-                      No executives found matching your search
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              {/* Rest of the modal buttons */}
-              <div className="flex justify-end gap-2">
-                <button
-                  onClick={() => setIsAssignModalOpen(false)}
-                  className="px-4 py-2 text-gray-500 hover:text-gray-700"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={async () => {
-                    await handleBulkAssign();
-                    setIsAssignModalOpen(false);
-                  }}
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                >
-                  Confirm Assign
-                </button>
-              </div>
-            </div>
+      {/* Selected Executive Display */}
+      {selectedExecutive && (
+        <div className="mb-4 p-2 bg-blue-50 rounded flex items-center justify-between">
+          <div>
+            <span className="font-medium">
+              {executives.find(e => e.email === selectedExecutive)?.username}
+            </span>
+            <span className="text-gray-500 text-sm ml-2">
+              ({selectedExecutive})
+            </span>
           </div>
-        )}
+          <button
+            onClick={() => setSelectedExecutive('')}
+            className="text-red-500 hover:text-red-700"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
+      {/* Search input */}
+      <div className="mb-4 relative">
+        <input
+          type="text"
+          placeholder="Search executives..."
+          value={assignSearch}
+          onChange={(e) => setAssignSearch(e.target.value)}
+          className="w-full p-2 border rounded pl-8 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          autoFocus
+        />
+        <Search className="absolute left-2 top-3 text-gray-400" size={16} />
+      </div>
+
+      {/* Executive List */}
+      <div className="mb-4 max-h-60 overflow-y-auto">
+        <div className="space-y-2">
+          {filteredAssignExecutives.map(exec => (
+            <div
+              key={exec.email}
+              onClick={() => {
+                setSelectedExecutive(exec.email);
+                setAssignSearch('');
+              }}
+              className={`p-2 cursor-pointer rounded ${
+                selectedExecutive === exec.email 
+                  ? 'bg-blue-100' 
+                  : 'hover:bg-gray-100'
+              }`}
+            >
+              <div className="font-medium">{exec.username}</div>
+              <div className="text-xs text-gray-500">{exec.email}</div>
+            </div>
+          ))}
+          {filteredAssignExecutives.length === 0 && (
+            <div className="p-2 text-gray-500 text-sm">
+              No executives found matching your search
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Buttons Section */}
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={() => setIsAssignModalOpen(false)}
+          className="px-4 py-2 text-gray-500 hover:text-gray-700"
+          disabled={isAssigning} // Disable button while assigning
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={async () => {
+            setIsAssigning(true); // Start loading
+            await handleBulkAssign();
+            setIsAssignModalOpen(false);
+            setIsAssigning(false); // Stop loading
+          }}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center"
+          disabled={isAssigning} // Disable button while assigning
+        >
+       {isAssigning ? (
+  <div className="flex items-center space-x-2">
+    {/* Animated Loading Spinner */}
+    <div className="w-5 h-5 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+
+
+    {/* Animated Text */}
+    <span className="animate-pulse">Assigning...</span>
+  </div>
+) : (
+  "Confirm Assign"
+)}
+
+        </button>
+      </div>
+    </div>
+  </div>
+)}
       </div>
 
       {/* Add the Assign button near other control buttons (search for the existing buttons section): */}
