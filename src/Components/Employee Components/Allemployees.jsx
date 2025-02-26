@@ -33,6 +33,8 @@ const Allemployees = () => {
   const [editingPosition, setEditingPosition] = useState(null);
   const [newPosition, setNewPosition] = useState('');
   const [positionFilter, setPositionFilter] = useState('');
+  const [sortField, setSortField] = useState('username');
+  const [sortDirection, setSortDirection] = useState('asc');
 
   // Add positions array
   const positions = [
@@ -65,10 +67,46 @@ const Allemployees = () => {
     return matchesEmployeeId && matchesOtherSearch && matchesRole && matchesPosition;
   });
 
+  // Add sorting logic
+  const sortedEmployees = [...filteredEmployees].sort((a, b) => {
+    let aValue, bValue;
+    
+    switch (sortField) {
+      case 'username':
+        aValue = a.username || `${a.firstname} ${a.lastname}`;
+        bValue = b.username || `${b.firstname} ${b.lastname}`;
+        break;
+      case 'employeeId':
+        aValue = a.employeeId;
+        bValue = b.employeeId;
+        break;
+      case 'email':
+        aValue = a.email;
+        bValue = b.email;
+        break;
+      case 'mainPosition':
+        aValue = a.mainPosition;
+        bValue = b.mainPosition;
+        break;
+      default:
+        aValue = a[sortField];
+        bValue = b[sortField];
+    }
+
+    if (!aValue) aValue = '';
+    if (!bValue) bValue = '';
+
+    if (sortDirection === 'asc') {
+      return aValue.toString().localeCompare(bValue.toString());
+    } else {
+      return bValue.toString().localeCompare(aValue.toString());
+    }
+  });
+
   // Add pagination logic
   const indexOfLastRecord = currentPage * rowsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - rowsPerPage;
-  const currentRecords = filteredEmployees.slice(indexOfFirstRecord, indexOfLastRecord);
+  const currentRecords = sortedEmployees.slice(indexOfFirstRecord, indexOfLastRecord);
   const totalPages = Math.ceil(filteredEmployees.length / rowsPerPage);
 
   // Export to Excel function
@@ -370,6 +408,18 @@ const Allemployees = () => {
     </td>
   );
 
+  const handleSort = (field) => {
+    setSortField(field);
+    setSortDirection(currentDirection => currentDirection === 'asc' ? 'desc' : 'asc');
+  };
+
+  const SortIcon = ({ field, currentSortField, currentSortDirection }) => {
+    if (field !== currentSortField) {
+      return <span className="ml-1">↕</span>;
+    }
+    return <span className="ml-1">{currentSortDirection === 'asc' ? '↑' : '↓'}</span>;
+  };
+
   return (
     <>
     <div>
@@ -488,22 +538,59 @@ const Allemployees = () => {
                                 checked={allSelected}
                                 onChange={handleSelectAll}
                               />
-                              <span>Name</span>
+                              <button 
+                                onClick={() => handleSort('username')}
+                                className="flex items-center cursor-pointer hover:text-gray-700"
+                              >
+                                <span>Name</span>
+                                <SortIcon field="username" currentSortField={sortField} currentSortDirection={sortDirection} />
+                              </button>
                             </div>
                           </th>
                           <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500">
-                            Employee ID
+                            <button 
+                              onClick={() => handleSort('employeeId')}
+                              className="flex items-center cursor-pointer hover:text-gray-700"
+                            >
+                              <span>Employee ID</span>
+                              <SortIcon field="employeeId" currentSortField={sortField} currentSortDirection={sortDirection} />
+                            </button>
                           </th>
                           <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500">
-                            Status
+                            <button 
+                              onClick={() => handleSort('status')}
+                              className="flex items-center cursor-pointer hover:text-gray-700"
+                            >
+                              <span>Status</span>
+                              <SortIcon field="status" currentSortField={sortField} currentSortDirection={sortDirection} />
+                            </button>
                           </th>
                           <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500">
-                            Salary                          </th>
-                          <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500">
-                            Email
+                            <button 
+                              onClick={() => handleSort('salary')}
+                              className="flex items-center cursor-pointer hover:text-gray-700"
+                            >
+                              <span>Salary</span>
+                              <SortIcon field="salary" currentSortField={sortField} currentSortDirection={sortDirection} />
+                            </button>
                           </th>
                           <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500">
-                            Position
+                            <button 
+                              onClick={() => handleSort('email')}
+                              className="flex items-center cursor-pointer hover:text-gray-700"
+                            >
+                              <span>Email</span>
+                              <SortIcon field="email" currentSortField={sortField} currentSortDirection={sortDirection} />
+                            </button>
+                          </th>
+                          <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500">
+                            <button 
+                              onClick={() => handleSort('mainPosition')}
+                              className="flex items-center cursor-pointer hover:text-gray-700"
+                            >
+                              <span>Position</span>
+                              <SortIcon field="mainPosition" currentSortField={sortField} currentSortDirection={sortDirection} />
+                            </button>
                           </th>
                           <th className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500">
                             Actions

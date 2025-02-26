@@ -831,10 +831,12 @@ useEffect(() => {
           title: 'Session Expired',
           text: 'Your login session has expired. Please login again.',
           confirmButtonText: 'OK'
-        }).then(() => {
-          
-        
+        }).then((result) => {
+          if (result.isConfirmed) { 
+              window.location.href = '/'; // Navigate only after "OK" click
+          }
         });
+
       } else {
         toast.error('Failed to fetch executives');
       }
