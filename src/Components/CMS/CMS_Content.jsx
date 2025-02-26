@@ -62,7 +62,7 @@ const CMSDashboard = () => {
   const followUpStatusOptions = ["NEW", "INTERESTED", "NOT_INTERESTED", "FOLLOW_UP", "COMPLETE"];
   const [rowsPerPage, setRowsPerPage] = useState(25); // Default to 25 rows per page
   const [logCurrentPage, setLogCurrentPage] = useState(1);
-  const [logEntriesPerPage] = useState(5); // Set the number of logs per page
+  const [logEntriesPerPage] = useState(10); // Set the number of logs per page
 
   const [executives, setExecutives] = useState([]);
   const [searchExecutive, setSearchExecutive] = useState('');
