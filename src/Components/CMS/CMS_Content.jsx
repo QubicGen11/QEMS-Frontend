@@ -833,7 +833,7 @@ useEffect(() => {
           confirmButtonText: 'OK'
         }).then(() => {
           cookie.remove('token');
-          window.location.href = '/';
+        
         });
       } else {
         toast.error('Failed to fetch executives');
