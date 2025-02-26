@@ -32,6 +32,7 @@ const Allemployees = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [editingPosition, setEditingPosition] = useState(null);
   const [newPosition, setNewPosition] = useState('');
+  const [positionFilter, setPositionFilter] = useState('');
 
   // Add positions array
   const positions = [
@@ -59,8 +60,9 @@ const Allemployees = () => {
     );
     
     const matchesRole = !roleFilter || employee.role === roleFilter;
+    const matchesPosition = !positionFilter || employee.mainPosition === positionFilter;
     
-    return matchesEmployeeId && matchesOtherSearch && matchesRole;
+    return matchesEmployeeId && matchesOtherSearch && matchesRole && matchesPosition;
   });
 
   // Add pagination logic
@@ -445,6 +447,25 @@ const Allemployees = () => {
                     <option value="">All Roles</option>
                     {uniqueRoles.map(role => (
                       <option key={role} value={role}>{role}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Position Filter */}
+                <div className="flex-1 min-w-[200px]">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Filter by Position
+                  </label>
+                  <select
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    value={positionFilter}
+                    onChange={(e) => setPositionFilter(e.target.value)}
+                  >
+                    <option value="">All Positions</option>
+                    {positions.map(position => (
+                      <option key={position} value={position}>
+                        {position}
+                      </option>
                     ))}
                   </select>
                 </div>
