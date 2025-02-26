@@ -70,11 +70,10 @@ const InfoTiles = ({ totalCompleted, activeContacts, pendingFollowUp, assignedLe
             key={index}
             className={`p-3 text-white rounded-lg shadow-md ${tile.bgColor} relative overflow-hidden`}
             initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1, transition: { duration: 0.5 } }}
-            whileHover={{ scale: 1.05, rotateY: 10, rotateX: 10 }}
+            
           >
             <motion.div className="absolute inset-0 bg-white/10 blur-md" animate={{ opacity: 1, transition: { duration: 1, repeat: Infinity, repeatType: "mirror" } }} />
-            <motion.div className="transform perspective-1000" whileHover={{ rotateY: 10, rotateX: 10 }}>
+            <motion.div className="transform perspective-1000" >
               {tile.title === "Financial Summary" ? (
                 <div className="flex flex-col w-full gap-1 p-2">
                   <h3 className="text-sm font-semibold text-center mb-1">Financial Summary</h3>
@@ -137,10 +136,10 @@ const InfoTiles = ({ totalCompleted, activeContacts, pendingFollowUp, assignedLe
               className={`relative overflow-hidden p-5 text-white rounded-xl shadow-lg bg-gradient-to-r ${tile.bgColor} ${tile.height} flex flex-col justify-center items-center w-full lg:w-auto`}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1, transition: { duration: 0.5 } }}
-              whileHover={{ scale: 1.1, rotateX: 10, rotateY: 10, boxShadow: "0px 0px 20px rgba(255, 255, 255, 0.7)" }}
+              whileHover={{ scale: 1.07,  boxShadow: "0px 0px 20px rgba(255, 255, 255, 0.7)" }}
             >
               <motion.div className="absolute inset-0 bg-white/20 blur-lg rounded-xl" animate={{ opacity: 0.7, transition: { duration: 1.5, repeat: Infinity, repeatType: "mirror" } }} />
-              <motion.div className="transform perspective-1000 flex flex-col items-center justify-center h-full" whileHover={{ rotateY: 15, rotateX: 15 }}>
+              <motion.div className="transform perspective-1000 flex flex-col items-center justify-center h-full" >
                 {tile.title === "Financial Summary" ? (
                   <div className="space-y-2 text-center">
                     <div className="space-y-1">

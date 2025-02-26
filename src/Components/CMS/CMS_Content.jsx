@@ -832,7 +832,7 @@ useEffect(() => {
           text: 'Your login session has expired. Please login again.',
           confirmButtonText: 'OK'
         }).then(() => {
-          cookie.remove('token');
+          
         
         });
       } else {
