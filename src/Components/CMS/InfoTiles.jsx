@@ -13,6 +13,7 @@ const InfoTiles = ({ totalCompleted, activeContacts, pendingFollowUp, assignedLe
     totalPreRegisteredAmount: 0,
     totalRemainingAmount: 0
   });
+  const [adminAccess, setAdminAccess] = useState([]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -46,6 +47,7 @@ const InfoTiles = ({ totalCompleted, activeContacts, pendingFollowUp, assignedLe
             totalPreRegisteredAmount: 0,
             totalRemainingAmount: 0
           });
+          setAdminAccess(response.data.data.adminAccess || []);
         }
       } catch (error) {
         console.error('Error fetching financial data:', error);
@@ -64,7 +66,7 @@ const InfoTiles = ({ totalCompleted, activeContacts, pendingFollowUp, assignedLe
           { title: "Pending Follow-ups", value: pendingFollowUp, bgColor: "bg-gradient-to-r from-orange-400 to-red-500" },
           { title: "Total Leads", value: totalLeads, bgColor: "bg-gradient-to-r from-yellow-400 to-yellow-600" },
           ...(cookie.get('token') ? [{ title: "Assigned Leads", value: assignedLeads, bgColor: "bg-gradient-to-r from-gray-500 to-gray-700" }] : []),
-          { title: "Financial Summary", value: financialData, bgColor: "bg-gradient-to-r from-purple-400 to-purple-600" }
+          ...(!adminAccess.includes('hide') ? [{ title: "Financial Summary", value: financialData, bgColor: "bg-gradient-to-r from-purple-400 to-purple-600" }] : [])
         ].map((tile, index) => (
           <motion.div
             key={index}
@@ -79,6 +81,7 @@ const InfoTiles = ({ totalCompleted, activeContacts, pendingFollowUp, assignedLe
                   <h3 className="text-sm font-semibold text-center mb-1">Financial Summary</h3>
                   <div className="grid grid-cols-2 gap-1 text-center">
                     <div className="col-span-2">
+
                       <p className="text-xs">Projected</p>
                       <p className="text-sm font-bold">₹{tile.value?.totalProjectedAmount?.toLocaleString()}</p>
                     </div>
@@ -124,12 +127,12 @@ const InfoTiles = ({ totalCompleted, activeContacts, pendingFollowUp, assignedLe
             { title: "Completed", value: totalCompleted, bgColor: "from-green-400 to-green-600", height: "h-28" },
             { title: "Total Leads", value: totalLeads, bgColor: "from-yellow-400 to-yellow-600", height: "h-32" },
             ...(cookie.get('token') ? [{ title: "Assigned Leads", value: assignedLeads, bgColor: "from-gray-500 to-gray-700", height: "h-36" }] : []),
-            { 
+            ...(!adminAccess.includes('hide') ? [{ 
               title: "Financial Summary",
               value: financialData,
               bgColor: "from-purple-400 to-purple-600", 
-              height: "h-40"  // Make this the largest
-            }
+              height: "h-40"
+            }] : [])
           ].map((tile, index) => (
             <motion.div
               key={index}
