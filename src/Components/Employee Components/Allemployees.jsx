@@ -14,7 +14,7 @@ import SendNotificationModal from "./SendNotificationModal";
 import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Toast,{ displayToast } from '../../Toast';
-
+import Cookies from 'js-cookie';
 
 const Allemployees = () => {
   const [employees, setEmployees] = useState([]);
@@ -30,6 +30,14 @@ const Allemployees = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [editingPosition, setEditingPosition] = useState(null);
+  const [newPosition, setNewPosition] = useState('');
+
+  // Add positions array
+  const positions = [
+    
+    "Intern","Product Manager", "Product Owner" , "Sales Lead", "Sales Manager","Team Lead","Lead Generation" , "Executive"
+  ];
 
   // Get unique roles
   const uniqueRoles = [...new Set(employees.map(emp => emp.role))].filter(Boolean);
@@ -285,6 +293,81 @@ const Allemployees = () => {
     );
   };
 
+  const handleUpdatePosition = async (employee) => {
+    try {
+      const token = Cookies.get('token');
+      const response = await axios.put(
+        `${config.apiUrl}/qubinest/users/update-main-position`,
+        {
+          email: employee.email,
+          newMainPosition: newPosition
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.status === 200) {
+        displayToast('success', 'Position updated successfully');
+        setEditingPosition(null);
+        setNewPosition('');
+        fetchEmployees();
+      }
+    } catch (error) {
+      console.error('Error updating position:', error);
+      displayToast('error', 'Failed to update position');
+    }
+  };
+
+  const renderPositionCell = (employee) => (
+    <td className="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
+      {editingPosition === employee.employeeId ? (
+        <div className="flex items-center gap-2">
+          <select
+            value={newPosition}
+            onChange={(e) => setNewPosition(e.target.value)}
+            className="px-2 py-1 border border-gray-300 rounded-md text-sm"
+          >
+            <option value="">Select Position</option>
+            {positions.map(pos => (
+              <option key={pos} value={pos}>{pos}</option>
+            ))}
+          </select>
+          <button
+            onClick={() => handleUpdatePosition(employee)}
+            className="px-3 py-1 text-xs text-white bg-green-500 rounded hover:bg-green-600"
+          >
+            Save
+          </button>
+          <button
+            onClick={() => {
+              setEditingPosition(null);
+              setNewPosition('');
+            }}
+            className="px-3 py-1 text-xs text-white bg-gray-500 rounded hover:bg-gray-600"
+          >
+            Cancel
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2">
+          <span>{employee.mainPosition}</span>
+          <button
+            onClick={() => {
+              setEditingPosition(employee.employeeId);
+              setNewPosition(employee.mainPosition || '');
+            }}
+            className="text-blue-500 hover:text-blue-700"
+          >
+            Edit
+          </button>
+        </div>
+      )}
+    </td>
+  );
+
   return (
     <>
     <div>
@@ -466,9 +549,7 @@ const Allemployees = () => {
                             <td className="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
                               {employee.email}
                             </td>
-                            <td className="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
-                              {employee.mainPosition}
-                            </td>
+                            {renderPositionCell(employee)}
                             <td className="px-4 py-4 text-sm whitespace-nowrap">
                               <div className="flex items-center gap-x-6">
                                 {employee.status === 'Active' ? (
