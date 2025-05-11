@@ -4,5 +4,5 @@ services:
     image: emsfe:$BUILD_TAG
     container_name: frontend
     ports:
-      - "8085:8085"
+      - "8085:80"
     restart: always
